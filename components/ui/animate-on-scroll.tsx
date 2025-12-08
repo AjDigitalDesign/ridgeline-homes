@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { useAnimateOnScroll } from "@/hooks/use-animate-on-scroll";
 import { cn } from "@/lib/utils";
 
@@ -18,7 +19,7 @@ interface AnimateOnScrollProps {
   duration?: number;
   className?: string;
   threshold?: number;
-  as?: keyof JSX.IntrinsicElements;
+  as?: React.ElementType;
 }
 
 export function AnimateOnScroll({
