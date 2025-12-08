@@ -128,9 +128,11 @@ export function AuthModal({
     setError(null);
 
     try {
+      // Use the current origin for the callback to avoid www/non-www mismatch
+      const callbackURL = typeof window !== "undefined" ? window.location.origin : "https://ridgelinehomes.net";
       await signIn.social({
         provider: "google",
-        callbackURL: "/",
+        callbackURL,
       });
     } catch (err: unknown) {
       console.error("Google sign-in error:", err);
