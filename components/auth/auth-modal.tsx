@@ -10,7 +10,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { signIn, signUp, getGoogleSignInUrl } from "@/lib/auth-client";
+import { signIn, signUp } from "@/lib/auth-client";
 
 // Google Icon SVG
 function GoogleIcon({ className }: { className?: string }) {
@@ -123,17 +123,20 @@ export function AuthModal({
     }
   };
 
-  const handleGoogleSignIn = () => {
+  const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     setError(null);
 
-    // For Google OAuth, redirect directly to the API
-    // The API will handle the OAuth flow and redirect back
-    const callbackURL = window.location.origin;
-    const googleUrl = getGoogleSignInUrl(callbackURL);
-
-    // Redirect to Google OAuth
-    window.location.href = googleUrl;
+    try {
+      await signIn.social({
+        provider: "google",
+        callbackURL: "/",
+      });
+    } catch (err: unknown) {
+      console.error("Google sign-in error:", err);
+      setError("Google sign in failed. Please try again.");
+      setIsGoogleLoading(false);
+    }
   };
 
   return (
