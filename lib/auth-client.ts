@@ -1,9 +1,8 @@
 import { createAuthClient } from "better-auth/react";
 
-// Auth is handled by our Next.js app directly
-// No need to proxy to external API
+// Auth is handled by the ForgeHome backend at app.forgehome.io
 export const authClient = createAuthClient({
-  baseURL: "", // Empty string means use the same origin (our Next.js app)
+  baseURL: process.env.NEXT_PUBLIC_API_URL || "https://app.forgehome.io",
 });
 
 export const {
