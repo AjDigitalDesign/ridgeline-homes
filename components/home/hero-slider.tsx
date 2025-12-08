@@ -39,8 +39,6 @@ export default function HeroSlider({ slides, socialLinks }: HeroSliderProps) {
   const [isVideoOpen, setIsVideoOpen] = useState(false);
   const swiperRef = useRef<SwiperType | null>(null);
 
-  const currentSlideData = slides[currentSlide];
-
   // Build social links from props - only show if they exist
   const socialLinksArray = [
     socialLinks?.twitter && { name: "TWITTER", href: socialLinks.twitter },
@@ -55,9 +53,12 @@ export default function HeroSlider({ slides, socialLinks }: HeroSliderProps) {
   const hasVideo = (slide: BannerSlide) =>
     slide.videoUrl && slide.videoUrl.length > 0;
 
+  // Early return if no slides (after hooks)
   if (!slides || slides.length === 0) {
     return null;
   }
+
+  const currentSlideData = slides[currentSlide];
 
   return (
     <section className="relative w-full overflow-hidden">
