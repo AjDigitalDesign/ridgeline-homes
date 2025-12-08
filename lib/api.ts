@@ -331,3 +331,47 @@ export interface MarketArea {
 // Fetch market areas
 export const fetchMarketAreas = () =>
   api.get<MarketArea[]>("/api/public/market-areas");
+
+// Favorite types
+export type FavoriteType = "home" | "community" | "floorplan";
+
+export interface Favorite {
+  id: string;
+  userId: string;
+  type: FavoriteType;
+  homeId: string | null;
+  communityId: string | null;
+  floorplanId: string | null;
+  createdAt: string;
+  home?: Home | null;
+  community?: Community | null;
+  floorplan?: Floorplan | null;
+}
+
+export interface CreateFavoriteData {
+  type: FavoriteType;
+  homeId?: string;
+  communityId?: string;
+  floorplanId?: string;
+}
+
+// Favorites API functions (requires authentication)
+export const fetchFavorites = (type?: FavoriteType) =>
+  api.get<Favorite[]>("/api/public/favorites", {
+    params: type ? { type } : undefined,
+    withCredentials: true
+  });
+
+export const addFavorite = (data: CreateFavoriteData) =>
+  api.post<Favorite>("/api/public/favorites", data, { withCredentials: true });
+
+export const removeFavorite = (id: string) =>
+  api.delete(`/api/public/favorites?id=${id}`, { withCredentials: true });
+
+export const removeFavoriteByItem = (type: FavoriteType, itemId: string) => {
+  const params = new URLSearchParams({ type });
+  if (type === "home") params.append("homeId", itemId);
+  else if (type === "community") params.append("communityId", itemId);
+  else if (type === "floorplan") params.append("floorplanId", itemId);
+  return api.delete(`/api/public/favorites?${params.toString()}`, { withCredentials: true });
+};

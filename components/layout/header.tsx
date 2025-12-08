@@ -4,9 +4,9 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import MobileNav from "../header/mobile";
-import { Button } from "../ui/button";
 import MainLogo from "../main-logo";
 import DesktopNav from "../header/desktop";
+import { UserMenu } from "../auth/user-menu";
 import { cn } from "@/lib/utils";
 
 export function Header() {
@@ -70,14 +70,7 @@ export function Header() {
               </span>
             </Link>
 
-            <div className="hidden lg:block">
-              <Button
-                asChild
-                className="bg-main-secondary text-main-primary hover:bg-main-secondary/90"
-              >
-                <Link href="/sign-in">Sign In</Link>
-              </Button>
-            </div>
+            <UserMenu />
 
             {/* Mobile Navigation */}
             <MobileNav />

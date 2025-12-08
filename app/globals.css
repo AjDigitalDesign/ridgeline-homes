@@ -370,3 +370,33 @@ html {
 .stagger-children.is-visible > *:nth-child(6) {
   animation: fade-in-up 0.5s ease-out 500ms forwards;
 }
+
+/* Mapbox popup styles */
+.mapboxgl-popup-content {
+  padding: 0 !important;
+  border-radius: 0.75rem !important;
+  overflow: hidden;
+  box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1) !important;
+}
+
+.mapboxgl-popup-close-button {
+  display: none;
+}
+
+.mapboxgl-popup-tip {
+  display: none;
+}
+
+.community-popup .mapboxgl-popup-content {
+  background: transparent !important;
+}
+
+/* Hide scrollbar utility */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

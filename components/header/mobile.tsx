@@ -9,14 +9,12 @@ import {
   Phone,
   Mail,
   MessageCircle,
-  User,
   BookOpenIcon,
   LifeBuoyIcon,
   InfoIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { navigationItems } from "@/lib/constants/navigation";
-import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
@@ -24,6 +22,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { MobileUserMenu } from "@/components/auth/user-menu";
 
 import SalesPerson from "@/public/sales-person.png";
 import Logo from "../main-logo";
@@ -138,17 +137,8 @@ export default function MobileNav() {
 
         {/* Footer Actions */}
         <div className="border-t border-slate-700/50 p-6 space-y-4">
-          {/* Sign In Button */}
-          <Button
-            asChild
-            variant="outline"
-            className="w-full border-slate-600 bg-transparent text-white hover:bg-slate-700 hover:text-white"
-          >
-            <Link href="/sign-in" onClick={() => setOpen(false)}>
-              <User className="size-4" />
-              Sign In
-            </Link>
-          </Button>
+          {/* User Menu (Sign In / Account) */}
+          <MobileUserMenu />
 
           {/* Ask Kelly Contact Section */}
           <div className="flex w-full items-center justify-between gap-10 pt-2">

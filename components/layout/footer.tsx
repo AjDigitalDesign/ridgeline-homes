@@ -158,11 +158,17 @@ export function Footer() {
               <li className="flex items-start gap-3">
                 <Phone className="size-5 text-white/50 shrink-0 mt-0.5" />
                 <div className="text-sm text-white/70">
-                  <a href="tel:+1234567890" className="hover:text-main-secondary transition-colors">
+                  <a
+                    href="tel:+1234567890"
+                    className="hover:text-main-secondary transition-colors"
+                  >
                     +01 234 567 890
                   </a>
                   <br />
-                  <a href="tel:+09876543210" className="hover:text-main-secondary transition-colors">
+                  <a
+                    href="tel:+09876543210"
+                    className="hover:text-main-secondary transition-colors"
+                  >
                     +09 876 543 210
                   </a>
                 </div>
@@ -243,7 +249,7 @@ export function Footer() {
         </div>
 
         {/* Newsletter Section */}
-        <div className="mt-12 pt-10 border-t border-white/10">
+        <div className="mt-12 pt-10 border-t border-white/10 relative overflow-hidden">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
             <div className="lg:max-w-md">
               <h3 className="text-2xl lg:text-3xl font-bold text-white">

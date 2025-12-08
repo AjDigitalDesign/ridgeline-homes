@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Outfit, Inter } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/components/providers/query-provider";
+import { FavoritesProvider } from "@/components/providers/favorites-provider";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 
@@ -31,9 +32,11 @@ export default function RootLayout({
         className={`${outfit.variable} ${inter.variable} antialiased`}
       >
         <QueryProvider>
-          <Header />
-          {children}
-          <Footer />
+          <FavoritesProvider>
+            <Header />
+            {children}
+            <Footer />
+          </FavoritesProvider>
         </QueryProvider>
       </body>
     </html>
