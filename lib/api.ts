@@ -2,12 +2,14 @@ import axios from "axios";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 const API_KEY = process.env.NEXT_PUBLIC_API_KEY || "";
+const TENANT_SLUG = process.env.NEXT_PUBLIC_TENANT_SLUG || "";
 
 export const api = axios.create({
   baseURL: API_URL,
   headers: {
     "Content-Type": "application/json",
     "X-API-Key": API_KEY,
+    "x-tenant-slug": TENANT_SLUG,
   },
 });
 
