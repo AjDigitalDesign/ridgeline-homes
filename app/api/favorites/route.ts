@@ -62,6 +62,12 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(body),
     });
 
+    // Handle 409 Conflict (already favorited) - return success with the existing data
+    if (response.status === 409) {
+      const data = await response.json().catch(() => ({ message: "Already favorited" }));
+      return NextResponse.json(data, { status: 200 });
+    }
+
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Failed to add favorite:", response.status, errorText);

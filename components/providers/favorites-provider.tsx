@@ -61,14 +61,19 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
 
       const currentlyFavorited = isFavorited(type, itemId);
 
-      if (currentlyFavorited) {
-        await removeFavoriteMutation.mutateAsync({ type, itemId });
-      } else {
-        const data: CreateFavoriteData = { type };
-        if (type === "home") data.homeId = itemId;
-        else if (type === "community") data.communityId = itemId;
-        else if (type === "floorplan") data.floorplanId = itemId;
-        await addFavoriteMutation.mutateAsync(data);
+      try {
+        if (currentlyFavorited) {
+          await removeFavoriteMutation.mutateAsync({ type, itemId });
+        } else {
+          const data: CreateFavoriteData = { type };
+          if (type === "home") data.homeId = itemId;
+          else if (type === "community") data.communityId = itemId;
+          else if (type === "floorplan") data.floorplanId = itemId;
+          await addFavoriteMutation.mutateAsync(data);
+        }
+      } catch (error) {
+        // Error is handled by the mutation's onError callback
+        console.error("Toggle favorite failed:", error);
       }
     },
     [isAuthenticated, isFavorited, addFavoriteMutation, removeFavoriteMutation]

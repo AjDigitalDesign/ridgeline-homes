@@ -39,6 +39,11 @@ export function useAddFavorite() {
       queryClient.invalidateQueries({ queryKey: ["favorites", variables.type] });
       queryClient.invalidateQueries({ queryKey: ["favorites", undefined] });
     },
+    onError: (error) => {
+      // Still invalidate queries on error to refresh the state
+      queryClient.invalidateQueries({ queryKey: ["favorites"] });
+      console.error("Failed to add favorite:", error);
+    },
   });
 }
 
