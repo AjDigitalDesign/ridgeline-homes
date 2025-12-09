@@ -6,6 +6,9 @@ const AUTH_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://ridgeline-home
 
 export const authClient = createAuthClient({
   baseURL: AUTH_BASE_URL,
+  fetchOptions: {
+    credentials: "include", // Send cookies with cross-origin requests
+  },
 });
 
 export const {
