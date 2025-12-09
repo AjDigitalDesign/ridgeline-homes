@@ -28,12 +28,20 @@ const FavoritesContext = createContext<FavoritesContextValue | null>(null);
 
 export function FavoritesProvider({ children }: { children: ReactNode }) {
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
-  const { data: favoritesData, isLoading: isFavoritesLoading } = useFavorites();
+  const { data: favoritesData, isLoading: isFavoritesLoading, error } = useFavorites();
   const addFavoriteMutation = useAddFavorite();
   const removeFavoriteMutation = useRemoveFavorite();
 
   // Ensure favorites is always an array
   const favorites = Array.isArray(favoritesData) ? favoritesData : [];
+
+  // Debug logging
+  if (typeof window !== "undefined") {
+    console.log("[FavoritesProvider] isAuthenticated:", isAuthenticated);
+    console.log("[FavoritesProvider] favoritesData:", favoritesData);
+    console.log("[FavoritesProvider] favorites count:", favorites.length);
+    console.log("[FavoritesProvider] error:", error);
+  }
 
   const isLoading = isAuthLoading || isFavoritesLoading;
   const isToggling = addFavoriteMutation.isPending || removeFavoriteMutation.isPending;

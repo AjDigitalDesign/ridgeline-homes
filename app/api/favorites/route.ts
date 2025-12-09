@@ -34,7 +34,11 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await response.json();
-    return NextResponse.json(data, { status: response.status });
+
+    // Ensure we return an array - the backend might wrap it in an object
+    const favorites = Array.isArray(data) ? data : (data.favorites || data.data || []);
+
+    return NextResponse.json(favorites, { status: 200 });
   } catch (error) {
     console.error("Failed to fetch favorites:", error);
     // Return empty array on error to prevent client-side crashes
