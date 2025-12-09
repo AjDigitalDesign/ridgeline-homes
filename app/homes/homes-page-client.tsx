@@ -3,9 +3,8 @@
 import { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Search, SlidersHorizontal, MapPin, Bed, Bath, Square, X } from "lucide-react";
+import { Search, SlidersHorizontal, MapPin, Bed, Bath, Square, X, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { FavoriteButton } from "@/components/favorites/favorite-button";
 import type { Home, Community } from "@/lib/api";
 
 interface HomesPageClientProps {
@@ -233,13 +232,12 @@ export default function HomesPageClient({
                     fill
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-                  <div className="absolute top-3 right-3 z-10">
-                    <FavoriteButton
-                      type="home"
-                      itemId={home.id}
-                      variant="icon"
-                    />
-                  </div>
+                  <button
+                    className="absolute top-3 right-3 z-10 p-2 bg-white/90 rounded-full hover:bg-white transition-colors"
+                    aria-label="Add to favorites"
+                  >
+                    <Heart className="size-5 text-gray-600 hover:text-red-500" />
+                  </button>
                   {home.status && (
                     <div className="absolute top-3 left-3">
                       <span className="bg-main-secondary text-main-primary px-3 py-1 rounded-full text-sm font-medium">
