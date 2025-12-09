@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
 
   if (!authHeader) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json([], { status: 200 });
   }
 
   const { searchParams } = new URL(request.url);
@@ -27,11 +27,18 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    if (!response.ok) {
+      // Return empty array on error to prevent client-side crashes
+      console.error("Failed to fetch favorites:", response.status, response.statusText);
+      return NextResponse.json([], { status: 200 });
+    }
+
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
     console.error("Failed to fetch favorites:", error);
-    return NextResponse.json({ error: "Failed to fetch favorites" }, { status: 500 });
+    // Return empty array on error to prevent client-side crashes
+    return NextResponse.json([], { status: 200 });
   }
 }
 
@@ -40,7 +47,7 @@ export async function POST(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
 
   if (!authHeader) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Please sign in to add favorites" }, { status: 401 });
   }
 
   try {
@@ -55,6 +62,15 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(body),
     });
 
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Failed to add favorite:", response.status, errorText);
+      return NextResponse.json(
+        { error: "Failed to add favorite" },
+        { status: response.status }
+      );
+    }
+
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
@@ -68,7 +84,7 @@ export async function DELETE(request: NextRequest) {
   const authHeader = request.headers.get("authorization");
 
   if (!authHeader) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Please sign in to remove favorites" }, { status: 401 });
   }
 
   const { searchParams } = new URL(request.url);
@@ -91,6 +107,15 @@ export async function DELETE(request: NextRequest) {
     // Handle empty response (204 No Content)
     if (response.status === 204) {
       return new NextResponse(null, { status: 204 });
+    }
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Failed to remove favorite:", response.status, errorText);
+      return NextResponse.json(
+        { error: "Failed to remove favorite" },
+        { status: response.status }
+      );
     }
 
     const data = await response.json();
