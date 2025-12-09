@@ -4,6 +4,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 const API_KEY = process.env.NEXT_PUBLIC_API_KEY || "";
 const TENANT_SLUG = process.env.NEXT_PUBLIC_TENANT_SLUG || "";
 
+// Public API client (with tenant slug header for public endpoints)
 export const api = axios.create({
   baseURL: API_URL,
   headers: {
@@ -13,8 +14,28 @@ export const api = axios.create({
   },
 });
 
-// Add request interceptor to include auth token
+// Authenticated API client (without x-tenant-slug to avoid CORS issues)
+// The auth token already identifies the user's tenant
+export const authApi = axios.create({
+  baseURL: API_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+// Add request interceptor to include auth token for public api
 api.interceptors.request.use((config) => {
+  if (typeof window !== "undefined") {
+    const sessionToken = localStorage.getItem("session_token");
+    if (sessionToken) {
+      config.headers.Authorization = `Bearer ${sessionToken}`;
+    }
+  }
+  return config;
+});
+
+// Add request interceptor to include auth token for auth api
+authApi.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
     const sessionToken = localStorage.getItem("session_token");
     if (sessionToken) {
@@ -26,6 +47,20 @@ api.interceptors.request.use((config) => {
 
 // Add response interceptor to handle 401 errors
 api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 && typeof window !== "undefined") {
+      // Session expired, clear auth data
+      localStorage.removeItem("auth_session");
+      localStorage.removeItem("session_token");
+      window.dispatchEvent(new Event("auth-change"));
+    }
+    return Promise.reject(error);
+  }
+);
+
+// Add same response interceptor to authApi
+authApi.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401 && typeof window !== "undefined") {
@@ -383,21 +418,22 @@ export interface CreateFavoriteData {
 }
 
 // Favorites API functions (requires authentication via Authorization header)
+// Uses authApi to avoid x-tenant-slug CORS issues (auth token identifies tenant)
 export const fetchFavorites = (type?: FavoriteType) =>
-  api.get<Favorite[]>("/api/public/favorites", {
+  authApi.get<Favorite[]>("/api/public/favorites", {
     params: type ? { type } : undefined,
   });
 
 export const addFavorite = (data: CreateFavoriteData) =>
-  api.post<Favorite>("/api/public/favorites", data);
+  authApi.post<Favorite>("/api/public/favorites", data);
 
 export const removeFavorite = (id: string) =>
-  api.delete(`/api/public/favorites?id=${id}`);
+  authApi.delete(`/api/public/favorites?id=${id}`);
 
 export const removeFavoriteByItem = (type: FavoriteType, itemId: string) => {
   const params = new URLSearchParams({ type });
   if (type === "home") params.append("homeId", itemId);
   else if (type === "community") params.append("communityId", itemId);
   else if (type === "floorplan") params.append("floorplanId", itemId);
-  return api.delete(`/api/public/favorites?${params.toString()}`);
+  return authApi.delete(`/api/public/favorites?${params.toString()}`);
 };
