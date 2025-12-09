@@ -123,22 +123,17 @@ export function AuthModal({
     }
   };
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = () => {
     setIsGoogleLoading(true);
     setError(null);
 
-    try {
-      // Use the current origin for the callback to avoid www/non-www mismatch
-      const callbackURL = typeof window !== "undefined" ? window.location.origin : "https://ridgelinehomes.net";
-      await signIn.social({
-        provider: "google",
-        callbackURL,
-      });
-    } catch (err: unknown) {
-      console.error("Google sign-in error:", err);
-      setError("Google sign in failed. Please try again.");
-      setIsGoogleLoading(false);
-    }
+    // Use full redirect to backend OAuth endpoint to avoid cookie domain mismatch
+    // The backend will redirect to Google, then back to backend callback,
+    // then finally redirect to our frontend with session established
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://ridgeline-homes.forgehome.io";
+    const callbackURL = typeof window !== "undefined" ? window.location.origin : "https://ridgelinehomes.net";
+
+    window.location.href = `${apiUrl}/api/auth/sign-in/social?provider=google&callbackURL=${encodeURIComponent(callbackURL)}`;
   };
 
   return (
