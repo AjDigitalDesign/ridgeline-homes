@@ -382,23 +382,22 @@ export interface CreateFavoriteData {
   floorplanId?: string;
 }
 
-// Favorites API functions (requires authentication)
+// Favorites API functions (requires authentication via Authorization header)
 export const fetchFavorites = (type?: FavoriteType) =>
   api.get<Favorite[]>("/api/public/favorites", {
     params: type ? { type } : undefined,
-    withCredentials: true
   });
 
 export const addFavorite = (data: CreateFavoriteData) =>
-  api.post<Favorite>("/api/public/favorites", data, { withCredentials: true });
+  api.post<Favorite>("/api/public/favorites", data);
 
 export const removeFavorite = (id: string) =>
-  api.delete(`/api/public/favorites?id=${id}`, { withCredentials: true });
+  api.delete(`/api/public/favorites?id=${id}`);
 
 export const removeFavoriteByItem = (type: FavoriteType, itemId: string) => {
   const params = new URLSearchParams({ type });
   if (type === "home") params.append("homeId", itemId);
   else if (type === "community") params.append("communityId", itemId);
   else if (type === "floorplan") params.append("floorplanId", itemId);
-  return api.delete(`/api/public/favorites?${params.toString()}`, { withCredentials: true });
+  return api.delete(`/api/public/favorites?${params.toString()}`);
 };
