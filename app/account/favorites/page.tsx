@@ -333,13 +333,16 @@ function CommunityFavoriteCard({ favorite, onRemove }: { favorite: Favorite; onR
 
 export default function FavoritesPage() {
   const [activeTab, setActiveTab] = useState<TabType>("homes");
-  const { data: favorites, isLoading } = useFavorites();
+  const { data: favoritesData, isLoading } = useFavorites();
   const removeFavoriteMutation = useRemoveFavorite();
 
+  // Ensure favorites is always an array
+  const favorites = Array.isArray(favoritesData) ? favoritesData : [];
+
   // Filter favorites by type
-  const homeFavorites = favorites?.filter((f) => f.type === "home") || [];
-  const floorplanFavorites = favorites?.filter((f) => f.type === "floorplan") || [];
-  const communityFavorites = favorites?.filter((f) => f.type === "community") || [];
+  const homeFavorites = favorites.filter((f) => f.type === "home");
+  const floorplanFavorites = favorites.filter((f) => f.type === "floorplan");
+  const communityFavorites = favorites.filter((f) => f.type === "community");
 
   const handleRemove = (type: FavoriteType, itemId: string) => {
     removeFavoriteMutation.mutate({ type, itemId });
