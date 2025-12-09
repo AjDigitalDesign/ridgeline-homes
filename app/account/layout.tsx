@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Heart, User, Loader2 } from "lucide-react";
-import { useSession } from "@/lib/auth-client";
+import { useAuth } from "@/lib/auth-context";
 import { cn } from "@/lib/utils";
 
 const sidebarItems = [
@@ -28,17 +28,17 @@ export default function AccountLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { data: session, isPending } = useSession();
+  const { user, isLoading, isAuthenticated } = useAuth();
 
   // Redirect to home if not authenticated
   useEffect(() => {
-    if (!isPending && !session?.user) {
+    if (!isLoading && !isAuthenticated) {
       router.push("/");
     }
-  }, [isPending, session, router]);
+  }, [isLoading, isAuthenticated, router]);
 
   // Show loading while checking auth
-  if (isPending) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 pt-20 flex items-center justify-center">
         <Loader2 className="size-8 animate-spin text-main-primary" />
@@ -47,11 +47,11 @@ export default function AccountLayout({
   }
 
   // Don't render if not authenticated
-  if (!session?.user) {
+  if (!isAuthenticated || !user) {
     return null;
   }
 
-  const firstName = session.user.name?.split(" ")[0] || "User";
+  const firstName = user.name?.split(" ")[0] || "User";
 
   return (
     <div className="min-h-screen bg-gray-50 pt-20">

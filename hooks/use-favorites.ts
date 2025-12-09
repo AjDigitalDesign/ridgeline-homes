@@ -9,11 +9,11 @@ import {
   type Favorite,
   type CreateFavoriteData,
 } from "@/lib/api";
-import { useSession } from "@/lib/auth-client";
+import { useAuth } from "@/lib/auth-context";
 
 // Fetch all favorites
 export function useFavorites(type?: FavoriteType) {
-  const { data: session } = useSession();
+  const { isAuthenticated } = useAuth();
 
   return useQuery({
     queryKey: ["favorites", type],
@@ -21,7 +21,7 @@ export function useFavorites(type?: FavoriteType) {
       const { data } = await fetchFavorites(type);
       return data;
     },
-    enabled: !!session?.user,
+    enabled: isAuthenticated,
   });
 }
 
