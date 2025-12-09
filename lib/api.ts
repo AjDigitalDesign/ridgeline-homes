@@ -417,23 +417,56 @@ export interface CreateFavoriteData {
   floorplanId?: string;
 }
 
-// Favorites API functions (requires authentication via Authorization header)
-// Uses authApi to avoid x-tenant-slug CORS issues (auth token identifies tenant)
+// Local API client for proxied requests (avoids CORS issues)
+// Routes through Next.js API routes which then call the backend
+const localApi = axios.create({
+  baseURL: "",
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+// Add request interceptor to include auth token for local api
+localApi.interceptors.request.use((config) => {
+  if (typeof window !== "undefined") {
+    const sessionToken = localStorage.getItem("session_token");
+    if (sessionToken) {
+      config.headers.Authorization = `Bearer ${sessionToken}`;
+    }
+  }
+  return config;
+});
+
+// Add response interceptor to handle 401 errors
+localApi.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 && typeof window !== "undefined") {
+      // Session expired, clear auth data
+      localStorage.removeItem("auth_session");
+      localStorage.removeItem("session_token");
+      window.dispatchEvent(new Event("auth-change"));
+    }
+    return Promise.reject(error);
+  }
+);
+
+// Favorites API functions (proxied through Next.js API routes to avoid CORS)
 export const fetchFavorites = (type?: FavoriteType) =>
-  authApi.get<Favorite[]>("/api/public/favorites", {
+  localApi.get<Favorite[]>("/api/favorites", {
     params: type ? { type } : undefined,
   });
 
 export const addFavorite = (data: CreateFavoriteData) =>
-  authApi.post<Favorite>("/api/public/favorites", data);
+  localApi.post<Favorite>("/api/favorites", data);
 
 export const removeFavorite = (id: string) =>
-  authApi.delete(`/api/public/favorites?id=${id}`);
+  localApi.delete(`/api/favorites?id=${id}`);
 
 export const removeFavoriteByItem = (type: FavoriteType, itemId: string) => {
   const params = new URLSearchParams({ type });
   if (type === "home") params.append("homeId", itemId);
   else if (type === "community") params.append("communityId", itemId);
   else if (type === "floorplan") params.append("floorplanId", itemId);
-  return authApi.delete(`/api/public/favorites?${params.toString()}`);
+  return localApi.delete(`/api/favorites?${params.toString()}`);
 };
