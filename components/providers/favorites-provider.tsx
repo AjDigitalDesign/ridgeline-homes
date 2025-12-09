@@ -7,7 +7,7 @@ import {
   useMemo,
   type ReactNode,
 } from "react";
-import { useSession } from "@/lib/auth-client";
+import { useAuth } from "@/lib/auth-context";
 import {
   useFavorites,
   useAddFavorite,
@@ -27,13 +27,12 @@ interface FavoritesContextValue {
 const FavoritesContext = createContext<FavoritesContextValue | null>(null);
 
 export function FavoritesProvider({ children }: { children: ReactNode }) {
-  const { data: session, isPending: isSessionLoading } = useSession();
+  const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const { data: favorites = [], isLoading: isFavoritesLoading } = useFavorites();
   const addFavoriteMutation = useAddFavorite();
   const removeFavoriteMutation = useRemoveFavorite();
 
-  const isAuthenticated = !!session?.user;
-  const isLoading = isSessionLoading || isFavoritesLoading;
+  const isLoading = isAuthLoading || isFavoritesLoading;
   const isToggling = addFavoriteMutation.isPending || removeFavoriteMutation.isPending;
 
   const isFavorited = useCallback(

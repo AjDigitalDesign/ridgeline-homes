@@ -1,18 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useSession } from "@/lib/auth-client";
+import { useAuth } from "@/lib/auth-context";
 
 export default function ProfilePage() {
-  const { data: session } = useSession();
+  const { user, isLoading: isAuthLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: session?.user?.name || "",
-    email: session?.user?.email || "",
+    name: "",
+    email: "",
     phone: "",
   });
+
+  // Update form data when user loads
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || "",
+        email: user.email || "",
+        phone: "",
+      });
+    }
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,11 +36,19 @@ export default function ProfilePage() {
 
   const handleReset = () => {
     setFormData({
-      name: session?.user?.name || "",
-      email: session?.user?.email || "",
+      name: user?.name || "",
+      email: user?.email || "",
       phone: "",
     });
   };
+
+  if (isAuthLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="size-8 animate-spin text-main-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl">
