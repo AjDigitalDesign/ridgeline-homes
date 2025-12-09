@@ -1,11 +1,11 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://ridgeline-homes.forgehome.io";
 
 /**
- * Initiates Google OAuth sign-in flow via redirect
+ * Initiates Google OAuth sign-in flow via redirect using cross-domain endpoint
  */
 export function signInWithGoogle() {
   const callbackURL = `${window.location.origin}/auth/callback`;
-  window.location.href = `${API_URL}/api/auth/sign-in/social?provider=google&callbackURL=${encodeURIComponent(callbackURL)}`;
+  window.location.href = `${API_URL}/api/auth/cross-domain/google?callbackURL=${encodeURIComponent(callbackURL)}`;
 }
 
 /**
