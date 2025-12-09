@@ -1,16 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { X, Mail, Lock, User, Eye, EyeOff, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { signIn, signUp } from "@/lib/auth-client";
+import {
+  signInWithGoogle,
+  signInWithEmail,
+  signUpWithEmail,
+} from "@/lib/auth-actions";
 
 // Google Icon SVG
 function GoogleIcon({ className }: { className?: string }) {
@@ -47,7 +49,6 @@ export function AuthModal({
   onOpenChange,
   defaultTab = "sign-in",
 }: AuthModalProps) {
-  const router = useRouter();
   const [activeTab, setActiveTab] = useState<"sign-in" | "sign-up">(defaultTab);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -74,20 +75,11 @@ export function AuthModal({
     setError(null);
 
     try {
-      const result = await signIn.email({
-        email: signInData.email,
-        password: signInData.password,
-      });
-
-      if (result.error) {
-        setError(result.error.message || "Sign in failed");
-      } else {
-        onOpenChange(false);
-        router.refresh();
-      }
+      await signInWithEmail(signInData.email, signInData.password);
+      // If we get here without redirect, close modal
+      onOpenChange(false);
     } catch (err) {
-      setError("An unexpected error occurred");
-    } finally {
+      setError(err instanceof Error ? err.message : "Sign in failed");
       setIsLoading(false);
     }
   };
@@ -104,21 +96,15 @@ export function AuthModal({
     }
 
     try {
-      const result = await signUp.email({
-        email: signUpData.email,
-        password: signUpData.password,
-        name: signUpData.name,
-      });
-
-      if (result.error) {
-        setError(result.error.message || "Sign up failed");
-      } else {
-        onOpenChange(false);
-        router.refresh();
-      }
+      await signUpWithEmail(
+        signUpData.email,
+        signUpData.password,
+        signUpData.name
+      );
+      // If we get here without redirect, close modal
+      onOpenChange(false);
     } catch (err) {
-      setError("An unexpected error occurred");
-    } finally {
+      setError(err instanceof Error ? err.message : "Sign up failed");
       setIsLoading(false);
     }
   };
@@ -126,14 +112,7 @@ export function AuthModal({
   const handleGoogleSignIn = () => {
     setIsGoogleLoading(true);
     setError(null);
-
-    // Use full redirect to backend OAuth endpoint to avoid cookie domain mismatch
-    // The backend will redirect to Google, then back to backend callback,
-    // then finally redirect to our frontend with session established
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "https://ridgeline-homes.forgehome.io";
-    const callbackURL = typeof window !== "undefined" ? window.location.origin : "https://ridgelinehomes.net";
-
-    window.location.href = `${apiUrl}/api/auth/sign-in/social?provider=google&callbackURL=${encodeURIComponent(callbackURL)}`;
+    signInWithGoogle();
   };
 
   return (

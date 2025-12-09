@@ -3,6 +3,7 @@ import { Outfit, Inter } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { FavoritesProvider } from "@/components/providers/favorites-provider";
+import { AuthProvider } from "@/lib/auth-context";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 
@@ -32,11 +33,13 @@ export default function RootLayout({
         className={`${outfit.variable} ${inter.variable} antialiased`}
       >
         <QueryProvider>
-          <FavoritesProvider>
-            <Header />
-            {children}
-            <Footer />
-          </FavoritesProvider>
+          <AuthProvider>
+            <FavoritesProvider>
+              <Header />
+              {children}
+              <Footer />
+            </FavoritesProvider>
+          </AuthProvider>
         </QueryProvider>
       </body>
     </html>

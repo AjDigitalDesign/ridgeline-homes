@@ -13,6 +13,31 @@ export const api = axios.create({
   },
 });
 
+// Add request interceptor to include auth token
+api.interceptors.request.use((config) => {
+  if (typeof window !== "undefined") {
+    const sessionToken = localStorage.getItem("session_token");
+    if (sessionToken) {
+      config.headers.Authorization = `Bearer ${sessionToken}`;
+    }
+  }
+  return config;
+});
+
+// Add response interceptor to handle 401 errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 && typeof window !== "undefined") {
+      // Session expired, clear auth data
+      localStorage.removeItem("auth_session");
+      localStorage.removeItem("session_token");
+      window.dispatchEvent(new Event("auth-change"));
+    }
+    return Promise.reject(error);
+  }
+);
+
 // Types
 export interface Community {
   id: string;

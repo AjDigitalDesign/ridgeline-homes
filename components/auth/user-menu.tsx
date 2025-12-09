@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { ChevronDown, Heart, User, LogOut, Loader2 } from "lucide-react";
 import {
   Popover,
@@ -10,20 +9,18 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { useSession, signOut } from "@/lib/auth-client";
+import { useAuth } from "@/lib/auth-context";
 import { AuthModal } from "./auth-modal";
 
 export function UserMenu() {
-  const router = useRouter();
-  const { data: session, isPending } = useSession();
+  const { user, isLoading, isAuthenticated, signOut } = useAuth();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   const handleSignOut = async () => {
     setIsSigningOut(true);
     try {
-      await signOut();
-      router.refresh();
+      signOut();
     } catch (error) {
       console.error("Sign out failed:", error);
     } finally {
@@ -32,7 +29,7 @@ export function UserMenu() {
   };
 
   // Loading state
-  if (isPending) {
+  if (isLoading) {
     return (
       <div className="hidden lg:flex items-center gap-2">
         <Loader2 className="size-4 animate-spin text-white" />
@@ -41,7 +38,7 @@ export function UserMenu() {
   }
 
   // Not authenticated - show Sign In button
-  if (!session?.user) {
+  if (!isAuthenticated || !user) {
     return (
       <>
         <div className="hidden lg:block">
@@ -58,14 +55,14 @@ export function UserMenu() {
   }
 
   // Authenticated - show user dropdown
-  const initials = session.user.name
-    ? session.user.name
+  const initials = user.name
+    ? user.name
         .split(" ")
         .map((n) => n[0])
         .join("")
         .toUpperCase()
         .slice(0, 2)
-    : session.user.email?.slice(0, 2).toUpperCase() || "U";
+    : user.email?.slice(0, 2).toUpperCase() || "U";
 
   return (
     <div className="hidden lg:block">
@@ -76,7 +73,7 @@ export function UserMenu() {
               {initials}
             </div>
             <span className="text-sm font-medium max-w-[100px] truncate">
-              {session.user.name || session.user.email}
+              {user.name || user.email}
             </span>
             <ChevronDown className="size-4" />
           </button>
@@ -84,9 +81,9 @@ export function UserMenu() {
         <PopoverContent className="w-56 p-2" align="end">
           <div className="px-3 py-2 border-b mb-2">
             <p className="font-medium text-sm text-main-primary truncate">
-              {session.user.name || "User"}
+              {user.name || "User"}
             </p>
-            <p className="text-xs text-gray-500 truncate">{session.user.email}</p>
+            <p className="text-xs text-gray-500 truncate">{user.email}</p>
           </div>
           <Link
             href="/account/favorites"
@@ -124,16 +121,14 @@ export function UserMenu() {
 
 // Mobile version for the mobile nav
 export function MobileUserMenu() {
-  const router = useRouter();
-  const { data: session, isPending } = useSession();
+  const { user, isLoading, isAuthenticated, signOut } = useAuth();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   const handleSignOut = async () => {
     setIsSigningOut(true);
     try {
-      await signOut();
-      router.refresh();
+      signOut();
     } catch (error) {
       console.error("Sign out failed:", error);
     } finally {
@@ -141,7 +136,7 @@ export function MobileUserMenu() {
     }
   };
 
-  if (isPending) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center py-4">
         <Loader2 className="size-5 animate-spin text-main-primary" />
@@ -149,7 +144,7 @@ export function MobileUserMenu() {
     );
   }
 
-  if (!session?.user) {
+  if (!isAuthenticated || !user) {
     return (
       <>
         <div className="border-t pt-4 mt-4">
@@ -165,14 +160,14 @@ export function MobileUserMenu() {
     );
   }
 
-  const initials = session.user.name
-    ? session.user.name
+  const initials = user.name
+    ? user.name
         .split(" ")
         .map((n) => n[0])
         .join("")
         .toUpperCase()
         .slice(0, 2)
-    : session.user.email?.slice(0, 2).toUpperCase() || "U";
+    : user.email?.slice(0, 2).toUpperCase() || "U";
 
   return (
     <div className="border-t pt-4 mt-4">
@@ -182,9 +177,9 @@ export function MobileUserMenu() {
         </div>
         <div className="min-w-0">
           <p className="font-medium text-main-primary truncate">
-            {session.user.name || "User"}
+            {user.name || "User"}
           </p>
-          <p className="text-xs text-gray-500 truncate">{session.user.email}</p>
+          <p className="text-xs text-gray-500 truncate">{user.email}</p>
         </div>
       </div>
       <div className="space-y-1">
