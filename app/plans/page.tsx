@@ -1,11 +1,14 @@
 import { Suspense } from "react";
 import { fetchFloorplans, fetchCommunities } from "@/lib/api";
 import PlansPageClient from "./plans-page-client";
+import { generateMetadata as generateSeoMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Floor Plans | Ridgeline Homes",
-  description: "Browse our collection of floor plans. Find the perfect layout for your new home with Ridgeline Homes.",
-};
+export const metadata = generateSeoMetadata({
+  title: "Floor Plans",
+  description:
+    "Browse our collection of floor plans. Find the perfect layout for your new home with Ridgeline Homes.",
+  keywords: ["floor plans", "home designs", "new home layouts", "home builder"],
+});
 
 async function getInitialData() {
   const [floorplansRes, communitiesRes] = await Promise.all([

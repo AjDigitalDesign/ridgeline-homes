@@ -41,6 +41,7 @@ import { Lightbox } from "@/components/ui/lightbox";
 import { FavoriteButton } from "@/components/ui/favorite-button";
 import CommunityMap from "./community-map";
 import type { Community, MarketArea } from "@/lib/api";
+import { getCommunityUrl, getCommunityUrlWithParams } from "@/lib/url";
 
 interface CommunitiesPageClientProps {
   initialCommunities: Community[];
@@ -251,7 +252,7 @@ function CommunityCard({
               size="sm"
               className="flex-1 bg-main-secondary text-main-primary hover:bg-main-secondary/90 text-xs lg:text-sm"
             >
-              <Link href={`/communities/${community.slug}?schedule=true`}>
+              <Link href={getCommunityUrlWithParams(community, { schedule: "true" })}>
                 <Calendar className="size-3.5 lg:size-4 mr-1" />
                 Schedule Tour
               </Link>
@@ -262,7 +263,7 @@ function CommunityCard({
               variant="outline"
               className="flex-1 border-main-primary text-main-primary hover:bg-main-primary hover:text-white text-xs lg:text-sm"
             >
-              <Link href={`/communities/${community.slug}`}>
+              <Link href={getCommunityUrl(community)}>
                 Detail
                 <ArrowRight className="size-3.5 lg:size-4 ml-1" />
               </Link>

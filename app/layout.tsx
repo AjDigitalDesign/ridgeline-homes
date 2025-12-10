@@ -7,6 +7,7 @@ import { AuthProvider } from "@/lib/auth-context";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Toaster } from "@/components/ui/sonner";
+import { generateMetadata as generateSeoMetadata, siteConfig } from "@/lib/seo";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -18,10 +19,10 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Ridgeline Homes | Top Notch Living Space",
-  description: "Bringing together a team with passion, dedication, and resources to help our clients reach their buying and selling goals.",
-};
+export const metadata: Metadata = generateSeoMetadata({
+  title: `${siteConfig.name} | ${siteConfig.tagline}`,
+  description: siteConfig.description,
+});
 
 export default function RootLayout({
   children,
