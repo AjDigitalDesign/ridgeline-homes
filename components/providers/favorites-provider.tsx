@@ -7,6 +7,7 @@ import {
   useMemo,
   type ReactNode,
 } from "react";
+import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import {
   useFavorites,
@@ -14,6 +15,12 @@ import {
   useRemoveFavorite,
 } from "@/hooks/use-favorites";
 import type { FavoriteType, Favorite, CreateFavoriteData } from "@/lib/api";
+
+const typeLabels: Record<FavoriteType, string> = {
+  home: "Home",
+  community: "Community",
+  floorplan: "Floor Plan",
+};
 
 interface FavoritesContextValue {
   favorites: Favorite[];
@@ -28,20 +35,12 @@ const FavoritesContext = createContext<FavoritesContextValue | null>(null);
 
 export function FavoritesProvider({ children }: { children: ReactNode }) {
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
-  const { data: favoritesData, isLoading: isFavoritesLoading, error } = useFavorites();
+  const { data: favoritesData, isLoading: isFavoritesLoading } = useFavorites();
   const addFavoriteMutation = useAddFavorite();
   const removeFavoriteMutation = useRemoveFavorite();
 
   // Ensure favorites is always an array
   const favorites = Array.isArray(favoritesData) ? favoritesData : [];
-
-  // Debug logging
-  if (typeof window !== "undefined") {
-    console.log("[FavoritesProvider] isAuthenticated:", isAuthenticated);
-    console.log("[FavoritesProvider] favoritesData:", favoritesData);
-    console.log("[FavoritesProvider] favorites count:", favorites.length);
-    console.log("[FavoritesProvider] error:", error);
-  }
 
   const isLoading = isAuthLoading || isFavoritesLoading;
   const isToggling = addFavoriteMutation.isPending || removeFavoriteMutation.isPending;
@@ -49,7 +48,11 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
   const isFavorited = useCallback(
     (type: FavoriteType, itemId: string) => {
       if (!Array.isArray(favorites)) return false;
+
       return favorites.some((fav) => {
+        // Case-insensitive type comparison in case backend returns uppercase
+        const favType = fav.type?.toLowerCase();
+        if (favType !== type.toLowerCase()) return false;
         if (type === "home") return fav.homeId === itemId;
         if (type === "community") return fav.communityId === itemId;
         if (type === "floorplan") return fav.floorplanId === itemId;
@@ -62,25 +65,31 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
   const toggleFavorite = useCallback(
     async (type: FavoriteType, itemId: string) => {
       if (!isAuthenticated) {
-        // Could trigger a login modal here
-        console.warn("User must be logged in to favorite items");
+        toast.error("Please sign in to save favorites");
         return;
       }
 
       const currentlyFavorited = isFavorited(type, itemId);
+      const label = typeLabels[type];
 
       try {
         if (currentlyFavorited) {
           await removeFavoriteMutation.mutateAsync({ type, itemId });
+          toast.success(`${label} removed from favorites`);
         } else {
           const data: CreateFavoriteData = { type };
           if (type === "home") data.homeId = itemId;
           else if (type === "community") data.communityId = itemId;
           else if (type === "floorplan") data.floorplanId = itemId;
           await addFavoriteMutation.mutateAsync(data);
+          toast.success(`${label} added to favorites`, {
+            description: "View your saved items in your account.",
+          });
         }
       } catch (error) {
-        // Error is handled by the mutation's onError callback
+        toast.error("Something went wrong", {
+          description: "Please try again later.",
+        });
         console.error("Toggle favorite failed:", error);
       }
     },

@@ -339,10 +339,10 @@ export default function FavoritesPage() {
   // Ensure favorites is always an array
   const favorites = Array.isArray(favoritesData) ? favoritesData : [];
 
-  // Filter favorites by type
-  const homeFavorites = favorites.filter((f) => f.type === "home");
-  const floorplanFavorites = favorites.filter((f) => f.type === "floorplan");
-  const communityFavorites = favorites.filter((f) => f.type === "community");
+  // Filter favorites by type (case-insensitive)
+  const homeFavorites = favorites.filter((f) => f.type?.toLowerCase() === "home");
+  const floorplanFavorites = favorites.filter((f) => f.type?.toLowerCase() === "floorplan");
+  const communityFavorites = favorites.filter((f) => f.type?.toLowerCase() === "community");
 
   const handleRemove = (type: FavoriteType, itemId: string) => {
     removeFavoriteMutation.mutate({ type, itemId });

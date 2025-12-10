@@ -6,6 +6,7 @@ import { FavoritesProvider } from "@/components/providers/favorites-provider";
 import { AuthProvider } from "@/lib/auth-context";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { Toaster } from "@/components/ui/sonner";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -38,6 +39,7 @@ export default function RootLayout({
               <Header />
               {children}
               <Footer />
+              <Toaster />
             </FavoritesProvider>
           </AuthProvider>
         </QueryProvider>

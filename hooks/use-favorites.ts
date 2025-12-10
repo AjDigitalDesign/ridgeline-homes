@@ -100,6 +100,8 @@ export function useIsFavorited(type: FavoriteType, itemId: string) {
   if (!favorites) return false;
 
   return favorites.some((fav) => {
+    // Case-insensitive type comparison
+    if (fav.type?.toLowerCase() !== type.toLowerCase()) return false;
     if (type === "home") return fav.homeId === itemId;
     if (type === "community") return fav.communityId === itemId;
     if (type === "floorplan") return fav.floorplanId === itemId;

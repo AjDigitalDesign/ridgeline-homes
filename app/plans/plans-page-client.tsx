@@ -7,8 +7,6 @@ import { useSearchParams, useRouter } from "next/navigation";
 import {
   ChevronDown,
   SlidersHorizontal,
-  Map,
-  LayoutGrid,
   X,
   Camera,
   MapPin,
@@ -19,6 +17,8 @@ import {
   Bath,
   Square,
   Car,
+  Layers,
+  Home,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -43,11 +43,10 @@ import {
 } from "@/components/ui/popover";
 import { Lightbox } from "@/components/ui/lightbox";
 import { FavoriteButton } from "@/components/ui/favorite-button";
-import HomesMap from "./homes-map";
-import type { Home, Community } from "@/lib/api";
+import type { Floorplan, Community } from "@/lib/api";
 
-interface HomesPageClientProps {
-  initialHomes: Home[];
+interface PlansPageClientProps {
+  initialFloorplans: Floorplan[];
   communities: Community[];
 }
 
@@ -65,11 +64,10 @@ const SORT_OPTIONS = [
   { label: "Featured", value: "featured" },
   { label: "Price: Low to High", value: "price-asc" },
   { label: "Price: High to Low", value: "price-desc" },
-  { label: "Newest", value: "newest" },
+  { label: "Sq Ft: Low to High", value: "sqft-asc" },
+  { label: "Sq Ft: High to Low", value: "sqft-desc" },
   { label: "Name A-Z", value: "name-asc" },
 ];
-
-type ViewMode = "list" | "map";
 
 function formatPrice(price: number | null) {
   if (!price) return "Contact for Price";
@@ -80,42 +78,25 @@ function formatPrice(price: number | null) {
   }).format(price);
 }
 
-function formatMonthlyPayment(price: number | null) {
-  if (!price) return null;
-  const monthlyRate = 0.065 / 12;
-  const numPayments = 360;
-  const downPayment = price * 0.2;
-  const loanAmount = price - downPayment;
-  const monthly =
-    (loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments))) /
-    (Math.pow(1 + monthlyRate, numPayments) - 1);
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(monthly);
-}
-
-// Home Card Component
-function HomeCard({
-  home,
-  onHover,
-  onClick,
-  isHighlighted,
+// Floorplan Card Component
+function FloorplanCard({
+  floorplan,
 }: {
-  home: Home;
-  onHover?: (id: string | null) => void;
-  onClick?: (home: Home) => void;
-  isHighlighted?: boolean;
+  floorplan: Floorplan;
 }) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
-  const image = home.gallery?.[0] || "";
-  const location = home.community
-    ? `${home.community.name}${home.community.city ? `, ${home.community.city}` : ""}`
-    : [home.city, home.state].filter(Boolean).join(", ");
-  const galleryImages = home.gallery || [];
+  const image = floorplan.elevationGallery?.[0] || floorplan.gallery?.[0] || "";
+  const galleryImages = [
+    ...(floorplan.elevationGallery || []),
+    ...(floorplan.gallery || []),
+    ...(floorplan.plansImages || []),
+  ];
+
+  // Get available communities for this floorplan
+  const availableCommunities = floorplan.communityFloorplans?.map(cf => cf.community.name) || [];
 
   const handleGalleryClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     if (galleryImages.length > 0) {
       setLightboxOpen(true);
@@ -124,44 +105,31 @@ function HomeCard({
 
   return (
     <>
-      <div
-        className={`group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all cursor-pointer ${
-          isHighlighted ? "ring-2 ring-main-secondary shadow-lg" : ""
-        }`}
-        onMouseEnter={() => onHover?.(home.id)}
-        onMouseLeave={() => onHover?.(null)}
-        onClick={() => onClick?.(home)}
-      >
+      <div className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all">
         {/* Image */}
         <div className="relative h-[200px] lg:h-[220px] overflow-hidden">
           {image ? (
             <Image
               src={image}
-              alt={home.name}
+              alt={floorplan.name}
               fill
               className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
           ) : (
             <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-              <MapPin className="size-12 text-gray-400" />
+              <Home className="size-12 text-gray-400" />
             </div>
           )}
-          {/* Status Badge */}
-          <div className="absolute top-4 left-4">
-            <span className="px-3 py-1.5 bg-main-secondary text-main-primary text-xs font-semibold uppercase rounded-full">
-              {home.status === "AVAILABLE" ? "Available" : home.status?.replace(/_/g, " ")}
-            </span>
-          </div>
           {/* Favorite Icon */}
           <FavoriteButton
-            type="home"
-            itemId={home.id}
+            type="floorplan"
+            itemId={floorplan.id}
             className="absolute top-4 right-4"
           />
           {/* Bottom Actions */}
           <div
             className={`absolute left-4 flex items-center gap-2 ${
-              home.marketingHeadline && home.showMarketingHeadline
+              floorplan.marketingHeadline && floorplan.showMarketingHeadline
                 ? "bottom-12"
                 : "bottom-4"
             }`}
@@ -175,15 +143,12 @@ function HomeCard({
                 {galleryImages.length} Photos
               </button>
             )}
-            <span className="flex items-center justify-center size-8 bg-main-secondary rounded-full">
-              <MapPin className="size-4 text-main-primary" />
-            </span>
           </div>
           {/* Marketing Headline Banner */}
-          {home.marketingHeadline && home.showMarketingHeadline && (
+          {floorplan.marketingHeadline && floorplan.showMarketingHeadline && (
             <div className="absolute bottom-0 left-0 right-0 bg-main-secondary px-4 py-2">
               <p className="text-sm font-medium text-main-primary truncate">
-                {home.marketingHeadline}
+                {floorplan.marketingHeadline}
               </p>
             </div>
           )}
@@ -195,58 +160,74 @@ function HomeCard({
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <h3 className="text-base lg:text-lg font-bold text-main-primary group-hover:text-main-primary/80 transition-colors truncate">
-                {home.name}
+                {floorplan.name}
               </h3>
-              <p className="text-sm text-gray-500 mt-0.5">{location}</p>
+              {floorplan.modelNumber && (
+                <p className="text-xs text-gray-500">Model #{floorplan.modelNumber}</p>
+              )}
             </div>
             <div className="text-right shrink-0">
+              <p className="text-sm text-gray-500">From</p>
               <p className="text-base lg:text-lg font-bold text-main-primary">
-                {formatPrice(home.price)}
+                {formatPrice(floorplan.basePrice)}
               </p>
-              {home.price && (
-                <p className="text-xs text-gray-500 flex items-center gap-1 justify-end">
-                  {formatMonthlyPayment(home.price)}/mo
-                  <Calendar className="size-3" />
-                </p>
-              )}
             </div>
           </div>
 
           {/* Stats */}
           <div className="flex items-center gap-3 lg:gap-4 mt-4 pt-4 border-t border-gray-100">
-            {home.bedrooms && (
+            {floorplan.baseBedrooms && (
               <div className="text-center">
                 <p className="text-sm font-semibold text-main-primary">
-                  {home.bedrooms}
+                  {floorplan.baseBedrooms}
                 </p>
                 <p className="text-xs text-gray-500">Beds</p>
               </div>
             )}
-            {home.bathrooms && (
+            {floorplan.baseBathrooms && (
               <div className="text-center">
                 <p className="text-sm font-semibold text-main-primary">
-                  {home.bathrooms}
+                  {floorplan.baseBathrooms}
                 </p>
                 <p className="text-xs text-gray-500">Baths</p>
               </div>
             )}
-            {home.squareFeet && (
+            {floorplan.baseSquareFeet && (
               <div className="text-center">
                 <p className="text-sm font-semibold text-main-primary">
-                  {home.squareFeet.toLocaleString()}
+                  {floorplan.baseSquareFeet.toLocaleString()}
                 </p>
                 <p className="text-xs text-gray-500">SQ FT</p>
               </div>
             )}
-            {home.garages && (
+            {floorplan.baseStories && (
               <div className="text-center">
                 <p className="text-sm font-semibold text-main-primary">
-                  {home.garages}
+                  {floorplan.baseStories}
+                </p>
+                <p className="text-xs text-gray-500">Stories</p>
+              </div>
+            )}
+            {floorplan.baseGarages && (
+              <div className="text-center">
+                <p className="text-sm font-semibold text-main-primary">
+                  {floorplan.baseGarages}
                 </p>
                 <p className="text-xs text-gray-500">Garage</p>
               </div>
             )}
           </div>
+
+          {/* Available In Communities */}
+          {availableCommunities.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-gray-100">
+              <p className="text-xs text-gray-500 mb-1">Available in:</p>
+              <p className="text-xs text-main-primary font-medium truncate">
+                {availableCommunities.slice(0, 2).join(", ")}
+                {availableCommunities.length > 2 && ` +${availableCommunities.length - 2} more`}
+              </p>
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex items-center gap-2 lg:gap-3 mt-4">
@@ -255,7 +236,7 @@ function HomeCard({
               size="sm"
               className="flex-1 bg-main-secondary text-main-primary hover:bg-main-secondary/90 text-xs lg:text-sm"
             >
-              <Link href={`/homes/${home.slug}?schedule=true`}>
+              <Link href={`/plans/${floorplan.slug}?schedule=true`}>
                 <Calendar className="size-3.5 lg:size-4 mr-1" />
                 Schedule Tour
               </Link>
@@ -266,8 +247,8 @@ function HomeCard({
               variant="outline"
               className="flex-1 border-main-primary text-main-primary hover:bg-main-primary hover:text-white text-xs lg:text-sm"
             >
-              <Link href={`/homes/${home.slug}`}>
-                Detail
+              <Link href={`/plans/${floorplan.slug}`}>
+                View Plan
                 <ArrowRight className="size-3.5 lg:size-4 ml-1" />
               </Link>
             </Button>
@@ -280,7 +261,7 @@ function HomeCard({
         images={galleryImages}
         open={lightboxOpen}
         onOpenChange={setLightboxOpen}
-        title={`${home.name} Gallery`}
+        title={`${floorplan.name} Gallery`}
       />
     </>
   );
@@ -348,13 +329,13 @@ function MobileQuickLinks() {
             </Link>
             <Link
               href="/homes"
-              className="px-4 py-3 bg-main-primary text-white rounded-lg font-medium"
+              className="px-4 py-3 border border-gray-200 rounded-lg font-medium text-main-primary"
             >
               Quick Move-In Homes
             </Link>
             <Link
               href="/plans"
-              className="px-4 py-3 border border-gray-200 rounded-lg font-medium text-main-primary"
+              className="px-4 py-3 bg-main-primary text-white rounded-lg font-medium"
             >
               Floor Plans
             </Link>
@@ -372,18 +353,21 @@ function FiltersSheet({
   communities,
 }: {
   filters: {
-    city: string;
+    community: string;
     priceRange: number;
     bedrooms: string;
     bathrooms: string;
-    community: string;
     sqft: string;
+    stories: string;
+    garages: string;
   };
   onFiltersChange: (filters: any) => void;
   communities: Community[];
 }) {
   const bedroomOptions = ["any", "2", "3", "4", "5"];
   const bathroomOptions = ["any", "2", "3", "4"];
+  const storiesOptions = ["any", "1", "2", "3"];
+  const garagesOptions = ["any", "1", "2", "3"];
   const sqftOptions = [
     { value: "any", label: "Any" },
     { value: "1500", label: "1,500+" },
@@ -402,131 +386,153 @@ function FiltersSheet({
           <ChevronDown className="size-4" />
         </button>
       </SheetTrigger>
-      <SheetContent side="right" className="w-full sm:max-w-md">
+      <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
         <SheetHeader>
           <SheetTitle>More Filters</SheetTitle>
         </SheetHeader>
-        <div className="container max-auto px-4">
-          <div className="flex flex-col gap-8 py-6">
-            {/* Bedrooms */}
-            <div>
-              <label className="text-sm font-semibold text-main-primary mb-3 block">
-                Bedrooms
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {bedroomOptions.map((option) => (
-                  <button
-                    key={option}
-                    onClick={() =>
-                      onFiltersChange({ ...filters, bedrooms: option })
-                    }
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                      filters.bedrooms === option
-                        ? "bg-main-primary text-white"
-                        : "bg-gray-100 text-main-primary hover:bg-gray-200"
-                    }`}
-                  >
-                    {option === "any" ? "Any" : `${option}+`}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Bathrooms */}
-            <div>
-              <label className="text-sm font-semibold text-main-primary mb-3 block">
-                Bathrooms
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {bathroomOptions.map((option) => (
-                  <button
-                    key={option}
-                    onClick={() =>
-                      onFiltersChange({ ...filters, bathrooms: option })
-                    }
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                      filters.bathrooms === option
-                        ? "bg-main-primary text-white"
-                        : "bg-gray-100 text-main-primary hover:bg-gray-200"
-                    }`}
-                  >
-                    {option === "any" ? "Any" : `${option}+`}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Community */}
-            <div>
-              <label className="text-sm font-semibold text-main-primary mb-3 block">
-                Community
-              </label>
-              <Select
-                value={filters.community}
-                onValueChange={(value) =>
-                  onFiltersChange({ ...filters, community: value })
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="All Communities" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Communities</SelectItem>
-                  {communities.map((community) => (
-                    <SelectItem key={community.id} value={community.id}>
-                      {community.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Square Feet */}
-            <div>
-              <label className="text-sm font-semibold text-main-primary mb-3 block">
-                Square Feet
-              </label>
-              <div className="flex flex-wrap gap-2">
-                {sqftOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    onClick={() =>
-                      onFiltersChange({ ...filters, sqft: option.value })
-                    }
-                    className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                      filters.sqft === option.value
-                        ? "bg-main-primary text-white"
-                        : "bg-gray-100 text-main-primary hover:bg-gray-200"
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
+        <div className="flex flex-col gap-8 py-6">
+          {/* Bedrooms */}
+          <div>
+            <label className="text-sm font-semibold text-main-primary mb-3 block">
+              Bedrooms
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {bedroomOptions.map((option) => (
+                <button
+                  key={option}
+                  onClick={() =>
+                    onFiltersChange({ ...filters, bedrooms: option })
+                  }
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    filters.bedrooms === option
+                      ? "bg-main-primary text-white"
+                      : "bg-gray-100 text-main-primary hover:bg-gray-200"
+                  }`}
+                >
+                  {option === "any" ? "Any" : `${option}+`}
+                </button>
+              ))}
             </div>
           </div>
 
-          <div className="flex gap-3 mt-auto pt-4 border-t">
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={() =>
-                onFiltersChange({
-                  city: "all",
-                  priceRange: 0,
-                  bedrooms: "any",
-                  bathrooms: "any",
-                  community: "all",
-                  sqft: "any",
-                })
-              }
-            >
-              Clear All
-            </Button>
-            <SheetClose asChild>
-              <Button className="flex-1 bg-main-primary">Apply Filters</Button>
-            </SheetClose>
+          {/* Bathrooms */}
+          <div>
+            <label className="text-sm font-semibold text-main-primary mb-3 block">
+              Bathrooms
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {bathroomOptions.map((option) => (
+                <button
+                  key={option}
+                  onClick={() =>
+                    onFiltersChange({ ...filters, bathrooms: option })
+                  }
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    filters.bathrooms === option
+                      ? "bg-main-primary text-white"
+                      : "bg-gray-100 text-main-primary hover:bg-gray-200"
+                  }`}
+                >
+                  {option === "any" ? "Any" : `${option}+`}
+                </button>
+              ))}
+            </div>
           </div>
+
+          {/* Square Feet */}
+          <div>
+            <label className="text-sm font-semibold text-main-primary mb-3 block">
+              Square Feet
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {sqftOptions.map((option) => (
+                <button
+                  key={option.value}
+                  onClick={() =>
+                    onFiltersChange({ ...filters, sqft: option.value })
+                  }
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    filters.sqft === option.value
+                      ? "bg-main-primary text-white"
+                      : "bg-gray-100 text-main-primary hover:bg-gray-200"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Stories */}
+          <div>
+            <label className="text-sm font-semibold text-main-primary mb-3 block">
+              Stories
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {storiesOptions.map((option) => (
+                <button
+                  key={option}
+                  onClick={() =>
+                    onFiltersChange({ ...filters, stories: option })
+                  }
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    filters.stories === option
+                      ? "bg-main-primary text-white"
+                      : "bg-gray-100 text-main-primary hover:bg-gray-200"
+                  }`}
+                >
+                  {option === "any" ? "Any" : option}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Garages */}
+          <div>
+            <label className="text-sm font-semibold text-main-primary mb-3 block">
+              Garage
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {garagesOptions.map((option) => (
+                <button
+                  key={option}
+                  onClick={() =>
+                    onFiltersChange({ ...filters, garages: option })
+                  }
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    filters.garages === option
+                      ? "bg-main-primary text-white"
+                      : "bg-gray-100 text-main-primary hover:bg-gray-200"
+                  }`}
+                >
+                  {option === "any" ? "Any" : `${option}+`}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex gap-3 pt-4 border-t">
+          <Button
+            variant="outline"
+            className="flex-1"
+            onClick={() =>
+              onFiltersChange({
+                community: "all",
+                priceRange: 0,
+                bedrooms: "any",
+                bathrooms: "any",
+                sqft: "any",
+                stories: "any",
+                garages: "any",
+              })
+            }
+          >
+            Clear All
+          </Button>
+          <SheetClose asChild>
+            <Button className="flex-1 bg-main-primary">Apply Filters</Button>
+          </SheetClose>
         </div>
       </SheetContent>
     </Sheet>
@@ -540,7 +546,6 @@ function MobileFilters({
   sortBy,
   onSortChange,
   communities,
-  cities,
   activeFiltersCount,
 }: {
   filters: any;
@@ -548,7 +553,6 @@ function MobileFilters({
   sortBy: string;
   onSortChange: (sort: string) => void;
   communities: Community[];
-  cities: string[];
   activeFiltersCount: number;
 }) {
   return (
@@ -566,30 +570,30 @@ function MobileFilters({
             <ChevronDown className="size-4" />
           </button>
         </SheetTrigger>
-        <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl">
+        <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl overflow-y-auto">
           <SheetHeader>
             <SheetTitle>Filters</SheetTitle>
           </SheetHeader>
-          <div className="flex flex-col gap-6 py-6 overflow-y-auto">
-            {/* City */}
+          <div className="flex flex-col gap-6 py-6">
+            {/* Community */}
             <div>
               <label className="text-sm font-medium text-gray-700 mb-2 block">
-                City
+                Community
               </label>
               <Select
-                value={filters.city}
+                value={filters.community}
                 onValueChange={(value) =>
-                  onFiltersChange({ ...filters, city: value })
+                  onFiltersChange({ ...filters, community: value })
                 }
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="All Cities" />
+                  <SelectValue placeholder="All Communities" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Cities</SelectItem>
-                  {cities.map((city) => (
-                    <SelectItem key={city} value={city}>
-                      {city}
+                  <SelectItem value="all">All Communities</SelectItem>
+                  {communities.map((community) => (
+                    <SelectItem key={community.id} value={community.id}>
+                      {community.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -614,31 +618,6 @@ function MobileFilters({
                   {PRICE_RANGES.map((range, index) => (
                     <SelectItem key={index} value={String(index)}>
                       {range.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Community */}
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">
-                Community
-              </label>
-              <Select
-                value={filters.community}
-                onValueChange={(value) =>
-                  onFiltersChange({ ...filters, community: value })
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="All Communities" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Communities</SelectItem>
-                  {communities.map((community) => (
-                    <SelectItem key={community.id} value={community.id}>
-                      {community.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -716,20 +695,67 @@ function MobileFilters({
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Stories */}
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-2 block">
+                Stories
+              </label>
+              <Select
+                value={filters.stories}
+                onValueChange={(value) =>
+                  onFiltersChange({ ...filters, stories: value })
+                }
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Any" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="any">Any</SelectItem>
+                  <SelectItem value="1">1 Story</SelectItem>
+                  <SelectItem value="2">2 Stories</SelectItem>
+                  <SelectItem value="3">3 Stories</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Garages */}
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-2 block">
+                Garage
+              </label>
+              <Select
+                value={filters.garages}
+                onValueChange={(value) =>
+                  onFiltersChange({ ...filters, garages: value })
+                }
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Any" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="any">Any</SelectItem>
+                  <SelectItem value="1">1+ Car</SelectItem>
+                  <SelectItem value="2">2+ Car</SelectItem>
+                  <SelectItem value="3">3+ Car</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          <div className="flex gap-3 mt-auto pt-4 border-t">
+          <div className="flex gap-3 pt-4 border-t">
             <Button
               variant="outline"
               className="flex-1"
               onClick={() =>
                 onFiltersChange({
-                  city: "all",
+                  community: "all",
                   priceRange: 0,
                   bedrooms: "any",
                   bathrooms: "any",
-                  community: "all",
                   sqft: "any",
+                  stories: "any",
+                  garages: "any",
                 })
               }
             >
@@ -772,30 +798,29 @@ function MobileFilters({
 // Active Filter Tags Component
 function ActiveFilterTags({
   filters,
-  selectedCity,
   selectedCommunity,
   onRemoveFilter,
   onClearAll,
 }: {
   filters: {
-    city: string;
+    community: string;
     priceRange: number;
     bedrooms: string;
     bathrooms: string;
-    community: string;
     sqft: string;
+    stories: string;
+    garages: string;
   };
-  selectedCity: string | null;
   selectedCommunity: Community | null;
   onRemoveFilter: (key: string, value: any) => void;
   onClearAll: () => void;
 }) {
   const activeFilters: { key: string; label: string; value: any }[] = [];
 
-  if (filters.city !== "all" && selectedCity) {
+  if (filters.community !== "all" && selectedCommunity) {
     activeFilters.push({
-      key: "city",
-      label: selectedCity,
+      key: "community",
+      label: selectedCommunity.name,
       value: "all",
     });
   }
@@ -805,14 +830,6 @@ function ActiveFilterTags({
       key: "priceRange",
       label: PRICE_RANGES[filters.priceRange].label,
       value: 0,
-    });
-  }
-
-  if (filters.community !== "all" && selectedCommunity) {
-    activeFilters.push({
-      key: "community",
-      label: selectedCommunity.name,
-      value: "all",
     });
   }
 
@@ -836,6 +853,22 @@ function ActiveFilterTags({
     activeFilters.push({
       key: "sqft",
       label: `${parseInt(filters.sqft).toLocaleString()}+ SF`,
+      value: "any",
+    });
+  }
+
+  if (filters.stories !== "any") {
+    activeFilters.push({
+      key: "stories",
+      label: `${filters.stories} ${filters.stories === "1" ? "Story" : "Stories"}`,
+      value: "any",
+    });
+  }
+
+  if (filters.garages !== "any") {
+    activeFilters.push({
+      key: "garages",
+      label: `${filters.garages}+ Car Garage`,
       value: "any",
     });
   }
@@ -866,24 +899,19 @@ function ActiveFilterTags({
   );
 }
 
-export default function HomesPageClient({
-  initialHomes,
+export default function PlansPageClient({
+  initialFloorplans,
   communities,
-}: HomesPageClientProps) {
+}: PlansPageClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   // State
-  const [viewMode, setViewMode] = useState<ViewMode>("map");
-  const [hoveredHomeId, setHoveredHomeId] = useState<string | null>(null);
-  const [selectedHomeId, setSelectedHomeId] = useState<string | null>(null);
   const [isAnimated, setIsAnimated] = useState(false);
 
-  // Set initial view mode based on screen size and trigger animations
+  // Trigger animations
   useEffect(() => {
     window.scrollTo(0, 0);
-    const isDesktop = window.innerWidth >= 1024;
-    setViewMode(isDesktop ? "map" : "list");
     const animateTimer = setTimeout(() => {
       setIsAnimated(true);
     }, 50);
@@ -893,142 +921,137 @@ export default function HomesPageClient({
   }, []);
 
   const [filters, setFilters] = useState({
-    city: searchParams.get("city") || "all",
+    community: searchParams.get("community") || "all",
     priceRange: 0,
     bedrooms: "any",
     bathrooms: "any",
-    community: searchParams.get("community") || "all",
     sqft: "any",
+    stories: "any",
+    garages: "any",
   });
   const [sortBy, setSortBy] = useState("featured");
 
-  // Get unique cities from homes
-  const cities = useMemo(() => {
-    const citySet = new Set<string>();
-    initialHomes.forEach((home) => {
-      const city = home.city || home.community?.city;
-      if (city) citySet.add(city);
-    });
-    return Array.from(citySet).sort();
-  }, [initialHomes]);
-
-  // Get selected city and community
-  const selectedCity = filters.city !== "all" ? filters.city : null;
+  // Get selected community
   const selectedCommunity = useMemo(() => {
     if (filters.community === "all") return null;
     return communities.find((c) => c.id === filters.community) || null;
   }, [filters.community, communities]);
 
-  // Filter and sort homes
-  const filteredHomes = useMemo(() => {
-    let result = [...initialHomes];
-
-    // Filter by city
-    if (filters.city !== "all") {
-      result = result.filter(
-        (h) => h.city === filters.city || h.community?.city === filters.city
-      );
-    }
+  // Filter and sort floorplans
+  const filteredFloorplans = useMemo(() => {
+    let result = [...initialFloorplans];
 
     // Filter by community
     if (filters.community !== "all") {
-      result = result.filter((h) => h.community?.id === filters.community);
+      result = result.filter((fp) =>
+        fp.communityFloorplans?.some((cf) => cf.community.id === filters.community)
+      );
     }
 
     // Filter by price range
     const priceRange = PRICE_RANGES[filters.priceRange];
     if (priceRange && filters.priceRange > 0) {
-      result = result.filter((h) => {
-        if (!h.price) return true;
-        return h.price >= priceRange.min && h.price <= priceRange.max;
+      result = result.filter((fp) => {
+        if (!fp.basePrice) return true;
+        return fp.basePrice >= priceRange.min && fp.basePrice <= priceRange.max;
       });
     }
 
     // Filter by bedrooms
     if (filters.bedrooms !== "any") {
       const minBeds = parseInt(filters.bedrooms);
-      result = result.filter((h) => h.bedrooms && h.bedrooms >= minBeds);
+      result = result.filter((fp) => fp.baseBedrooms && fp.baseBedrooms >= minBeds);
     }
 
     // Filter by bathrooms
     if (filters.bathrooms !== "any") {
       const minBaths = parseInt(filters.bathrooms);
-      result = result.filter((h) => h.bathrooms && h.bathrooms >= minBaths);
+      result = result.filter((fp) => fp.baseBathrooms && fp.baseBathrooms >= minBaths);
     }
 
     // Filter by square feet
     if (filters.sqft !== "any") {
       const minSqft = parseInt(filters.sqft);
-      result = result.filter((h) => h.squareFeet && h.squareFeet >= minSqft);
+      result = result.filter((fp) => fp.baseSquareFeet && fp.baseSquareFeet >= minSqft);
+    }
+
+    // Filter by stories
+    if (filters.stories !== "any") {
+      const stories = parseInt(filters.stories);
+      result = result.filter((fp) => fp.baseStories === stories);
+    }
+
+    // Filter by garages
+    if (filters.garages !== "any") {
+      const minGarages = parseInt(filters.garages);
+      result = result.filter((fp) => fp.baseGarages && fp.baseGarages >= minGarages);
     }
 
     // Sort
     switch (sortBy) {
       case "price-asc":
-        result.sort((a, b) => (a.price || 0) - (b.price || 0));
+        result.sort((a, b) => (a.basePrice || 0) - (b.basePrice || 0));
         break;
       case "price-desc":
-        result.sort((a, b) => (b.price || 0) - (a.price || 0));
+        result.sort((a, b) => (b.basePrice || 0) - (a.basePrice || 0));
+        break;
+      case "sqft-asc":
+        result.sort((a, b) => (a.baseSquareFeet || 0) - (b.baseSquareFeet || 0));
+        break;
+      case "sqft-desc":
+        result.sort((a, b) => (b.baseSquareFeet || 0) - (a.baseSquareFeet || 0));
         break;
       case "name-asc":
         result.sort((a, b) => a.name.localeCompare(b.name));
         break;
-      case "newest":
-        result.reverse();
-        break;
     }
 
     return result;
-  }, [initialHomes, filters, sortBy]);
+  }, [initialFloorplans, filters, sortBy]);
 
   // Count active filters
   const activeFiltersCount = useMemo(() => {
     let count = 0;
-    if (filters.city !== "all") count++;
-    if (filters.priceRange > 0) count++;
     if (filters.community !== "all") count++;
+    if (filters.priceRange > 0) count++;
     if (filters.bedrooms !== "any") count++;
     if (filters.bathrooms !== "any") count++;
     if (filters.sqft !== "any") count++;
+    if (filters.stories !== "any") count++;
+    if (filters.garages !== "any") count++;
     return count;
   }, [filters]);
 
   // Calculate price ranges with counts
   const priceRangesWithCounts = useMemo(() => {
-    let baseHomes = [...initialHomes];
-    if (filters.city !== "all") {
-      baseHomes = baseHomes.filter(
-        (h) => h.city === filters.city || h.community?.city === filters.city
-      );
-    }
+    let baseFloorplans = [...initialFloorplans];
     if (filters.community !== "all") {
-      baseHomes = baseHomes.filter((h) => h.community?.id === filters.community);
+      baseFloorplans = baseFloorplans.filter((fp) =>
+        fp.communityFloorplans?.some((cf) => cf.community.id === filters.community)
+      );
     }
 
     return PRICE_RANGES.map((range, index) => {
       if (index === 0) {
-        return { ...range, count: baseHomes.length, index };
+        return { ...range, count: baseFloorplans.length, index };
       }
-      const count = baseHomes.filter((h) => {
-        if (!h.price) return false;
-        return h.price >= range.min && h.price <= range.max;
+      const count = baseFloorplans.filter((fp) => {
+        if (!fp.basePrice) return false;
+        return fp.basePrice >= range.min && fp.basePrice <= range.max;
       }).length;
       return { ...range, count, index };
     });
-  }, [initialHomes, filters.city, filters.community]);
+  }, [initialFloorplans, filters.community]);
 
   // Handle filter changes
   const handleFiltersChange = useCallback(
     (newFilters: typeof filters) => {
       setFilters(newFilters);
       const params = new URLSearchParams();
-      if (newFilters.city !== "all") {
-        params.set("city", newFilters.city);
-      }
       if (newFilters.community !== "all") {
         params.set("community", newFilters.community);
       }
-      router.push(`/homes${params.toString() ? `?${params.toString()}` : ""}`);
+      router.push(`/plans${params.toString() ? `?${params.toString()}` : ""}`);
     },
     [router]
   );
@@ -1044,27 +1067,18 @@ export default function HomesPageClient({
   // Clear all filters
   const handleClearAllFilters = useCallback(() => {
     handleFiltersChange({
-      city: "all",
+      community: "all",
       priceRange: 0,
       bedrooms: "any",
       bathrooms: "any",
-      community: "all",
       sqft: "any",
+      stories: "any",
+      garages: "any",
     });
   }, [handleFiltersChange]);
 
-  // Handle card click
-  const handleCardClick = useCallback((home: Home) => {
-    setSelectedHomeId(home.id);
-  }, []);
-
-  // Handle marker select from map
-  const handleMarkerSelect = useCallback((home: Home | null) => {
-    setSelectedHomeId(home?.id || null);
-  }, []);
-
   // Hero background image
-  const heroImage = initialHomes[0]?.gallery?.[0] || "";
+  const heroImage = initialFloorplans[0]?.elevationGallery?.[0] || initialFloorplans[0]?.gallery?.[0] || "";
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -1073,7 +1087,7 @@ export default function HomesPageClient({
         {heroImage ? (
           <Image
             src={heroImage}
-            alt="Available Homes"
+            alt="Floor Plans"
             fill
             className={`object-cover transition-transform duration-1000 ${
               isAnimated ? "scale-100" : "scale-110"
@@ -1093,7 +1107,7 @@ export default function HomesPageClient({
             }`}
           >
             <h1 className="text-4xl lg:text-6xl font-bold text-white">
-              Quick Move-In Homes
+              Floor Plans
             </h1>
             <p
               className={`text-lg lg:text-xl text-white/90 mt-2 uppercase tracking-wider transition-all duration-700 delay-100 ${
@@ -1102,7 +1116,7 @@ export default function HomesPageClient({
                   : "opacity-0 translate-y-4"
               }`}
             >
-              Available Now
+              Find Your Perfect Layout
             </p>
             <div
               className={`w-24 h-1 bg-main-secondary mx-auto mt-4 transition-all duration-500 delay-200 ${
@@ -1114,7 +1128,7 @@ export default function HomesPageClient({
       </section>
 
       {/* Quick Links Navigation */}
-      <QuickLinksNav activeTab="homes" isAnimated={isAnimated} />
+      <QuickLinksNav activeTab="plans" isAnimated={isAnimated} />
       <MobileQuickLinks />
 
       {/* Desktop Filters Bar */}
@@ -1123,47 +1137,49 @@ export default function HomesPageClient({
           <div className="flex items-center justify-between py-4">
             {/* Left Filters */}
             <div className="flex items-center gap-3">
-              {/* City Filter */}
+              {/* Community Filter */}
               <Popover>
                 <PopoverTrigger asChild>
                   <button
                     className={`flex items-center gap-2 px-4 py-2.5 border rounded-full text-sm font-medium transition-colors ${
-                      filters.city !== "all"
+                      filters.community !== "all"
                         ? "border-main-primary bg-main-primary/5 text-main-primary"
                         : "border-gray-200 text-main-primary hover:border-main-primary"
                     }`}
                   >
-                    {filters.city !== "all" ? filters.city : "City"}
+                    {filters.community !== "all" && selectedCommunity
+                      ? selectedCommunity.name
+                      : "Community"}
                     <ChevronDown className="size-4" />
                   </button>
                 </PopoverTrigger>
                 <PopoverContent className="w-64 p-2" align="start">
                   <button
                     onClick={() =>
-                      handleFiltersChange({ ...filters, city: "all" })
+                      handleFiltersChange({ ...filters, community: "all" })
                     }
                     className={`w-full text-left px-3 py-2 text-sm rounded-md transition-colors ${
-                      filters.city === "all"
+                      filters.community === "all"
                         ? "bg-main-primary/10 text-main-primary font-medium"
                         : "hover:bg-gray-100"
                     }`}
                   >
-                    All Cities
+                    All Communities
                   </button>
                   <div className="max-h-[300px] overflow-y-auto">
-                    {cities.map((city) => (
+                    {communities.map((community) => (
                       <button
-                        key={city}
+                        key={community.id}
                         onClick={() =>
-                          handleFiltersChange({ ...filters, city })
+                          handleFiltersChange({ ...filters, community: community.id })
                         }
                         className={`w-full text-left px-3 py-2 text-sm rounded-md transition-colors ${
-                          filters.city === city
+                          filters.community === community.id
                             ? "bg-main-primary/10 text-main-primary font-medium"
                             : "hover:bg-gray-100"
                         }`}
                       >
-                        {city}
+                        {community.name}
                       </button>
                     ))}
                   </div>
@@ -1262,32 +1278,6 @@ export default function HomesPageClient({
                   ))}
                 </PopoverContent>
               </Popover>
-
-              {/* View Toggle */}
-              <div className="flex items-center border border-gray-200 rounded-full overflow-hidden">
-                <button
-                  onClick={() => setViewMode("map")}
-                  className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
-                    viewMode === "map"
-                      ? "bg-main-primary text-white"
-                      : "text-main-primary hover:bg-gray-50"
-                  }`}
-                >
-                  <Map className="size-4" />
-                  Map
-                </button>
-                <button
-                  onClick={() => setViewMode("list")}
-                  className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
-                    viewMode === "list"
-                      ? "bg-main-primary text-white"
-                      : "text-main-primary hover:bg-gray-50"
-                  }`}
-                >
-                  <LayoutGrid className="size-4" />
-                  List
-                </button>
-              </div>
             </div>
           </div>
         </div>
@@ -1300,48 +1290,20 @@ export default function HomesPageClient({
         sortBy={sortBy}
         onSortChange={setSortBy}
         communities={communities}
-        cities={cities}
         activeFiltersCount={activeFiltersCount}
       />
-
-      {/* Mobile View Toggle */}
-      <div className="lg:hidden flex items-center justify-end gap-2 px-4 py-2 bg-white border-b">
-        <button
-          onClick={() => setViewMode("map")}
-          className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-full transition-colors ${
-            viewMode === "map"
-              ? "bg-main-primary text-white"
-              : "border border-gray-200 text-main-primary"
-          }`}
-        >
-          <Map className="size-4" />
-          Map
-        </button>
-        <button
-          onClick={() => setViewMode("list")}
-          className={`flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-full transition-colors ${
-            viewMode === "list"
-              ? "bg-main-primary text-white"
-              : "border border-gray-200 text-main-primary"
-          }`}
-        >
-          <LayoutGrid className="size-4" />
-          List
-        </button>
-      </div>
 
       {/* Results Count - Mobile */}
       <div className="bg-gray-100 py-3 px-4 lg:hidden">
         <p className="text-sm text-gray-600">
           Showing{" "}
           <span className="font-bold text-main-primary">
-            {filteredHomes.length}
+            {filteredFloorplans.length}
           </span>{" "}
-          {filteredHomes.length === 1 ? "Home" : "Homes"}
+          {filteredFloorplans.length === 1 ? "Floor Plan" : "Floor Plans"}
         </p>
         <ActiveFilterTags
           filters={filters}
-          selectedCity={selectedCity}
           selectedCommunity={selectedCommunity}
           onRemoveFilter={handleRemoveFilter}
           onClearAll={handleClearAllFilters}
@@ -1349,113 +1311,54 @@ export default function HomesPageClient({
       </div>
 
       {/* Main Content */}
-      {viewMode === "map" ? (
-        /* Map View - Split Layout */
-        <div className="flex flex-col lg:flex-row h-[calc(100vh-200px)] lg:h-[calc(100vh-180px)]">
-          {/* Map */}
-          <div className="h-1/2 lg:h-full lg:flex-1 relative">
-            <HomesMap
-              homes={filteredHomes}
-              hoveredHomeId={hoveredHomeId}
-              selectedHomeId={selectedHomeId}
-              onMarkerHover={setHoveredHomeId}
-              onMarkerSelect={handleMarkerSelect}
-            />
-          </div>
-
-          {/* Cards */}
-          <div className="h-1/2 lg:h-full lg:w-[580px] xl:w-[640px] lg:shrink-0 overflow-y-auto bg-gray-50 p-4">
-            <div className="hidden lg:block mb-4">
-              <p className="text-sm text-gray-600">
-                Showing{" "}
-                <span className="font-bold text-main-primary">
-                  {filteredHomes.length}
-                </span>{" "}
-                {filteredHomes.length === 1 ? "Home" : "Homes"}
-              </p>
-              <ActiveFilterTags
-                filters={filters}
-                selectedCity={selectedCity}
-                selectedCommunity={selectedCommunity}
-                onRemoveFilter={handleRemoveFilter}
-                onClearAll={handleClearAllFilters}
-              />
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              {filteredHomes.map((home, index) => (
-                <div
-                  key={home.id}
-                  className={`transition-all duration-500 ${
-                    isAnimated
-                      ? "opacity-100 translate-y-0"
-                      : "opacity-0 translate-y-8"
-                  }`}
-                  style={{ transitionDelay: `${Math.min(index * 100, 500)}ms` }}
-                >
-                  <HomeCard
-                    home={home}
-                    onHover={setHoveredHomeId}
-                    onClick={handleCardClick}
-                    isHighlighted={
-                      hoveredHomeId === home.id || selectedHomeId === home.id
-                    }
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
+      <div className="container mx-auto px-4 lg:px-10 xl:px-20 2xl:px-24 py-8">
+        <div className="hidden lg:block mb-6">
+          <p className="text-sm text-gray-600">
+            Showing{" "}
+            <span className="font-bold text-main-primary">
+              {filteredFloorplans.length}
+            </span>{" "}
+            {filteredFloorplans.length === 1 ? "Floor Plan" : "Floor Plans"}
+          </p>
+          <ActiveFilterTags
+            filters={filters}
+            selectedCommunity={selectedCommunity}
+            onRemoveFilter={handleRemoveFilter}
+            onClearAll={handleClearAllFilters}
+          />
         </div>
-      ) : (
-        /* List View */
-        <div className="container mx-auto px-4 lg:px-10 xl:px-20 2xl:px-24 py-8">
-          <div className="hidden lg:block mb-6">
-            <p className="text-sm text-gray-600">
-              Showing{" "}
-              <span className="font-bold text-main-primary">
-                {filteredHomes.length}
-              </span>{" "}
-              {filteredHomes.length === 1 ? "Home" : "Homes"}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+          {filteredFloorplans.map((floorplan, index) => (
+            <div
+              key={floorplan.id}
+              className={`transition-all duration-500 ${
+                isAnimated
+                  ? "opacity-100 translate-y-0"
+                  : "opacity-0 translate-y-8"
+              }`}
+              style={{ transitionDelay: `${Math.min(index * 75, 600)}ms` }}
+            >
+              <FloorplanCard floorplan={floorplan} />
+            </div>
+          ))}
+        </div>
+
+        {filteredFloorplans.length === 0 && (
+          <div className="text-center py-16">
+            <Layers className="size-16 text-gray-300 mx-auto mb-4" />
+            <p className="text-lg text-gray-500">
+              No floor plans found matching your criteria.
             </p>
-            <ActiveFilterTags
-              filters={filters}
-              selectedCity={selectedCity}
-              selectedCommunity={selectedCommunity}
-              onRemoveFilter={handleRemoveFilter}
-              onClearAll={handleClearAllFilters}
-            />
+            <Button
+              variant="outline"
+              className="mt-4"
+              onClick={handleClearAllFilters}
+            >
+              Clear Filters
+            </Button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
-            {filteredHomes.map((home, index) => (
-              <div
-                key={home.id}
-                className={`transition-all duration-500 ${
-                  isAnimated
-                    ? "opacity-100 translate-y-0"
-                    : "opacity-0 translate-y-8"
-                }`}
-                style={{ transitionDelay: `${Math.min(index * 75, 600)}ms` }}
-              >
-                <HomeCard home={home} />
-              </div>
-            ))}
-          </div>
-
-          {filteredHomes.length === 0 && (
-            <div className="text-center py-16">
-              <p className="text-lg text-gray-500">
-                No homes found matching your criteria.
-              </p>
-              <Button
-                variant="outline"
-                className="mt-4"
-                onClick={handleClearAllFilters}
-              >
-                Clear Filters
-              </Button>
-            </div>
-          )}
-        </div>
-      )}
+        )}
+      </div>
     </main>
   );
 }
