@@ -8,6 +8,9 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
+    console.log("Inquiry request body:", JSON.stringify(body, null, 2));
+    console.log("API URL:", `${API_URL}/api/public/inquiries`);
+
     const response = await fetch(`${API_URL}/api/public/inquiries`, {
       method: "POST",
       headers: {
@@ -22,7 +25,7 @@ export async function POST(request: NextRequest) {
       const errorText = await response.text();
       console.error("Inquiry API error:", response.status, errorText);
       return NextResponse.json(
-        { error: "Failed to submit inquiry" },
+        { error: "Failed to submit inquiry", details: errorText },
         { status: response.status }
       );
     }
