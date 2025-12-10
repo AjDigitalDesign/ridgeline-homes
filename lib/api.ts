@@ -296,13 +296,25 @@ export const submitInquiry = async (data: {
   homeId?: string;
   floorplanId?: string;
 }) => {
+  // Transform to backend expected format
+  // Backend requires: name, email (required), phone, message, homeId, communityId, floorplanId (optional)
+  const payload = {
+    name: `${data.firstName} ${data.lastName}`.trim(),
+    email: data.email,
+    phone: data.phone || undefined,
+    message: data.message || undefined,
+    communityId: data.communityId || undefined,
+    homeId: data.homeId || undefined,
+    floorplanId: data.floorplanId || undefined,
+  };
+
   // Use local API proxy to avoid CORS issues
   const response = await fetch("/api/inquiries", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
