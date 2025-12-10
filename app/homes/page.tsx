@@ -1,11 +1,14 @@
 import { Suspense } from "react";
 import { fetchHomes, fetchCommunities } from "@/lib/api";
 import HomesPageClient from "./homes-page-client";
+import { generateMetadata as generateSeoMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Available Homes | Ridgeline Homes",
-  description: "Browse available new homes for sale in Maryland. Find move-in ready homes and quick move-in options with Ridgeline Homes.",
-};
+export const metadata = generateSeoMetadata({
+  title: "Available Homes",
+  description:
+    "Browse available new homes for sale in Maryland. Find move-in ready homes and quick move-in options with Ridgeline Homes.",
+  keywords: ["homes for sale", "quick move-in homes", "Maryland homes", "new construction"],
+});
 
 async function getInitialData() {
   const [homesRes, communitiesRes] = await Promise.all([

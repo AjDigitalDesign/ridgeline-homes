@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useFavorites, useRemoveFavorite } from "@/hooks/use-favorites";
 import type { Favorite, FavoriteType } from "@/lib/api";
+import { getStateSlug, getCitySlug } from "@/lib/url";
 
 type TabType = "homes" | "floorplans" | "communities";
 
@@ -323,7 +324,7 @@ function CommunityFavoriteCard({ favorite, onRemove }: { favorite: Favorite; onR
         {/* Actions */}
         <div className="mt-4 pt-4 border-t">
           <Button asChild className="w-full bg-main-primary">
-            <Link href={`/communities/${community.slug}`}>View Community</Link>
+            <Link href={`/communities/${getStateSlug(community.state)}/${getCitySlug(community.city)}/${community.slug}`}>View Community</Link>
           </Button>
         </div>
       </div>

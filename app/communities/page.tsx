@@ -1,11 +1,14 @@
 import { Suspense } from "react";
 import { fetchCommunities, fetchMarketAreas } from "@/lib/api";
 import CommunitiesPageClient from "./communities-page-client";
+import { generateMetadata as generateSeoMetadata } from "@/lib/seo";
 
-export const metadata = {
-  title: "Communities | Ridgeline Homes",
-  description: "Browse our new home communities in Maryland. Find your perfect neighborhood with Ridgeline Homes.",
-};
+export const metadata = generateSeoMetadata({
+  title: "Communities",
+  description:
+    "Browse our new home communities in Maryland. Find your perfect neighborhood with Ridgeline Homes.",
+  keywords: ["new home communities", "Maryland homes", "home builder", "neighborhoods"],
+});
 
 async function getInitialData() {
   const [communitiesRes, marketAreasRes] = await Promise.all([

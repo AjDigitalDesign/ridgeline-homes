@@ -39,8 +39,11 @@ import {
 } from "@/components/ui/popover";
 import { Lightbox } from "@/components/ui/lightbox";
 import { FavoriteButton } from "@/components/ui/favorite-button";
+import { MortgageCalculator } from "@/components/mortgage-calculator";
 import CommunityMap from "./community-map";
 import type { Community, MarketArea } from "@/lib/api";
+import { getCommunityUrl, getCommunityUrlWithParams } from "@/lib/url";
+import { Calculator } from "lucide-react";
 
 interface CommunitiesPageClientProps {
   initialCommunities: Community[];
@@ -105,6 +108,7 @@ function CommunityCard({
   isHighlighted?: boolean;
 }) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
   const image = community.gallery?.[0] || "";
   const location = [community.city, community.state].filter(Boolean).join(", ");
   const galleryImages = community.gallery || [];
@@ -114,6 +118,11 @@ function CommunityCard({
     if (galleryImages.length > 0) {
       setLightboxOpen(true);
     }
+  };
+
+  const handleCalculatorClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCalculatorOpen(true);
   };
 
   return (
@@ -192,10 +201,13 @@ function CommunityCard({
                   : "Contact Us"}
               </p>
               {community.priceMin && (
-                <p className="text-xs text-gray-500 flex items-center gap-1 justify-end">
+                <button
+                  onClick={handleCalculatorClick}
+                  className="text-xs text-gray-500 flex items-center gap-1 justify-end hover:text-main-primary transition-colors"
+                >
                   {formatMonthlyPayment(community.priceMin)}/mo
-                  <Calendar className="size-3" />
-                </p>
+                  <Calculator className="size-3" />
+                </button>
               )}
             </div>
           </div>
@@ -251,7 +263,7 @@ function CommunityCard({
               size="sm"
               className="flex-1 bg-main-secondary text-main-primary hover:bg-main-secondary/90 text-xs lg:text-sm"
             >
-              <Link href={`/communities/${community.slug}?schedule=true`}>
+              <Link href={getCommunityUrlWithParams(community, { schedule: "true" })}>
                 <Calendar className="size-3.5 lg:size-4 mr-1" />
                 Schedule Tour
               </Link>
@@ -262,7 +274,7 @@ function CommunityCard({
               variant="outline"
               className="flex-1 border-main-primary text-main-primary hover:bg-main-primary hover:text-white text-xs lg:text-sm"
             >
-              <Link href={`/communities/${community.slug}`}>
+              <Link href={getCommunityUrl(community)}>
                 Detail
                 <ArrowRight className="size-3.5 lg:size-4 ml-1" />
               </Link>
@@ -277,6 +289,14 @@ function CommunityCard({
         open={lightboxOpen}
         onOpenChange={setLightboxOpen}
         title={`${community.name} Gallery`}
+      />
+
+      {/* Mortgage Calculator */}
+      <MortgageCalculator
+        open={calculatorOpen}
+        onOpenChange={setCalculatorOpen}
+        initialPrice={community.priceMin || 400000}
+        propertyName={community.name}
       />
     </>
   );
