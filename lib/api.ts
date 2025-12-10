@@ -285,7 +285,7 @@ export const fetchFloorplans = (params?: {
 export const fetchFloorplan = (slug: string) =>
   api.get<Floorplan>(`/api/public/floorplans/${slug}`);
 
-export const submitInquiry = (data: {
+export const submitInquiry = async (data: {
   type: string;
   firstName: string;
   lastName: string;
@@ -295,7 +295,22 @@ export const submitInquiry = (data: {
   communityId?: string;
   homeId?: string;
   floorplanId?: string;
-}) => api.post("/api/public/inquiries", data);
+}) => {
+  // Use local API proxy to avoid CORS issues
+  const response = await fetch("/api/inquiries", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to submit inquiry");
+  }
+
+  return response.json();
+};
 
 // Banner Slide type
 export interface BannerSlide {
