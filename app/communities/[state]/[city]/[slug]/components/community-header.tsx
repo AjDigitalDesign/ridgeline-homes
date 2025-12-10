@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import { Phone, Calendar, ArrowRight, Calculator } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { MortgageCalculator } from "@/components/mortgage-calculator";
 import type { Community } from "@/lib/api";
 
 interface SalesTeamMember {
@@ -59,6 +61,8 @@ export default function CommunityHeader({
   onScheduleTour,
   onRequestInfo,
 }: CommunityHeaderProps) {
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
+
   const addressLine1 = community.address || "";
   const addressLine2 = [community.city, community.state, community.zipCode]
     .filter(Boolean)
@@ -104,14 +108,17 @@ export default function CommunityHeader({
                 </p>
                 {community.priceMin && (
                   <div className="flex items-center justify-end gap-2 mt-1">
-                    <div>
+                    <button
+                      onClick={() => setCalculatorOpen(true)}
+                      className="flex items-center gap-2 hover:text-main-primary transition-colors"
+                    >
                       <span className="text-sm text-gray-500">Est. Payment</span>
-                      <span className="text-sm font-semibold text-main-primary ml-1">
+                      <span className="text-sm font-semibold text-main-primary">
                         {calculateMonthlyPayment(community.priceMin)}/MO
                       </span>
-                    </div>
-                    <button className="p-1 bg-gray-100 rounded hover:bg-gray-200 transition-colors">
-                      <Calculator className="size-4 text-gray-600" />
+                      <span className="p-1 bg-gray-100 rounded hover:bg-gray-200 transition-colors">
+                        <Calculator className="size-4 text-gray-600" />
+                      </span>
                     </button>
                   </div>
                 )}
@@ -296,6 +303,14 @@ export default function CommunityHeader({
           </div>
         </div>
       </div>
+
+      {/* Mortgage Calculator Modal */}
+      <MortgageCalculator
+        open={calculatorOpen}
+        onOpenChange={setCalculatorOpen}
+        initialPrice={community.priceMin || 400000}
+        propertyName={community.name}
+      />
     </div>
   );
 }

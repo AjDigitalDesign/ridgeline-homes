@@ -39,9 +39,11 @@ import {
 } from "@/components/ui/popover";
 import { Lightbox } from "@/components/ui/lightbox";
 import { FavoriteButton } from "@/components/ui/favorite-button";
+import { MortgageCalculator } from "@/components/mortgage-calculator";
 import CommunityMap from "./community-map";
 import type { Community, MarketArea } from "@/lib/api";
 import { getCommunityUrl, getCommunityUrlWithParams } from "@/lib/url";
+import { Calculator } from "lucide-react";
 
 interface CommunitiesPageClientProps {
   initialCommunities: Community[];
@@ -106,6 +108,7 @@ function CommunityCard({
   isHighlighted?: boolean;
 }) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
   const image = community.gallery?.[0] || "";
   const location = [community.city, community.state].filter(Boolean).join(", ");
   const galleryImages = community.gallery || [];
@@ -115,6 +118,11 @@ function CommunityCard({
     if (galleryImages.length > 0) {
       setLightboxOpen(true);
     }
+  };
+
+  const handleCalculatorClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCalculatorOpen(true);
   };
 
   return (
@@ -193,10 +201,13 @@ function CommunityCard({
                   : "Contact Us"}
               </p>
               {community.priceMin && (
-                <p className="text-xs text-gray-500 flex items-center gap-1 justify-end">
+                <button
+                  onClick={handleCalculatorClick}
+                  className="text-xs text-gray-500 flex items-center gap-1 justify-end hover:text-main-primary transition-colors"
+                >
                   {formatMonthlyPayment(community.priceMin)}/mo
-                  <Calendar className="size-3" />
-                </p>
+                  <Calculator className="size-3" />
+                </button>
               )}
             </div>
           </div>
@@ -278,6 +289,14 @@ function CommunityCard({
         open={lightboxOpen}
         onOpenChange={setLightboxOpen}
         title={`${community.name} Gallery`}
+      />
+
+      {/* Mortgage Calculator */}
+      <MortgageCalculator
+        open={calculatorOpen}
+        onOpenChange={setCalculatorOpen}
+        initialPrice={community.priceMin || 400000}
+        propertyName={community.name}
       />
     </>
   );
