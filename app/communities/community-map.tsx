@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, X, Loader2 } from "lucide-react";
 import type { Community } from "@/lib/api";
+import { getCommunityUrl } from "@/lib/url";
 
 import "mapbox-gl/dist/mapbox-gl.css";
 
@@ -84,7 +85,7 @@ function PopupContent({
             </p>
           </div>
           <Link
-            href={`/communities/${community.slug}`}
+            href={getCommunityUrl(community)}
             className="flex items-center justify-center size-8 bg-main-secondary rounded-full hover:bg-main-secondary/80 transition-colors"
           >
             <ArrowRight className="size-4 text-main-primary" />
@@ -339,7 +340,7 @@ export default function CommunityMap({
                   ${selectedCommunity.priceMin ? `${formatPrice(selectedCommunity.priceMin)} - ${formatPrice(selectedCommunity.priceMax || selectedCommunity.priceMin)}` : "Contact Us"}
                 </p>
               </div>
-              <a href="/communities/${selectedCommunity.slug}" class="flex items-center justify-center size-8 bg-[#eed26e] rounded-full hover:bg-[#eed26e]/80 transition-colors">
+              <a href="/communities/${selectedCommunity.state?.toLowerCase().slice(0, 2) || 'md'}/${selectedCommunity.city?.toLowerCase().replace(/\s+/g, '-') || 'unknown'}/${selectedCommunity.slug}" class="flex items-center justify-center size-8 bg-[#eed26e] rounded-full hover:bg-[#eed26e]/80 transition-colors">
                 <svg class="size-4 text-[#1c2d37]" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
               </a>
             </div>

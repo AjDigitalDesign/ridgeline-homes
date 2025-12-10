@@ -44,6 +44,7 @@ import {
 import { Lightbox } from "@/components/ui/lightbox";
 import { FavoriteButton } from "@/components/ui/favorite-button";
 import type { Floorplan, Community } from "@/lib/api";
+import { getStateSlug, getCitySlug } from "@/lib/url";
 
 interface PlansPageClientProps {
   initialFloorplans: Floorplan[];
@@ -81,8 +82,10 @@ function formatPrice(price: number | null) {
 // Floorplan Card Component
 function FloorplanCard({
   floorplan,
+  communities,
 }: {
   floorplan: Floorplan;
+  communities: Community[];
 }) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const image = floorplan.elevationGallery?.[0] || floorplan.gallery?.[0] || "";
@@ -92,8 +95,17 @@ function FloorplanCard({
     ...(floorplan.plansImages || []),
   ];
 
-  // Get available communities for this floorplan
-  const availableCommunities = floorplan.communityFloorplans?.map(cf => cf.community.name) || [];
+  // Get available communities for this floorplan with full community data
+  const availableCommunities = floorplan.communityFloorplans?.map(cf => {
+    const fullCommunity = communities.find(c => c.id === cf.community.id);
+    return {
+      id: cf.community.id,
+      name: cf.community.name,
+      slug: cf.community.slug,
+      state: fullCommunity?.state || null,
+      city: fullCommunity?.city || null,
+    };
+  }) || [];
 
   const handleGalleryClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -221,11 +233,29 @@ function FloorplanCard({
           {/* Available In Communities */}
           {availableCommunities.length > 0 && (
             <div className="mt-3 pt-3 border-t border-gray-100">
-              <p className="text-xs text-gray-500 mb-1">Available in:</p>
-              <p className="text-xs text-main-primary font-medium truncate">
-                {availableCommunities.slice(0, 2).join(", ")}
-                {availableCommunities.length > 2 && ` +${availableCommunities.length - 2} more`}
-              </p>
+              <Select>
+                <SelectTrigger className="w-full h-9 text-xs border-gray-200">
+                  <div className="flex items-center gap-1.5">
+                    <MapPin className="size-3.5 shrink-0 text-gray-400" />
+                    <span className="text-gray-500">Available in</span>
+                  </div>
+                </SelectTrigger>
+                <SelectContent className="w-full">
+                  {availableCommunities.map((community) => {
+                    const url = `/communities/${getStateSlug(community.state)}/${getCitySlug(community.city)}/${community.slug}`;
+                    return (
+                      <Link
+                        key={community.id}
+                        href={url}
+                        className="flex items-center gap-2 px-2 py-2 text-sm rounded-md hover:bg-gray-100 text-main-primary transition-colors cursor-pointer"
+                      >
+                        <MapPin className="size-4 shrink-0 text-gray-400" />
+                        <span className="truncate">{community.name}</span>
+                      </Link>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
             </div>
           )}
 
@@ -1338,7 +1368,7 @@ export default function PlansPageClient({
               }`}
               style={{ transitionDelay: `${Math.min(index * 75, 600)}ms` }}
             >
-              <FloorplanCard floorplan={floorplan} />
+              <FloorplanCard floorplan={floorplan} communities={communities} />
             </div>
           ))}
         </div>

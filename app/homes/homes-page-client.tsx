@@ -19,6 +19,7 @@ import {
   Bath,
   Square,
   Car,
+  Calculator,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -43,6 +44,7 @@ import {
 } from "@/components/ui/popover";
 import { Lightbox } from "@/components/ui/lightbox";
 import { FavoriteButton } from "@/components/ui/favorite-button";
+import { MortgageCalculator } from "@/components/mortgage-calculator";
 import HomesMap from "./homes-map";
 import type { Home, Community } from "@/lib/api";
 
@@ -109,6 +111,7 @@ function HomeCard({
   isHighlighted?: boolean;
 }) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
   const image = home.gallery?.[0] || "";
   const location = home.community
     ? `${home.community.name}${home.community.city ? `, ${home.community.city}` : ""}`
@@ -120,6 +123,11 @@ function HomeCard({
     if (galleryImages.length > 0) {
       setLightboxOpen(true);
     }
+  };
+
+  const handleCalculatorClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCalculatorOpen(true);
   };
 
   return (
@@ -204,10 +212,13 @@ function HomeCard({
                 {formatPrice(home.price)}
               </p>
               {home.price && (
-                <p className="text-xs text-gray-500 flex items-center gap-1 justify-end">
+                <button
+                  onClick={handleCalculatorClick}
+                  className="text-xs text-gray-500 flex items-center gap-1 justify-end hover:text-main-primary transition-colors"
+                >
                   {formatMonthlyPayment(home.price)}/mo
-                  <Calendar className="size-3" />
-                </p>
+                  <Calculator className="size-3" />
+                </button>
               )}
             </div>
           </div>
@@ -281,6 +292,14 @@ function HomeCard({
         open={lightboxOpen}
         onOpenChange={setLightboxOpen}
         title={`${home.name} Gallery`}
+      />
+
+      {/* Mortgage Calculator */}
+      <MortgageCalculator
+        open={calculatorOpen}
+        onOpenChange={setCalculatorOpen}
+        initialPrice={home.price || 400000}
+        propertyName={home.name}
       />
     </>
   );
