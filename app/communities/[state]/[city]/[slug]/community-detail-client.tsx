@@ -71,12 +71,12 @@ export default function CommunityDetailClient({
 
   const sections: Section[] = [
     { id: "description", label: "Description", visible: true },
-    { id: "homes", label: "Homes", visible: homes.length > 0 },
-    { id: "floorplans", label: "Floorplans", visible: floorplans.length > 0 },
+    { id: "homes", label: "Available Homes", visible: homes.length > 0 },
+    { id: "floorplans", label: "Floor Plans", visible: floorplans.length > 0 },
     { id: "amenities", label: "Schools & Amenities", visible: hasAmenitiesOrSchools },
-    { id: "video", label: "Video", visible: !!community.videoUrl },
-    { id: "location", label: "Map", visible: !!(community.latitude && community.longitude) },
-    { id: "contact", label: "Contact", visible: true },
+    { id: "video", label: "Community Video", visible: !!community.videoUrl },
+    { id: "location", label: "Location & Directions", visible: !!(community.latitude && community.longitude) },
+    { id: "contact", label: "Contact Us", visible: true },
   ];
 
   const visibleSections = sections.filter((s) => s.visible);
@@ -99,7 +99,7 @@ export default function CommunityDetailClient({
         },
         {
           threshold: 0.3,
-          rootMargin: "-80px 0px -50% 0px",
+          rootMargin: "-150px 0px -50% 0px",
         }
       );
 
@@ -115,7 +115,7 @@ export default function CommunityDetailClient({
   const scrollToSection = (sectionId: SectionId) => {
     const element = sectionRefs.current[sectionId];
     if (element) {
-      const offset = 80; // Account for sticky nav
+      const offset = 150; // Account for sticky nav
       const elementPosition = element.getBoundingClientRect().top + window.scrollY;
       window.scrollTo({
         top: elementPosition - offset,
@@ -178,7 +178,7 @@ export default function CommunityDetailClient({
         <section
           id="description"
           ref={(el) => { sectionRefs.current.description = el; }}
-          className="scroll-mt-20"
+          className="scroll-mt-[150px]"
         >
           <OverviewSection community={community} homesCount={homes.length} />
         </section>
@@ -188,7 +188,7 @@ export default function CommunityDetailClient({
           <section
             id="homes"
             ref={(el) => { sectionRefs.current.homes = el; }}
-            className="scroll-mt-20 mt-12 lg:mt-16"
+            className="scroll-mt-[150px] mt-12 lg:mt-16"
           >
             <HomesSection homes={homes} communitySlug={community.slug} />
           </section>
@@ -199,7 +199,7 @@ export default function CommunityDetailClient({
           <section
             id="floorplans"
             ref={(el) => { sectionRefs.current.floorplans = el; }}
-            className="scroll-mt-20 mt-12 lg:mt-16"
+            className="scroll-mt-[150px] mt-12 lg:mt-16"
           >
             <FloorplansSection floorplans={floorplans} communitySlug={community.slug} />
           </section>
@@ -210,7 +210,7 @@ export default function CommunityDetailClient({
           <section
             id="amenities"
             ref={(el) => { sectionRefs.current.amenities = el; }}
-            className="scroll-mt-20 mt-12 lg:mt-16"
+            className="scroll-mt-[150px] mt-12 lg:mt-16"
           >
             <SchoolsAmenitiesSection
               schoolDistrict={community.schoolDistrict}
@@ -227,7 +227,7 @@ export default function CommunityDetailClient({
           <section
             id="video"
             ref={(el) => { sectionRefs.current.video = el; }}
-            className="scroll-mt-20 mt-12 lg:mt-16"
+            className="scroll-mt-[150px] mt-12 lg:mt-16"
           >
             <VideoSection
               videoUrl={community.videoUrl}
@@ -241,7 +241,7 @@ export default function CommunityDetailClient({
           <section
             id="location"
             ref={(el) => { sectionRefs.current.location = el; }}
-            className="scroll-mt-20 mt-12 lg:mt-16"
+            className="scroll-mt-[150px] mt-12 lg:mt-16"
           >
             <LocationSection community={community} />
           </section>

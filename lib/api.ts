@@ -161,20 +161,49 @@ export interface Home {
   stories: number | null;
   garages: number | null;
   status: string;
+  description: string | null;
   marketingHeadline: string | null;
   showMarketingHeadline: boolean;
   gallery: string[];
+  floorPlanGallery: string[];
+  interactiveFloorPlanUrl: string | null;
+  virtualTourUrl: string | null;
+  videoUrl: string | null;
+  features: string[];
+  schoolDistrict: string | null;
+  elementarySchool: string | null;
+  middleSchool: string | null;
+  highSchool: string | null;
   openHouseDate: string | null;
   availableDate: string | null;
   estimatedCompletion: string | null;
   latitude: number | null;
   longitude: number | null;
+  salesTeams: Array<{
+    id: string;
+    homeId: string;
+    salesTeamId: string;
+    isPrimary: boolean;
+    displayOrder: number;
+    salesTeam: {
+      id: string;
+      name: string;
+      title: string | null;
+      email: string | null;
+      phone: string | null;
+      photo: string | null;
+      profile: string | null;
+    };
+  }>;
   community: {
     id: string;
     name: string;
     slug: string;
     city: string | null;
     state: string | null;
+    address: string | null;
+    zipCode: string | null;
+    phoneNumber: string | null;
   } | null;
   floorplan: {
     id: string;

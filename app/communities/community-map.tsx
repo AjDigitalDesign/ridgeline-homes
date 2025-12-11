@@ -72,7 +72,9 @@ function PopupContent({
 
       {/* Content */}
       <div className="p-3">
-        <h3 className="font-bold text-main-primary text-sm">{community.name}</h3>
+        <h3 className="font-bold text-main-primary text-sm">
+          {community.name}
+        </h3>
         <p className="text-xs text-gray-500 mt-0.5">{location}</p>
 
         <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
@@ -80,7 +82,9 @@ function PopupContent({
             <p className="text-xs text-gray-500">Priced From</p>
             <p className="font-bold text-main-primary">
               {community.priceMin
-                ? `${formatPrice(community.priceMin)} - ${formatPrice(community.priceMax || community.priceMin)}`
+                ? `${formatPrice(community.priceMin)} - ${formatPrice(
+                    community.priceMax || community.priceMin
+                  )}`
                 : "Contact Us"}
             </p>
           </div>
@@ -145,7 +149,10 @@ export default function CommunityMap({
       mapboxgl.accessToken = MAPBOX_TOKEN;
 
       // Calculate initial bounds
-      let center: [number, number] = [DEFAULT_CENTER.longitude, DEFAULT_CENTER.latitude];
+      let center: [number, number] = [
+        DEFAULT_CENTER.longitude,
+        DEFAULT_CENTER.latitude,
+      ];
       let zoom = DEFAULT_CENTER.zoom;
 
       if (validCommunities.length === 1) {
@@ -253,7 +260,8 @@ export default function CommunityMap({
       const path = data.element.querySelector("svg path");
       if (svg && path) {
         // Highlight if hovered OR selected
-        const isHighlighted = id === hoveredCommunityId || id === selectedCommunityId;
+        const isHighlighted =
+          id === hoveredCommunityId || id === selectedCommunityId;
         if (isHighlighted) {
           path.setAttribute("fill", "#eed26e");
           data.element.style.zIndex = "50";
@@ -280,7 +288,9 @@ export default function CommunityMap({
       isMapLoaded &&
       !isUserInteracting
     ) {
-      const community = validCommunities.find((c) => c.id === hoveredCommunityId);
+      const community = validCommunities.find(
+        (c) => c.id === hoveredCommunityId
+      );
       if (community?.latitude && community?.longitude) {
         mapRef.current.flyTo({
           center: [community.longitude, community.latitude],
@@ -291,7 +301,13 @@ export default function CommunityMap({
     }
 
     lastHoveredIdRef.current = hoveredCommunityId;
-  }, [hoveredCommunityId, selectedCommunityId, validCommunities, isMapLoaded, isUserInteracting]);
+  }, [
+    hoveredCommunityId,
+    selectedCommunityId,
+    validCommunities,
+    isMapLoaded,
+    isUserInteracting,
+  ]);
 
   // Fly to selected community (when clicking card)
   useEffect(() => {
@@ -315,12 +331,20 @@ export default function CommunityMap({
       popupRef.current = null;
     }
 
-    if (selectedCommunity && selectedCommunity.latitude && selectedCommunity.longitude) {
+    if (
+      selectedCommunity &&
+      selectedCommunity.latitude &&
+      selectedCommunity.longitude
+    ) {
       const popupContainer = document.createElement("div");
       popupContainer.className = "community-popup-content";
 
       const image = selectedCommunity.gallery?.[0] || "";
-      const location = [selectedCommunity.city, selectedCommunity.state, selectedCommunity.zipCode]
+      const location = [
+        selectedCommunity.city,
+        selectedCommunity.state,
+        selectedCommunity.zipCode,
+      ]
         .filter(Boolean)
         .join(", ");
 
@@ -329,19 +353,40 @@ export default function CommunityMap({
           <button class="popup-close absolute top-2 right-2 z-10 p-1 bg-white/90 rounded-full hover:bg-white transition-colors">
             <svg class="size-4 text-gray-600" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
           </button>
-          ${image ? `<div class="relative h-[120px]"><img src="${image}" alt="${selectedCommunity.name}" class="w-full h-full object-cover" /></div>` : ""}
+          ${
+            image
+              ? `<div class="relative h-[120px]"><img src="${image}" alt="${selectedCommunity.name}" class="w-full h-full object-cover" /></div>`
+              : ""
+          }
           <div class="p-3">
-            <h3 class="font-bold text-[#1c2d37] text-sm">${selectedCommunity.name}</h3>
+            <h3 class="font-bold text-[#1c2d37] text-sm">${
+              selectedCommunity.name
+            }</h3>
             <p class="text-xs text-gray-500 mt-0.5">${location}</p>
             <div class="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
               <div>
                 <p class="text-xs text-gray-500">Priced From</p>
                 <p class="font-bold text-[#1c2d37] text-sm">
-                  ${selectedCommunity.priceMin ? `${formatPrice(selectedCommunity.priceMin)} - ${formatPrice(selectedCommunity.priceMax || selectedCommunity.priceMin)}` : "Contact Us"}
+                  ${
+                    selectedCommunity.priceMin
+                      ? `${formatPrice(
+                          selectedCommunity.priceMin
+                        )} - ${formatPrice(
+                          selectedCommunity.priceMax ||
+                            selectedCommunity.priceMin
+                        )}`
+                      : "Contact Us"
+                  }
                 </p>
               </div>
-              <a href="/communities/${selectedCommunity.state?.toLowerCase().slice(0, 2) || 'md'}/${selectedCommunity.city?.toLowerCase().replace(/\s+/g, '-') || 'unknown'}/${selectedCommunity.slug}" class="flex items-center justify-center size-8 bg-[#eed26e] rounded-full hover:bg-[#eed26e]/80 transition-colors">
-                <svg class="size-4 text-[#1c2d37]" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              <a href="/communities/${
+                selectedCommunity.state?.toLowerCase().slice(0, 2) || "md"
+              }/${
+        selectedCommunity.city?.toLowerCase().replace(/\s+/g, "-") || "unknown"
+      }/${
+        selectedCommunity.slug
+      }" class="flex items-center justify-center size-8 bg-main-secondary rounded-full hover:bg-main-secondary/80 transition-colors">
+                <svg class="size-4 text-main-primary" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
               </a>
             </div>
           </div>
@@ -358,9 +403,11 @@ export default function CommunityMap({
         .setDOMContent(popupContainer)
         .addTo(mapRef.current);
 
-      popupContainer.querySelector(".popup-close")?.addEventListener("click", () => {
-        onMarkerSelect(null);
-      });
+      popupContainer
+        .querySelector(".popup-close")
+        ?.addEventListener("click", () => {
+          onMarkerSelect(null);
+        });
 
       popupRef.current = popup;
     }

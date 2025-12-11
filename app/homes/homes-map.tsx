@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, X, Loader2, Bed, Bath, Square } from "lucide-react";
 import type { Home } from "@/lib/api";
+import { getHomeUrl } from "@/lib/url";
 
 import "mapbox-gl/dist/mapbox-gl.css";
 
@@ -274,7 +275,7 @@ export default function HomesMap({
               <div>
                 <p class="font-bold text-[#1c2d37]">${formatPrice(selectedHome.price)}</p>
               </div>
-              <a href="/homes/${selectedHome.slug}" class="flex items-center justify-center size-8 bg-[#eed26e] rounded-full hover:bg-[#eed26e]/80 transition-colors">
+              <a href="${getHomeUrl(selectedHome)}" class="flex items-center justify-center size-8 bg-[#eed26e] rounded-full hover:bg-[#eed26e]/80 transition-colors">
                 <svg class="size-4 text-[#1c2d37]" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
               </a>
             </div>

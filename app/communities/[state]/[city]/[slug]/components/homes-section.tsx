@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight, Camera, MapPin, Calendar, Calculator } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Home } from "@/lib/api";
+import { getHomeUrl } from "@/lib/url";
 
 interface HomesSectionProps {
   homes: Home[];
@@ -39,9 +40,15 @@ function calculateMonthlyPayment(price: number): string {
 function getStatusBadge(status: string) {
   switch (status) {
     case "AVAILABLE":
-      return { label: "Active", className: "bg-main-secondary text-main-primary" };
+      return {
+        label: "Active",
+        className: "bg-main-secondary text-main-primary",
+      };
     case "UNDER_CONSTRUCTION":
-      return { label: "Under Construction", className: "bg-gray-600 text-white" };
+      return {
+        label: "Under Construction",
+        className: "bg-gray-600 text-white",
+      };
     case "SOLD":
       return { label: "Sold", className: "bg-gray-400 text-white" };
     default:
@@ -116,7 +123,7 @@ function HomeCard({ home }: { home: Home }) {
             {home.price && (
               <div className="flex items-center gap-1 text-sm text-gray-500">
                 <span>{calculateMonthlyPayment(home.price)}/mo</span>
-                <Calculator className="size-3.5" />
+                <Calculator className="size-5" />
               </div>
             )}
           </div>
@@ -126,13 +133,17 @@ function HomeCard({ home }: { home: Home }) {
         <div className="flex items-center gap-1 py-4 border-b border-gray-100">
           {home.bedrooms && (
             <div className="flex-1 text-center border-r border-gray-200 last:border-r-0">
-              <p className="text-lg font-bold text-main-primary">{home.bedrooms}</p>
+              <p className="text-lg font-bold text-main-primary">
+                {home.bedrooms}
+              </p>
               <p className="text-xs text-gray-500">Beds</p>
             </div>
           )}
           {home.bathrooms && (
             <div className="flex-1 text-center border-r border-gray-200 last:border-r-0">
-              <p className="text-lg font-bold text-main-primary">{home.bathrooms}</p>
+              <p className="text-lg font-bold text-main-primary">
+                {home.bathrooms}
+              </p>
               <p className="text-xs text-gray-500">Baths</p>
             </div>
           )}
@@ -146,13 +157,17 @@ function HomeCard({ home }: { home: Home }) {
           )}
           {home.garages && (
             <div className="flex-1 text-center border-r border-gray-200 last:border-r-0">
-              <p className="text-lg font-bold text-main-primary">{home.garages}-Car</p>
+              <p className="text-lg font-bold text-main-primary">
+                {home.garages}-Car
+              </p>
               <p className="text-xs text-gray-500">Garage</p>
             </div>
           )}
           {home.stories && (
             <div className="flex-1 text-center">
-              <p className="text-lg font-bold text-main-primary">{home.stories}</p>
+              <p className="text-lg font-bold text-main-primary">
+                {home.stories}
+              </p>
               <p className="text-xs text-gray-500">Stories</p>
             </div>
           )}
@@ -179,14 +194,14 @@ function HomeCard({ home }: { home: Home }) {
         {/* CTAs */}
         <div className="flex items-center gap-3">
           <Link
-            href={`/homes/${home.slug}?schedule=true`}
+            href={`${getHomeUrl(home)}?schedule=true`}
             className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-main-secondary text-main-primary text-sm font-semibold rounded-full hover:bg-main-secondary/90 transition-colors"
           >
             Schedule Tour
             <Calendar className="size-4" />
           </Link>
           <Link
-            href={`/homes/${home.slug}`}
+            href={getHomeUrl(home)}
             className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-main-primary text-white text-sm font-semibold rounded-full hover:bg-main-primary/90 transition-colors"
           >
             Detail
@@ -198,7 +213,10 @@ function HomeCard({ home }: { home: Home }) {
   );
 }
 
-export default function HomesSection({ homes, communitySlug }: HomesSectionProps) {
+export default function HomesSection({
+  homes,
+  communitySlug,
+}: HomesSectionProps) {
   const displayedHomes = homes.slice(0, 6);
   const hasMore = homes.length > 6;
 

@@ -19,7 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useFavorites, useRemoveFavorite } from "@/hooks/use-favorites";
 import type { Favorite, FavoriteType } from "@/lib/api";
-import { getStateSlug, getCitySlug } from "@/lib/url";
+import { getStateSlug, getCitySlug, getHomeUrl } from "@/lib/url";
 
 type TabType = "homes" | "floorplans" | "communities";
 
@@ -141,7 +141,7 @@ function HomeFavoriteCard({ favorite, onRemove }: { favorite: Favorite; onRemove
         <div className="flex items-center justify-between mt-4 pt-4 border-t">
           <div className="flex items-center gap-4">
             <Link
-              href={`/homes/${home.slug}`}
+              href={getHomeUrl(home)}
               className="flex flex-col items-center gap-1 text-gray-500 hover:text-main-primary transition-colors"
             >
               <Home className="size-5" />

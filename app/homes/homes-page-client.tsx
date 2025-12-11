@@ -47,6 +47,7 @@ import { FavoriteButton } from "@/components/ui/favorite-button";
 import { MortgageCalculator } from "@/components/mortgage-calculator";
 import HomesMap from "./homes-map";
 import type { Home, Community } from "@/lib/api";
+import { getHomeUrl } from "@/lib/url";
 
 interface HomesPageClientProps {
   initialHomes: Home[];
@@ -114,7 +115,9 @@ function HomeCard({
   const [calculatorOpen, setCalculatorOpen] = useState(false);
   const image = home.gallery?.[0] || "";
   const location = home.community
-    ? `${home.community.name}${home.community.city ? `, ${home.community.city}` : ""}`
+    ? `${home.community.name}${
+        home.community.city ? `, ${home.community.city}` : ""
+      }`
     : [home.city, home.state].filter(Boolean).join(", ");
   const galleryImages = home.gallery || [];
 
@@ -157,7 +160,9 @@ function HomeCard({
           {/* Status Badge */}
           <div className="absolute top-4 left-4">
             <span className="px-3 py-1.5 bg-main-secondary text-main-primary text-xs font-semibold uppercase rounded-full">
-              {home.status === "AVAILABLE" ? "Available" : home.status?.replace(/_/g, " ")}
+              {home.status === "AVAILABLE"
+                ? "Available"
+                : home.status?.replace(/_/g, " ")}
             </span>
           </div>
           {/* Favorite Icon */}
@@ -217,7 +222,7 @@ function HomeCard({
                   className="text-xs text-gray-500 flex items-center gap-1 justify-end hover:text-main-primary transition-colors"
                 >
                   {formatMonthlyPayment(home.price)}/mo
-                  <Calculator className="size-3" />
+                  <Calculator className="size-4.5 text-tertiary" />
                 </button>
               )}
             </div>
@@ -266,7 +271,7 @@ function HomeCard({
               size="sm"
               className="flex-1 bg-main-secondary text-main-primary hover:bg-main-secondary/90 text-xs lg:text-sm"
             >
-              <Link href={`/homes/${home.slug}?schedule=true`}>
+              <Link href={`${getHomeUrl(home)}?schedule=true`}>
                 <Calendar className="size-3.5 lg:size-4 mr-1" />
                 Schedule Tour
               </Link>
@@ -277,7 +282,7 @@ function HomeCard({
               variant="outline"
               className="flex-1 border-main-primary text-main-primary hover:bg-main-primary hover:text-white text-xs lg:text-sm"
             >
-              <Link href={`/homes/${home.slug}`}>
+              <Link href={getHomeUrl(home)}>
                 Detail
                 <ArrowRight className="size-3.5 lg:size-4 ml-1" />
               </Link>
@@ -1021,7 +1026,9 @@ export default function HomesPageClient({
       );
     }
     if (filters.community !== "all") {
-      baseHomes = baseHomes.filter((h) => h.community?.id === filters.community);
+      baseHomes = baseHomes.filter(
+        (h) => h.community?.id === filters.community
+      );
     }
 
     return PRICE_RANGES.map((range, index) => {
