@@ -3,15 +3,29 @@
 import { useRef, useEffect, useState } from "react";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { Section, SectionId } from "../community-detail-client";
+
+export type HomeSectionId =
+  | "overview"
+  | "description"
+  | "floorplan"
+  | "virtualtour"
+  | "videotour"
+  | "details"
+  | "gallery"
+  | "specifications"
+  | "location";
+
+export interface HomeSection {
+  id: HomeSectionId;
+  label: string;
+  visible: boolean;
+}
 
 interface DetailNavigationProps {
-  sections: Section[];
-  activeSection: SectionId;
-  onSectionClick: (sectionId: SectionId) => void;
+  sections: HomeSection[];
+  activeSection: HomeSectionId;
+  onSectionClick: (sectionId: HomeSectionId) => void;
   onScheduleTour: () => void;
-  floorplansCount?: number;
-  homesCount?: number;
 }
 
 export default function DetailNavigation({
@@ -19,16 +33,7 @@ export default function DetailNavigation({
   activeSection,
   onSectionClick,
   onScheduleTour,
-  floorplansCount = 0,
-  homesCount = 0,
 }: DetailNavigationProps) {
-  // Helper to get count badge for a section
-  const getCountBadge = (sectionId: SectionId): number | null => {
-    if (sectionId === "floorplans" && floorplansCount > 0)
-      return floorplansCount;
-    if (sectionId === "homes" && homesCount > 0) return homesCount;
-    return null;
-  };
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -84,33 +89,19 @@ export default function DetailNavigation({
               onScroll={checkScrollability}
               className="flex items-center gap-1 overflow-x-auto scrollbar-hide scroll-smooth px-8 lg:px-0"
             >
-              {sections.map((section) => {
-                const count = getCountBadge(section.id);
-                return (
-                  <button
-                    key={section.id}
-                    onClick={() => onSectionClick(section.id)}
-                    className={`px-4 py-2 text-sm font-medium whitespace-nowrap rounded-full transition-colors flex items-center gap-2 ${
-                      activeSection === section.id
-                        ? "bg-main-primary text-white"
-                        : "text-main-primary hover:bg-gray-100"
-                    }`}
-                  >
-                    {section.label}
-                    {count !== null && (
-                      <span
-                        className={`inline-flex items-center justify-center size-5 text-xs font-semibold rounded ${
-                          activeSection === section.id
-                            ? "bg-white/20 text-white"
-                            : "bg-main-primary/10 text-main-primary"
-                        }`}
-                      >
-                        {count}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
+              {sections.map((section) => (
+                <button
+                  key={section.id}
+                  onClick={() => onSectionClick(section.id)}
+                  className={`px-4 py-2 text-sm font-medium whitespace-nowrap rounded-full transition-colors ${
+                    activeSection === section.id
+                      ? "bg-main-primary text-white"
+                      : "text-main-primary hover:bg-gray-100"
+                  }`}
+                >
+                  {section.label}
+                </button>
+              ))}
             </div>
 
             {/* Right Scroll Button */}
@@ -132,7 +123,7 @@ export default function DetailNavigation({
               className="bg-main-secondary text-main-primary hover:bg-main-secondary/90"
             >
               <Calendar className="size-4 mr-2" />
-              Schedule Tour
+              Schedule Showing
             </Button>
           </div>
         </div>

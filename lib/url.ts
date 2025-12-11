@@ -1,4 +1,4 @@
-import type { Community } from "./api";
+import type { Community, Home } from "./api";
 
 /**
  * Converts a string to a URL-safe slug
@@ -115,4 +115,29 @@ export function getCommunityUrlWithParams(
 
   const searchParams = new URLSearchParams(params);
   return `${base}?${searchParams.toString()}`;
+}
+
+/**
+ * Generates the full home URL path
+ * Format: /homes/state/city/community-slug/home-slug
+ */
+export function getHomeUrl(home: Home): string {
+  const state = getStateSlug(home.community?.state || home.state);
+  const city = getCitySlug(home.community?.city || home.city);
+  const communitySlug = home.community?.slug || "home";
+  return `/homes/${state}/${city}/${communitySlug}/${home.slug}`;
+}
+
+/**
+ * Generates home URL from individual parts (for use in route handlers)
+ */
+export function buildHomeUrl(
+  state: string | null,
+  city: string | null,
+  communitySlug: string,
+  homeSlug: string
+): string {
+  const stateSlug = getStateSlug(state);
+  const citySlug = getCitySlug(city);
+  return `/homes/${stateSlug}/${citySlug}/${communitySlug}/${homeSlug}`;
 }

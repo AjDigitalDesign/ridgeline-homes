@@ -70,8 +70,8 @@ export default function CommunityHeader({
 
   // Get primary sales team member
   const primaryAgent =
-    community.salesTeams?.find((m: SalesTeamMember) => m.isPrimary)?.salesTeam ||
-    community.salesTeams?.[0]?.salesTeam;
+    community.salesTeams?.find((m: SalesTeamMember) => m.isPrimary)
+      ?.salesTeam || community.salesTeams?.[0]?.salesTeam;
 
   return (
     <div className="bg-white">
@@ -112,12 +112,14 @@ export default function CommunityHeader({
                       onClick={() => setCalculatorOpen(true)}
                       className="flex items-center gap-2 hover:text-main-primary transition-colors"
                     >
-                      <span className="text-sm text-gray-500">Est. Payment</span>
+                      <span className="text-sm text-gray-500">
+                        Est. Payment
+                      </span>
                       <span className="text-sm font-semibold text-main-primary">
                         {calculateMonthlyPayment(community.priceMin)}/MO
                       </span>
-                      <span className="p-1 bg-gray-100 rounded hover:bg-gray-200 transition-colors">
-                        <Calculator className="size-4 text-gray-600" />
+                      <span className="p-1  rounded hover:bg-gray-200 transition-colors">
+                        <Calculator className="size-6 lg:size-6.5 text-tertiary" />
                       </span>
                     </button>
                   </div>
@@ -133,7 +135,8 @@ export default function CommunityHeader({
                   <div>
                     <p className="text-2xl lg:text-3xl font-bold text-main-primary">
                       {community.sqftMin.toLocaleString()}
-                      {community.sqftMax && community.sqftMax !== community.sqftMin
+                      {community.sqftMax &&
+                      community.sqftMax !== community.sqftMin
                         ? ` - ${community.sqftMax.toLocaleString()}`
                         : "+"}
                     </p>
@@ -148,7 +151,8 @@ export default function CommunityHeader({
                   <div>
                     <p className="text-2xl lg:text-3xl font-bold text-main-primary">
                       {community.bedsMin}
-                      {community.bedsMax && community.bedsMax !== community.bedsMin
+                      {community.bedsMax &&
+                      community.bedsMax !== community.bedsMin
                         ? ` - ${community.bedsMax}`
                         : "+"}
                     </p>
@@ -163,7 +167,8 @@ export default function CommunityHeader({
                   <div>
                     <p className="text-2xl lg:text-3xl font-bold text-main-primary">
                       {community.bathsMin}
-                      {community.bathsMax && community.bathsMax !== community.bathsMin
+                      {community.bathsMax &&
+                      community.bathsMax !== community.bathsMin
                         ? ` - ${community.bathsMax}`
                         : "+"}
                     </p>
@@ -178,7 +183,8 @@ export default function CommunityHeader({
                   <div>
                     <p className="text-2xl lg:text-3xl font-bold text-main-primary">
                       {community.garagesMin}
-                      {community.garagesMax && community.garagesMax !== community.garagesMin
+                      {community.garagesMax &&
+                      community.garagesMax !== community.garagesMin
                         ? ` - ${community.garagesMax}`
                         : "+"}
                     </p>
@@ -264,7 +270,9 @@ export default function CommunityHeader({
 
               {/* Community Info + Buttons */}
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-main-primary">{community.name}</p>
+                <p className="font-semibold text-main-primary">
+                  {community.name}
+                </p>
                 <p className="text-sm text-gray-600">{addressLine1}</p>
                 <p className="text-sm text-gray-600">{addressLine2}</p>
 
