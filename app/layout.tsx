@@ -7,6 +7,7 @@ import { AuthProvider } from "@/lib/auth-context";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Toaster } from "@/components/ui/sonner";
+import { AnalyticsProvider } from "@/components/analytics-provider";
 import { generateMetadata as generateSeoMetadata, siteConfig } from "@/lib/seo";
 
 const outfit = Outfit({
@@ -37,6 +38,7 @@ export default function RootLayout({
         <QueryProvider>
           <AuthProvider>
             <FavoritesProvider>
+              <AnalyticsProvider />
               <Header />
               {children}
               <Footer />

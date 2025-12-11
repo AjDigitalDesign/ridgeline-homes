@@ -245,6 +245,10 @@ export interface Tenant {
   promoBannerEnabled: boolean;
   promoBannerDescription: string | null;
   promoBannerLink: string | null;
+  googleAnalyticsId: string | null;
+  googleTagManagerId: string | null;
+  hubspotEnabled: boolean;
+  lassoEnabled: boolean;
 }
 
 // API Functions
