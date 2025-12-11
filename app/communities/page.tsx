@@ -12,13 +12,13 @@ export const metadata = generateSeoMetadata({
 
 async function getInitialData() {
   const [communitiesRes, marketAreasRes] = await Promise.all([
-    fetchCommunities({ status: "ACTIVE" }),
-    fetchMarketAreas(),
+    fetchCommunities({ status: "ACTIVE" }).catch(() => ({ data: [] })),
+    fetchMarketAreas().catch(() => ({ data: [] })),
   ]);
 
   return {
-    communities: communitiesRes.data,
-    marketAreas: marketAreasRes.data,
+    communities: Array.isArray(communitiesRes.data) ? communitiesRes.data : [],
+    marketAreas: Array.isArray(marketAreasRes.data) ? marketAreasRes.data : [],
   };
 }
 

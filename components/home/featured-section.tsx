@@ -7,6 +7,7 @@ import { ArrowRight, Camera, MapPin, Calendar, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnimateOnScroll } from "@/components/ui/animate-on-scroll";
 import type { Community, Home } from "@/lib/api";
+import { getHomeUrl } from "@/lib/url";
 
 interface FeaturedSectionProps {
   communities: Community[];
@@ -331,7 +332,7 @@ function HomeCard({ home }: { home: Home }) {
             size="sm"
             className="flex-1 bg-main-secondary text-main-primary hover:bg-main-secondary/90"
           >
-            <Link href={`/homes/${home.slug}?schedule=true`}>
+            <Link href={`${getHomeUrl(home)}?schedule=true`}>
               <Calendar className="size-4 mr-1.5" />
               Schedule Tour
             </Link>
@@ -342,7 +343,7 @@ function HomeCard({ home }: { home: Home }) {
             variant="outline"
             className="flex-1 border-main-primary text-main-primary hover:bg-main-primary hover:text-white"
           >
-            <Link href={`/homes/${home.slug}`}>
+            <Link href={getHomeUrl(home)}>
               Details
               <ArrowRight className="size-4 ml-1.5" />
             </Link>

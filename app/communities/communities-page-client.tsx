@@ -206,7 +206,7 @@ function CommunityCard({
                   className="text-xs text-gray-500 flex items-center gap-1 justify-end hover:text-main-primary transition-colors"
                 >
                   {formatMonthlyPayment(community.priceMin)}/mo
-                  <Calculator className="size-3" />
+                  <Calculator className="size-4.5 text-tertiary" />
                 </button>
               )}
             </div>
@@ -263,7 +263,11 @@ function CommunityCard({
               size="sm"
               className="flex-1 bg-main-secondary text-main-primary hover:bg-main-secondary/90 text-xs lg:text-sm"
             >
-              <Link href={getCommunityUrlWithParams(community, { schedule: "true" })}>
+              <Link
+                href={getCommunityUrlWithParams(community, {
+                  schedule: "true",
+                })}
+              >
                 <Calendar className="size-3.5 lg:size-4 mr-1" />
                 Schedule Tour
               </Link>
