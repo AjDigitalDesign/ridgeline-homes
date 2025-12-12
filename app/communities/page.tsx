@@ -1,35 +1,68 @@
 import { Suspense } from "react";
-import { fetchCommunities, fetchMarketAreas } from "@/lib/api";
+import type { Metadata } from "next";
+import { fetchCommunities, fetchMarketAreas, fetchListingSettings } from "@/lib/api";
 import CommunitiesPageClient from "./communities-page-client";
 import { generateMetadata as generateSeoMetadata } from "@/lib/seo";
 
-export const metadata = generateSeoMetadata({
-  title: "Communities",
-  description:
-    "Browse our new home communities in Maryland. Find your perfect neighborhood with Ridgeline Homes.",
-  keywords: ["new home communities", "Maryland homes", "home builder", "neighborhoods"],
-});
+export async function generateMetadata(): Promise<Metadata> {
+  try {
+    const { data: listingSettings } = await fetchListingSettings("communities");
+    const seo = listingSettings?.seo;
+
+    if (seo) {
+      return generateSeoMetadata({
+        title: seo.title || "Communities",
+        description: seo.description || "Browse our new home communities in Maryland.",
+        keywords: seo.keywords ? seo.keywords.split(",").map((k) => k.trim()) : [],
+        canonical: seo.canonicalUrl || undefined,
+        noIndex: !seo.index,
+        openGraph: {
+          title: seo.ogTitle || seo.title || undefined,
+          description: seo.ogDescription || seo.description || undefined,
+          image: seo.ogImage || undefined,
+        },
+        twitter: {
+          title: seo.twitterTitle || seo.ogTitle || seo.title || undefined,
+          description: seo.twitterDescription || seo.ogDescription || seo.description || undefined,
+          image: seo.twitterImage || seo.ogImage || undefined,
+        },
+      });
+    }
+  } catch {
+    // Fall back to default metadata
+  }
+
+  return generateSeoMetadata({
+    title: "Communities",
+    description:
+      "Browse our new home communities in Maryland. Find your perfect neighborhood with Ridgeline Homes.",
+    keywords: ["new home communities", "Maryland homes", "home builder", "neighborhoods"],
+  });
+}
 
 async function getInitialData() {
-  const [communitiesRes, marketAreasRes] = await Promise.all([
+  const [communitiesRes, marketAreasRes, listingSettingsRes] = await Promise.all([
     fetchCommunities({ status: "ACTIVE" }).catch(() => ({ data: [] })),
     fetchMarketAreas().catch(() => ({ data: [] })),
+    fetchListingSettings("communities").catch(() => ({ data: null })),
   ]);
 
   return {
     communities: Array.isArray(communitiesRes.data) ? communitiesRes.data : [],
     marketAreas: Array.isArray(marketAreasRes.data) ? marketAreasRes.data : [],
+    listingSettings: listingSettingsRes.data || null,
   };
 }
 
 export default async function CommunitiesPage() {
-  const { communities, marketAreas } = await getInitialData();
+  const { communities, marketAreas, listingSettings } = await getInitialData();
 
   return (
     <Suspense fallback={<CommunitiesPageSkeleton />}>
       <CommunitiesPageClient
         initialCommunities={communities}
         marketAreas={marketAreas}
+        listingSettings={listingSettings}
       />
     </Suspense>
   );
