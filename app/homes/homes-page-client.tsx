@@ -46,12 +46,13 @@ import { Lightbox } from "@/components/ui/lightbox";
 import { FavoriteButton } from "@/components/ui/favorite-button";
 import { MortgageCalculator } from "@/components/mortgage-calculator";
 import HomesMap from "./homes-map";
-import type { Home, Community } from "@/lib/api";
+import type { Home, Community, ListingSettings } from "@/lib/api";
 import { getHomeUrl } from "@/lib/url";
 
 interface HomesPageClientProps {
   initialHomes: Home[];
   communities: Community[];
+  listingSettings: ListingSettings | null;
 }
 
 const PRICE_RANGES = [
@@ -890,9 +891,58 @@ function ActiveFilterTags({
   );
 }
 
+// Listing Settings Footer Content
+function ListingSettingsFooter({
+  listingSettings,
+}: {
+  listingSettings: ListingSettings | null;
+}) {
+  if (!listingSettings?.footerContent && !listingSettings?.footerImage) {
+    return null;
+  }
+
+  return (
+    <section className="bg-white py-16 lg:py-24">
+      <div className="container mx-auto px-4 lg:px-10 xl:px-20 2xl:px-24">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+          {/* Text Content */}
+          <div>
+            <h2 className="text-3xl lg:text-4xl font-bold text-main-primary">
+              Maryland
+            </h2>
+            <p className="text-lg text-main-primary/70 mt-2">
+              Quick Move-In Homes
+            </p>
+            <div className="w-16 h-1 bg-main-secondary mt-4" />
+            {listingSettings.footerContent && (
+              <div
+                className="mt-6 text-gray-600 leading-relaxed prose prose-sm max-w-none"
+                dangerouslySetInnerHTML={{ __html: listingSettings.footerContent }}
+              />
+            )}
+          </div>
+
+          {/* Image */}
+          {listingSettings.footerImage && (
+            <div className="relative h-[300px] lg:h-[400px] rounded-xl overflow-hidden">
+              <Image
+                src={listingSettings.footerImage}
+                alt="Maryland Homes"
+                fill
+                className="object-cover"
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default function HomesPageClient({
   initialHomes,
   communities,
+  listingSettings,
 }: HomesPageClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -1089,8 +1139,14 @@ export default function HomesPageClient({
     setSelectedHomeId(home?.id || null);
   }, []);
 
-  // Hero background image
-  const heroImage = initialHomes[0]?.gallery?.[0] || "";
+  // Hero background image - use listing settings banner, then first home
+  const heroImage =
+    listingSettings?.bannerImage ||
+    initialHomes[0]?.gallery?.[0] ||
+    "";
+
+  // Hero title - use listing settings banner title
+  const heroTitle = listingSettings?.bannerTitle || "Quick Move-In Homes";
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -1119,17 +1175,8 @@ export default function HomesPageClient({
             }`}
           >
             <h1 className="text-4xl lg:text-6xl font-bold text-white">
-              Quick Move-In Homes
+              {heroTitle}
             </h1>
-            <p
-              className={`text-lg lg:text-xl text-white/90 mt-2 uppercase tracking-wider transition-all duration-700 delay-100 ${
-                isAnimated
-                  ? "opacity-100 translate-y-0"
-                  : "opacity-0 translate-y-4"
-              }`}
-            >
-              Available Now
-            </p>
             <div
               className={`w-24 h-1 bg-main-secondary mx-auto mt-4 transition-all duration-500 delay-200 ${
                 isAnimated ? "opacity-100 scale-x-100" : "opacity-0 scale-x-0"
@@ -1482,6 +1529,9 @@ export default function HomesPageClient({
           )}
         </div>
       )}
+
+      {/* Footer Content */}
+      <ListingSettingsFooter listingSettings={listingSettings} />
     </main>
   );
 }
