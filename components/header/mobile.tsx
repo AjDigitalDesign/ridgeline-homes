@@ -106,7 +106,7 @@ export default function MobileNav() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <button className="rounded-md text-primary p-2 transition-colors hover:bg-zinc-100 lg:hidden">
+        <button className="rounded-md text-primary p-2 transition-colors hover:bg-zinc-100 xl:hidden">
           <Menu className="size-6 text-white" />
         </button>
       </SheetTrigger>

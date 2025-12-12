@@ -530,3 +530,32 @@ export const removeFavoriteByItem = (type: FavoriteType, itemId: string) => {
   else if (type === "floorplan") params.append("floorplanId", itemId);
   return localApi.delete(`/api/favorites?${params.toString()}`);
 };
+
+// Listing Settings types
+export interface ListingSettingsSeo {
+  title: string;
+  description: string;
+  keywords: string;
+  ogTitle: string;
+  ogDescription: string;
+  ogImage: string;
+  twitterTitle: string;
+  twitterDescription: string;
+  twitterImage: string;
+  canonicalUrl: string;
+  index: boolean;
+  follow: boolean;
+  jsonLd: string;
+}
+
+export interface ListingSettings {
+  bannerTitle: string;
+  bannerImage: string;
+  footerContent: string;
+  footerImage: string;
+  seo: ListingSettingsSeo;
+}
+
+// Fetch listing settings for search pages (communities, homes, floorplans)
+export const fetchListingSettings = (type: "communities" | "homes" | "floorplans") =>
+  api.get<ListingSettings>(`/api/public/listing-settings/${type}`);

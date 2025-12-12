@@ -1,35 +1,68 @@
 import { Suspense } from "react";
-import { fetchHomes, fetchCommunities } from "@/lib/api";
+import type { Metadata } from "next";
+import { fetchHomes, fetchCommunities, fetchListingSettings } from "@/lib/api";
 import HomesPageClient from "./homes-page-client";
 import { generateMetadata as generateSeoMetadata } from "@/lib/seo";
 
-export const metadata = generateSeoMetadata({
-  title: "Available Homes",
-  description:
-    "Browse available new homes for sale in Maryland. Find move-in ready homes and quick move-in options with Ridgeline Homes.",
-  keywords: ["homes for sale", "quick move-in homes", "Maryland homes", "new construction"],
-});
+export async function generateMetadata(): Promise<Metadata> {
+  try {
+    const { data: listingSettings } = await fetchListingSettings("homes");
+    const seo = listingSettings?.seo;
+
+    if (seo) {
+      return generateSeoMetadata({
+        title: seo.title || "Available Homes",
+        description: seo.description || "Browse available new homes for sale in Maryland.",
+        keywords: seo.keywords ? seo.keywords.split(",").map((k) => k.trim()) : [],
+        canonical: seo.canonicalUrl || undefined,
+        noIndex: !seo.index,
+        openGraph: {
+          title: seo.ogTitle || seo.title || undefined,
+          description: seo.ogDescription || seo.description || undefined,
+          image: seo.ogImage || undefined,
+        },
+        twitter: {
+          title: seo.twitterTitle || seo.ogTitle || seo.title || undefined,
+          description: seo.twitterDescription || seo.ogDescription || seo.description || undefined,
+          image: seo.twitterImage || seo.ogImage || undefined,
+        },
+      });
+    }
+  } catch {
+    // Fall back to default metadata
+  }
+
+  return generateSeoMetadata({
+    title: "Available Homes",
+    description:
+      "Browse available new homes for sale in Maryland. Find move-in ready homes and quick move-in options with Ridgeline Homes.",
+    keywords: ["homes for sale", "quick move-in homes", "Maryland homes", "new construction"],
+  });
+}
 
 async function getInitialData() {
-  const [homesRes, communitiesRes] = await Promise.all([
+  const [homesRes, communitiesRes, listingSettingsRes] = await Promise.all([
     fetchHomes({ status: "AVAILABLE" }).catch(() => ({ data: [] })),
     fetchCommunities({ status: "ACTIVE" }).catch(() => ({ data: [] })),
+    fetchListingSettings("homes").catch(() => ({ data: null })),
   ]);
 
   return {
     homes: Array.isArray(homesRes.data) ? homesRes.data : [],
     communities: Array.isArray(communitiesRes.data) ? communitiesRes.data : [],
+    listingSettings: listingSettingsRes.data || null,
   };
 }
 
 export default async function HomesPage() {
-  const { homes, communities } = await getInitialData();
+  const { homes, communities, listingSettings } = await getInitialData();
 
   return (
     <Suspense fallback={<HomesPageSkeleton />}>
       <HomesPageClient
         initialHomes={homes}
         communities={communities}
+        listingSettings={listingSettings}
       />
     </Suspense>
   );

@@ -1,35 +1,68 @@
 import { Suspense } from "react";
-import { fetchFloorplans, fetchCommunities } from "@/lib/api";
+import type { Metadata } from "next";
+import { fetchFloorplans, fetchCommunities, fetchListingSettings } from "@/lib/api";
 import PlansPageClient from "./plans-page-client";
 import { generateMetadata as generateSeoMetadata } from "@/lib/seo";
 
-export const metadata = generateSeoMetadata({
-  title: "Floor Plans",
-  description:
-    "Browse our collection of floor plans. Find the perfect layout for your new home with Ridgeline Homes.",
-  keywords: ["floor plans", "home designs", "new home layouts", "home builder"],
-});
+export async function generateMetadata(): Promise<Metadata> {
+  try {
+    const { data: listingSettings } = await fetchListingSettings("floorplans");
+    const seo = listingSettings?.seo;
+
+    if (seo) {
+      return generateSeoMetadata({
+        title: seo.title || "Floor Plans",
+        description: seo.description || "Browse our collection of floor plans.",
+        keywords: seo.keywords ? seo.keywords.split(",").map((k) => k.trim()) : [],
+        canonical: seo.canonicalUrl || undefined,
+        noIndex: !seo.index,
+        openGraph: {
+          title: seo.ogTitle || seo.title || undefined,
+          description: seo.ogDescription || seo.description || undefined,
+          image: seo.ogImage || undefined,
+        },
+        twitter: {
+          title: seo.twitterTitle || seo.ogTitle || seo.title || undefined,
+          description: seo.twitterDescription || seo.ogDescription || seo.description || undefined,
+          image: seo.twitterImage || seo.ogImage || undefined,
+        },
+      });
+    }
+  } catch {
+    // Fall back to default metadata
+  }
+
+  return generateSeoMetadata({
+    title: "Floor Plans",
+    description:
+      "Browse our collection of floor plans. Find the perfect layout for your new home with Ridgeline Homes.",
+    keywords: ["floor plans", "home designs", "new home layouts", "home builder"],
+  });
+}
 
 async function getInitialData() {
-  const [floorplansRes, communitiesRes] = await Promise.all([
+  const [floorplansRes, communitiesRes, listingSettingsRes] = await Promise.all([
     fetchFloorplans().catch(() => ({ data: [] })),
     fetchCommunities({ status: "ACTIVE" }).catch(() => ({ data: [] })),
+    fetchListingSettings("floorplans").catch(() => ({ data: null })),
   ]);
 
   return {
     floorplans: Array.isArray(floorplansRes.data) ? floorplansRes.data : [],
     communities: Array.isArray(communitiesRes.data) ? communitiesRes.data : [],
+    listingSettings: listingSettingsRes.data || null,
   };
 }
 
 export default async function PlansPage() {
-  const { floorplans, communities } = await getInitialData();
+  const { floorplans, communities, listingSettings } = await getInitialData();
 
   return (
     <Suspense fallback={<PlansPageSkeleton />}>
       <PlansPageClient
         initialFloorplans={floorplans}
         communities={communities}
+        listingSettings={listingSettings}
       />
     </Suspense>
   );

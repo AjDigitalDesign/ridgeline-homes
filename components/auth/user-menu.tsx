@@ -72,9 +72,9 @@ export function UserMenu() {
             <div className="flex items-center justify-center size-9 rounded-full bg-main-secondary text-main-primary font-semibold text-sm">
               {initials}
             </div>
-            <span className="text-sm font-medium max-w-[100px] truncate">
+            {/* <span className="text-sm font-medium max-w-[100px] truncate">
               {user.name || user.email}
-            </span>
+            </span> */}
             <ChevronDown className="size-4" />
           </button>
         </PopoverTrigger>
