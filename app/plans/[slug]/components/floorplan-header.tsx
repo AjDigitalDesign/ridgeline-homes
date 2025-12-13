@@ -8,16 +8,24 @@ import {
   Calendar,
   ArrowRight,
   Calculator,
+  FileText,
+  Download,
+  ChevronDown,
   MapPin,
-  CalendarDays,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { MortgageCalculator } from "@/components/mortgage-calculator";
-import type { Home } from "@/lib/api";
+import type { Floorplan } from "@/lib/api";
 import { getStateSlug, getCitySlug } from "@/lib/url";
 
-interface HomeHeaderProps {
-  home: Home;
+interface FloorplanHeaderProps {
+  floorplan: Floorplan;
   onScheduleTour: () => void;
   onRequestInfo: () => void;
 }
@@ -46,110 +54,69 @@ function calculateMonthlyPayment(price: number) {
   }).format(monthlyPayment);
 }
 
-function formatStatus(status: string): string {
-  const statusMap: Record<string, string> = {
-    FOR_SALE: "For Sale",
-    AVAILABLE: "Available",
-    SOLD: "Sold",
-    PENDING: "Pending",
-    UNDER_CONTRACT: "Under Contract",
-    UNDER_CONSTRUCTION: "Under Construction",
-    MOVE_IN_READY: "Move-In Ready",
-    COMING_SOON: "Coming Soon",
-  };
-  return (
-    statusMap[status] ||
-    status
-      .split("_")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(" ")
-  );
-}
-
-function formatOpenHouseDate(dateString: string | null): string | null {
-  if (!dateString) return null;
-  const date = new Date(dateString);
-  return date.toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
-export default function HomeHeader({
-  home,
+export default function FloorplanHeader({
+  floorplan,
   onScheduleTour,
   onRequestInfo,
-}: HomeHeaderProps) {
+}: FloorplanHeaderProps) {
   const [calculatorOpen, setCalculatorOpen] = useState(false);
 
-  const address = home.address || home.street || home.name;
-  const location = [home.city, home.state, home.zipCode]
-    .filter(Boolean)
-    .join(", ");
-
-  // Get primary sales team member from home
+  // Get primary sales team member
   const primaryAgent =
-    home.salesTeams?.find((m) => m.isPrimary)?.salesTeam ||
-    home.salesTeams?.[0]?.salesTeam;
+    floorplan.salesTeams?.find((m) => m.isPrimary)?.salesTeam ||
+    floorplan.salesTeams?.[0]?.salesTeam;
 
-  // Community address info
-  const communityAddress = home.community?.address || "";
-  const communityLocation = [
-    home.community?.city,
-    home.community?.state,
-    home.community?.zipCode,
-  ]
-    .filter(Boolean)
-    .join(", ");
-
-  // Build community URL
-  const communityUrl = home.community
-    ? `/communities/${getStateSlug(home.community.state)}/${getCitySlug(
-        home.community.city
-      )}/${home.community.slug}`
-    : null;
-
-  // Open house date
-  const openHouseFormatted = formatOpenHouseDate(home.openHouseDate);
+  // Get first available community for contact info
+  const firstCommunity = floorplan.communityFloorplans?.[0]?.community;
 
   return (
     <div className="bg-white border-b border-gray-200">
       <div className="container mx-auto px-4 lg:px-10 xl:px-20 2xl:px-24 py-6 lg:py-8">
         <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
-          {/* Left Side - Home Info */}
+          {/* Left Side - Floorplan Info */}
           <div className="flex-1">
-            {/* Top Row: Address + Price */}
+            {/* Top Row: Name + Price */}
             <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-6">
-              {/* Address */}
+              {/* Name */}
               <div>
                 <h1 className="text-3xl lg:text-4xl font-bold text-main-primary mb-1">
-                  {address}
+                  {floorplan.name}
                 </h1>
-                {location && (
-                  <p className="text-base text-main-primary flex items-center gap-1">
-                    <MapPin className="size-4 text-main-secondary" />
-                    {location}
+                {floorplan.modelNumber && (
+                  <p className="text-base text-gray-500">
+                    Model: {floorplan.modelNumber}
                   </p>
+                )}
+                {(floorplan.planTypes?.length ?? 0) > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {floorplan.planTypes.map((type, idx) => (
+                      <span
+                        key={idx}
+                        className="inline-block px-3 py-1 text-xs font-medium rounded-full bg-main-secondary text-main-primary"
+                      >
+                        {type}
+                      </span>
+                    ))}
+                  </div>
                 )}
               </div>
 
               {/* Price Section */}
               <div className="lg:text-right">
+                <p className="text-sm text-gray-500 mb-1">Starting From</p>
                 <p className="text-3xl lg:text-4xl font-bold text-main-primary">
-                  {formatPrice(home.price) || "Contact Us"}
+                  {formatPrice(floorplan.basePrice) || "Contact Us"}
                 </p>
-                {home.price && (
+                {floorplan.basePrice && (
                   <button
                     onClick={() => setCalculatorOpen(true)}
                     className="flex items-center gap-2 lg:justify-end mt-1 hover:opacity-80 transition-opacity"
                   >
                     <span className="text-sm text-gray-500">Est. Payment</span>
                     <span className="text-sm font-semibold text-main-primary">
-                      {calculateMonthlyPayment(home.price)} / MO
+                      {calculateMonthlyPayment(floorplan.basePrice)} / MO
                     </span>
-                    <span className="p-1  rounded">
+                    <span className="p-1 rounded">
                       <Calculator className="size-5 lg:size-6 text-tertiary" />
                     </span>
                   </button>
@@ -160,50 +127,50 @@ export default function HomeHeader({
             {/* Stats Section - Gray background box */}
             <div className="bg-gray-100 rounded-lg px-6 py-4 mb-6">
               <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
-                {home.bedrooms && (
+                {floorplan.baseBedrooms && (
                   <div>
                     <p className="text-2xl lg:text-3xl font-bold text-main-primary">
-                      {home.bedrooms}
+                      {floorplan.baseBedrooms}
                     </p>
                     <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
                       Beds
                     </p>
                   </div>
                 )}
-                {home.bathrooms && (
+                {floorplan.baseBathrooms && (
                   <div>
                     <p className="text-2xl lg:text-3xl font-bold text-main-primary">
-                      {home.bathrooms}
+                      {floorplan.baseBathrooms}
                     </p>
                     <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
                       Baths
                     </p>
                   </div>
                 )}
-                {home.squareFeet && (
+                {floorplan.baseSquareFeet && (
                   <div>
                     <p className="text-2xl lg:text-3xl font-bold text-main-primary">
-                      {home.squareFeet.toLocaleString()}
+                      {floorplan.baseSquareFeet.toLocaleString()}
                     </p>
                     <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
                       Sq Ft
                     </p>
                   </div>
                 )}
-                {home.stories && (
+                {floorplan.baseStories && (
                   <div>
                     <p className="text-2xl lg:text-3xl font-bold text-main-primary">
-                      {home.stories}
+                      {floorplan.baseStories}
                     </p>
                     <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
                       Stories
                     </p>
                   </div>
                 )}
-                {home.garages && (
+                {floorplan.baseGarages && (
                   <div>
                     <p className="text-2xl lg:text-3xl font-bold text-main-primary">
-                      {home.garages}
+                      {floorplan.baseGarages}
                     </p>
                     <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
                       Car Garage
@@ -213,74 +180,79 @@ export default function HomeHeader({
               </div>
             </div>
 
-            {/* Community, Plan, Lot Row + Status Badge */}
+            {/* Communities Dropdown + Homes Count + Brochure */}
             <div className="flex flex-wrap items-center gap-x-6 gap-y-3 text-sm">
-              {home.community && communityUrl && (
-                <div>
-                  <span className="text-gray-500">Community</span>
-                  <br />
-                  <Link
-                    href={communityUrl}
-                    className="text-main-secondary font-semibold hover:underline"
-                  >
-                    {home.community.name}
-                  </Link>
-                </div>
+              {floorplan.communityFloorplans.length > 0 && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="flex flex-col items-start text-left hover:opacity-80 transition-opacity">
+                      <span className="text-gray-500">Available In</span>
+                      <span className="font-semibold text-main-primary flex items-center gap-1">
+                        {floorplan.communityFloorplans.length} {floorplan.communityFloorplans.length === 1 ? "Community" : "Communities"}
+                        <ChevronDown className="size-4" />
+                      </span>
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-72">
+                    {floorplan.communityFloorplans.map((cf, index) => {
+                      const communityUrl = `/communities/${getStateSlug(cf.community.state)}/${getCitySlug(cf.community.city)}/${cf.community.slug}`;
+                      return (
+                        <DropdownMenuItem key={index} asChild>
+                          <Link href={communityUrl} className="flex flex-col items-start gap-1 cursor-pointer">
+                            <span className="font-semibold text-main-primary">
+                              {cf.community.name}
+                            </span>
+                            <span className="text-xs text-gray-500 flex items-center gap-1">
+                              <MapPin className="size-3" />
+                              {[cf.community.city, cf.community.state].filter(Boolean).join(", ")}
+                              {cf.price && (
+                                <span className="ml-2">
+                                  From {formatPrice(cf.price)}
+                                </span>
+                              )}
+                            </span>
+                          </Link>
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
-              {home.floorplan && (
+              {(floorplan._count?.homes ?? 0) > 0 && (
                 <div className="pl-6 border-l border-gray-300">
-                  <span className="text-gray-500">Plan</span>
-                  <br />
-                  <Link
-                    href={`/plans/${home.floorplan.slug}`}
-                    className="font-semibold text-main-primary hover:underline"
-                  >
-                    {home.floorplan.name}
-                  </Link>
-                </div>
-              )}
-              {home.lotNumber && (
-                <div className="pl-6 border-l border-gray-300">
-                  <span className="text-gray-500">Lot</span>
+                  <span className="text-gray-500">Available Homes</span>
                   <br />
                   <span className="font-semibold text-main-primary">
-                    {home.lotNumber}
+                    {floorplan._count?.homes} {floorplan._count?.homes === 1 ? "Home" : "Homes"}
                   </span>
                 </div>
               )}
-
-              {/* Status Badge */}
-              <div className="lg:ml-auto">
-                <span className="inline-block px-5 py-2.5 text-xs  rounded-lg bg-main-secondary text-main-primary">
-                  {formatStatus(home.status)}
-                </span>
-              </div>
+              {floorplan.brochureUrl && (
+                <a
+                  href={floorplan.brochureUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ml-auto inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-main-primary bg-main-primary/5 rounded-lg hover:bg-main-primary/10 transition-colors"
+                >
+                  <FileText className="size-4" />
+                  <span>Download Brochure</span>
+                  <Download className="size-4" />
+                </a>
+              )}
             </div>
-
-            {/* Open House Row */}
-            {openHouseFormatted && (
-              <div className="flex items-center gap-2 mt-4 text-sm">
-                <CalendarDays className="size-4 text-main-secondary" />
-                <span className="text-gray-500">Open House:</span>
-                <span className="font-semibold text-main-primary">
-                  {openHouseFormatted}
-                </span>
-              </div>
-            )}
           </div>
 
           {/* Right Side - Contact Card */}
           <div className="lg:w-[400px] xl:w-[440px] shrink-0">
             <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
               <h2 className="text-xl lg:text-2xl font-bold text-main-primary mb-1">
-                Interested in this Home?
+                Interested in the {floorplan.name}?
               </h2>
               <p className="text-sm text-gray-600 mb-5">
-                The Ridgeline Homes Sales Team Is Here To Help You Through the
-                Homebuying Process
+                Our Sales Team Is Here To Help You Find Your Perfect Home
               </p>
 
-              {/* Agent + Community Info + Buttons Row */}
+              {/* Agent + Info + Buttons Row */}
               <div className="flex items-start gap-4">
                 {/* Agent Photo + Name */}
                 <div className="flex flex-col items-center shrink-0">
@@ -311,21 +283,14 @@ export default function HomeHeader({
 
                 {/* Community Info */}
                 <div className="flex-1 min-w-0">
-                  {home.community && (
+                  {firstCommunity && (
                     <>
                       <p className="font-semibold text-main-primary">
-                        {home.community.name}
+                        {firstCommunity.name}
                       </p>
-                      {communityAddress && (
-                        <p className="text-sm text-gray-600">
-                          {communityAddress}
-                        </p>
-                      )}
-                      {communityLocation && (
-                        <p className="text-sm text-gray-600">
-                          {communityLocation}
-                        </p>
-                      )}
+                      <p className="text-sm text-gray-600">
+                        {[firstCommunity.city, firstCommunity.state].filter(Boolean).join(", ")}
+                      </p>
                     </>
                   )}
                 </div>
@@ -338,7 +303,7 @@ export default function HomeHeader({
                     className="bg-main-primary text-white hover:bg-main-primary/90 px-4"
                   >
                     <Calendar className="size-4 mr-2" />
-                    Schedule Showing
+                    Schedule Tour
                   </Button>
                   <Button
                     onClick={onRequestInfo}
@@ -352,15 +317,13 @@ export default function HomeHeader({
               </div>
 
               {/* Phone */}
-              {(primaryAgent?.phone || home.community?.phoneNumber) && (
+              {primaryAgent?.phone && (
                 <a
-                  href={`tel:${
-                    primaryAgent?.phone || home.community?.phoneNumber
-                  }`}
+                  href={`tel:${primaryAgent.phone}`}
                   className="inline-flex items-center gap-2 text-main-secondary font-semibold hover:underline mt-4"
                 >
                   <Phone className="size-4" />
-                  PH {primaryAgent?.phone || home.community?.phoneNumber}
+                  PH {primaryAgent.phone}
                 </a>
               )}
             </div>
@@ -372,8 +335,8 @@ export default function HomeHeader({
       <MortgageCalculator
         open={calculatorOpen}
         onOpenChange={setCalculatorOpen}
-        initialPrice={home.price || 400000}
-        propertyName={address}
+        initialPrice={floorplan.basePrice || 400000}
+        propertyName={floorplan.name}
       />
     </div>
   );

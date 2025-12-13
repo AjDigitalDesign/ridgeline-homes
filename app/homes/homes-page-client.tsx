@@ -364,25 +364,27 @@ function MobileQuickLinks() {
           <SheetHeader>
             <SheetTitle>Find Your Home</SheetTitle>
           </SheetHeader>
-          <div className="flex flex-col gap-2 py-4">
-            <Link
-              href="/communities"
-              className="px-4 py-3 border border-gray-200 rounded-lg font-medium text-main-primary"
-            >
-              Communities
-            </Link>
-            <Link
-              href="/homes"
-              className="px-4 py-3 bg-main-primary text-white rounded-lg font-medium"
-            >
-              Quick Move-In Homes
-            </Link>
-            <Link
-              href="/plans"
-              className="px-4 py-3 border border-gray-200 rounded-lg font-medium text-main-primary"
-            >
-              Floor Plans
-            </Link>
+          <div className="container mx-auto px-4">
+            <div className="flex flex-col gap-2 py-4">
+              <Link
+                href="/communities"
+                className="px-4 py-3 border border-gray-200 rounded-lg font-medium text-main-primary"
+              >
+                Communities
+              </Link>
+              <Link
+                href="/homes"
+                className="px-4 py-3 bg-main-primary text-white rounded-lg font-medium"
+              >
+                Quick Move-In Homes
+              </Link>
+              <Link
+                href="/plans"
+                className="px-4 py-3 border border-gray-200 rounded-lg font-medium text-main-primary"
+              >
+                Floor Plans
+              </Link>
+            </div>
           </div>
         </SheetContent>
       </Sheet>
@@ -576,6 +578,17 @@ function MobileFilters({
   cities: string[];
   activeFiltersCount: number;
 }) {
+  const bedroomOptions = ["any", "2", "3", "4", "5"];
+  const bathroomOptions = ["any", "2", "3", "4"];
+  const sqftOptions = [
+    { value: "any", label: "Any" },
+    { value: "1500", label: "1,500+" },
+    { value: "2000", label: "2,000+" },
+    { value: "2500", label: "2,500+" },
+    { value: "3000", label: "3,000+" },
+    { value: "3500", label: "3,500+" },
+  ];
+
   return (
     <div className="lg:hidden flex items-center gap-2 px-4 py-3 bg-white/95 backdrop-blur-sm border-b overflow-x-auto sticky top-20 z-30">
       <Sheet>
@@ -591,159 +604,162 @@ function MobileFilters({
             <ChevronDown className="size-4" />
           </button>
         </SheetTrigger>
-        <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl">
-          <SheetHeader>
+        <SheetContent side="bottom" className="h-[85vh] flex flex-col">
+          <SheetHeader className="px-4">
             <SheetTitle>Filters</SheetTitle>
           </SheetHeader>
-          <div className="flex flex-col gap-6 py-6 overflow-y-auto">
-            {/* City */}
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">
-                City
-              </label>
-              <Select
-                value={filters.city}
-                onValueChange={(value) =>
-                  onFiltersChange({ ...filters, city: value })
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="All Cities" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Cities</SelectItem>
-                  {cities.map((city) => (
-                    <SelectItem key={city} value={city}>
-                      {city}
-                    </SelectItem>
+          <div className="flex-1 overflow-y-auto px-4 pb-4">
+            <div className="flex flex-col gap-6 py-4">
+              {/* City */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  City
+                </label>
+                <Select
+                  value={filters.city}
+                  onValueChange={(value) =>
+                    onFiltersChange({ ...filters, city: value })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="All Cities" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Cities</SelectItem>
+                    {cities.map((city) => (
+                      <SelectItem key={city} value={city}>
+                        {city}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Price Range */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Price Range
+                </label>
+                <Select
+                  value={String(filters.priceRange)}
+                  onValueChange={(value) =>
+                    onFiltersChange({ ...filters, priceRange: Number(value) })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Any Price" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PRICE_RANGES.map((range, index) => (
+                      <SelectItem key={index} value={String(index)}>
+                        {range.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Community */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Community
+                </label>
+                <Select
+                  value={filters.community}
+                  onValueChange={(value) =>
+                    onFiltersChange({ ...filters, community: value })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="All Communities" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Communities</SelectItem>
+                    {communities.map((community) => (
+                      <SelectItem key={community.id} value={community.id}>
+                        {community.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Bedrooms */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-3 block">
+                  Bedrooms
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {bedroomOptions.map((option) => (
+                    <button
+                      key={option}
+                      onClick={() =>
+                        onFiltersChange({ ...filters, bedrooms: option })
+                      }
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                        filters.bedrooms === option
+                          ? "bg-main-primary text-white"
+                          : "bg-gray-100 text-main-primary hover:bg-gray-200"
+                      }`}
+                    >
+                      {option === "any" ? "Any" : `${option}+`}
+                    </button>
                   ))}
-                </SelectContent>
-              </Select>
-            </div>
+                </div>
+              </div>
 
-            {/* Price Range */}
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">
-                Price Range
-              </label>
-              <Select
-                value={String(filters.priceRange)}
-                onValueChange={(value) =>
-                  onFiltersChange({ ...filters, priceRange: Number(value) })
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Any Price" />
-                </SelectTrigger>
-                <SelectContent>
-                  {PRICE_RANGES.map((range, index) => (
-                    <SelectItem key={index} value={String(index)}>
-                      {range.label}
-                    </SelectItem>
+              {/* Bathrooms */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-3 block">
+                  Bathrooms
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {bathroomOptions.map((option) => (
+                    <button
+                      key={option}
+                      onClick={() =>
+                        onFiltersChange({ ...filters, bathrooms: option })
+                      }
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                        filters.bathrooms === option
+                          ? "bg-main-primary text-white"
+                          : "bg-gray-100 text-main-primary hover:bg-gray-200"
+                      }`}
+                    >
+                      {option === "any" ? "Any" : `${option}+`}
+                    </button>
                   ))}
-                </SelectContent>
-              </Select>
-            </div>
+                </div>
+              </div>
 
-            {/* Community */}
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">
-                Community
-              </label>
-              <Select
-                value={filters.community}
-                onValueChange={(value) =>
-                  onFiltersChange({ ...filters, community: value })
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="All Communities" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Communities</SelectItem>
-                  {communities.map((community) => (
-                    <SelectItem key={community.id} value={community.id}>
-                      {community.name}
-                    </SelectItem>
+              {/* Square Feet */}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-3 block">
+                  Square Feet
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {sqftOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() =>
+                        onFiltersChange({ ...filters, sqft: option.value })
+                      }
+                      className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                        filters.sqft === option.value
+                          ? "bg-main-primary text-white"
+                          : "bg-gray-100 text-main-primary hover:bg-gray-200"
+                      }`}
+                    >
+                      {option.label}
+                    </button>
                   ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Bedrooms */}
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">
-                Bedrooms
-              </label>
-              <Select
-                value={filters.bedrooms}
-                onValueChange={(value) =>
-                  onFiltersChange({ ...filters, bedrooms: value })
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Any" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="any">Any</SelectItem>
-                  <SelectItem value="2">2+</SelectItem>
-                  <SelectItem value="3">3+</SelectItem>
-                  <SelectItem value="4">4+</SelectItem>
-                  <SelectItem value="5">5+</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Bathrooms */}
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">
-                Bathrooms
-              </label>
-              <Select
-                value={filters.bathrooms}
-                onValueChange={(value) =>
-                  onFiltersChange({ ...filters, bathrooms: value })
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Any" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="any">Any</SelectItem>
-                  <SelectItem value="2">2+</SelectItem>
-                  <SelectItem value="3">3+</SelectItem>
-                  <SelectItem value="4">4+</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Square Feet */}
-            <div>
-              <label className="text-sm font-medium text-gray-700 mb-2 block">
-                Square Feet
-              </label>
-              <Select
-                value={filters.sqft}
-                onValueChange={(value) =>
-                  onFiltersChange({ ...filters, sqft: value })
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Any" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="any">Any</SelectItem>
-                  <SelectItem value="1500">1,500+ SF</SelectItem>
-                  <SelectItem value="2000">2,000+ SF</SelectItem>
-                  <SelectItem value="2500">2,500+ SF</SelectItem>
-                  <SelectItem value="3000">3,000+ SF</SelectItem>
-                  <SelectItem value="3500">3,500+ SF</SelectItem>
-                </SelectContent>
-              </Select>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="flex gap-3 mt-auto pt-4 border-t">
+          {/* Fixed bottom buttons */}
+          <div className="flex gap-3 p-4 border-t bg-white">
             <Button
               variant="outline"
               className="flex-1"
@@ -917,7 +933,9 @@ function ListingSettingsFooter({
             {listingSettings.footerContent && (
               <div
                 className="mt-6 text-gray-600 leading-relaxed prose prose-sm max-w-none"
-                dangerouslySetInnerHTML={{ __html: listingSettings.footerContent }}
+                dangerouslySetInnerHTML={{
+                  __html: listingSettings.footerContent,
+                }}
               />
             )}
           </div>
@@ -1141,9 +1159,7 @@ export default function HomesPageClient({
 
   // Hero background image - use listing settings banner, then first home
   const heroImage =
-    listingSettings?.bannerImage ||
-    initialHomes[0]?.gallery?.[0] ||
-    "";
+    listingSettings?.bannerImage || initialHomes[0]?.gallery?.[0] || "";
 
   // Hero title - use listing settings banner title
   const heroTitle = listingSettings?.bannerTitle || "Quick Move-In Homes";
