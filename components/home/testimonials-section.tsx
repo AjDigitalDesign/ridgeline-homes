@@ -78,10 +78,10 @@ export default function TestimonialsSection() {
   };
 
   return (
-    <section className="bg-[#C0CDD1] py-16 lg:py-24 overflow-hidden">
+    <section className="bg-[#C0CDD1] py-16 lg:py-24 overflow-hidden relative">
       {/* Background Text */}
-      <div className="absolute inset-x-0 flex items-center justify-center pointer-events-none">
-        <span className="text-[4rem] lg:text-[8rem] xl:text-[10rem] font-bold text-main-primary/5 select-none uppercase tracking-wider">
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
+        <span className="text-[4rem] lg:text-[8rem] xl:text-[10rem] font-bold text-main-primary/5 select-none uppercase tracking-wider whitespace-nowrap">
           Testimonials
         </span>
       </div>

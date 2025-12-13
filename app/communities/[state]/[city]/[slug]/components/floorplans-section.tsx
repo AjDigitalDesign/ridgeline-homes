@@ -1,14 +1,18 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Camera, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Lightbox } from "@/components/ui/lightbox";
+import { FavoriteButton } from "@/components/ui/favorite-button";
 import type { Floorplan } from "@/lib/api";
 
 interface FloorplansSectionProps {
   floorplans: Floorplan[];
   communitySlug: string;
+  onScheduleTour?: (floorplanId: string, floorplanName: string) => void;
 }
 
 function formatPrice(price: number | null) {
@@ -20,10 +24,27 @@ function formatPrice(price: number | null) {
   }).format(price);
 }
 
-function FloorplanCard({ floorplan }: { floorplan: Floorplan }) {
+interface FloorplanCardProps {
+  floorplan: Floorplan;
+  onOpenGallery: (images: string[], title: string) => void;
+  onScheduleTour?: (floorplanId: string, floorplanName: string) => void;
+}
+
+function FloorplanCard({ floorplan, onOpenGallery, onScheduleTour }: FloorplanCardProps) {
   const image = floorplan.elevationGallery?.[0] || floorplan.gallery?.[0] || "";
-  const photoCount =
-    (floorplan.elevationGallery?.length || 0) + (floorplan.gallery?.length || 0);
+  const allImages = [
+    ...(floorplan.elevationGallery || []),
+    ...(floorplan.gallery || []),
+  ];
+  const photoCount = allImages.length;
+
+  const handlePhotosClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (allImages.length > 0) {
+      onOpenGallery(allImages, `${floorplan.name} Gallery`);
+    }
+  };
 
   return (
     <div className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all">
@@ -44,17 +65,27 @@ function FloorplanCard({ floorplan }: { floorplan: Floorplan }) {
 
         {/* Marketing Headline Badge */}
         {floorplan.marketingHeadline && floorplan.showMarketingHeadline && (
-          <div className="absolute top-4 left-0 right-0 flex justify-center">
+          <div className="absolute top-4 left-4">
             <span className="px-4 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-full bg-main-secondary text-main-primary">
               {floorplan.marketingHeadline}
             </span>
           </div>
         )}
 
+        {/* Favorite Button */}
+        <FavoriteButton
+          type="floorplan"
+          itemId={floorplan.id}
+          className="absolute top-4 right-4"
+        />
+
         {/* Bottom overlay with photos button */}
         <div className="absolute bottom-4 left-4 right-4 flex items-center">
           {photoCount > 0 && (
-            <button className="flex items-center gap-2 px-3 py-2 bg-white/95 hover:bg-white rounded-full text-xs font-semibold text-main-primary transition-colors">
+            <button
+              onClick={handlePhotosClick}
+              className="flex items-center gap-2 px-3 py-2 bg-white/95 hover:bg-white rounded-full text-xs font-semibold text-main-primary transition-colors"
+            >
               {photoCount} Photos
               <Camera className="size-4" />
             </button>
@@ -67,7 +98,6 @@ function FloorplanCard({ floorplan }: { floorplan: Floorplan }) {
         {/* Name & Price Row */}
         <div className="flex items-start justify-between gap-4 mb-4">
           <div className="min-w-0">
-            <p className="text-sm text-gray-500">The</p>
             <h3 className="text-xl font-bold text-main-primary group-hover:text-main-primary/80 transition-colors">
               {floorplan.name}
             </h3>
@@ -129,13 +159,13 @@ function FloorplanCard({ floorplan }: { floorplan: Floorplan }) {
               <Calendar className="size-4" />
             </Link>
           ) : (
-            <Link
-              href={`/plans/${floorplan.slug}?schedule=true`}
+            <button
+              onClick={() => onScheduleTour?.(floorplan.id, floorplan.name)}
               className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-main-secondary text-main-primary text-sm font-semibold rounded-full hover:bg-main-secondary/90 transition-colors"
             >
-              Virtual Tour
+              Schedule Tour
               <Calendar className="size-4" />
-            </Link>
+            </button>
           )}
           <Link
             href={`/plans/${floorplan.slug}`}
@@ -153,9 +183,20 @@ function FloorplanCard({ floorplan }: { floorplan: Floorplan }) {
 export default function FloorplansSection({
   floorplans,
   communitySlug,
+  onScheduleTour,
 }: FloorplansSectionProps) {
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxImages, setLightboxImages] = useState<string[]>([]);
+  const [lightboxTitle, setLightboxTitle] = useState("");
+
   const displayedFloorplans = floorplans.slice(0, 6);
   const hasMore = floorplans.length > 6;
+
+  const handleOpenGallery = (images: string[], title: string) => {
+    setLightboxImages(images);
+    setLightboxTitle(title);
+    setLightboxOpen(true);
+  };
 
   return (
     <div>
@@ -168,9 +209,22 @@ export default function FloorplansSection({
       </div>
 
       {/* Floorplans Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div
+        className={`grid gap-6 ${
+          displayedFloorplans.length === 1
+            ? "grid-cols-1 max-w-md mx-auto"
+            : displayedFloorplans.length === 2
+              ? "grid-cols-1 md:grid-cols-2 max-w-3xl mx-auto"
+              : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+        }`}
+      >
         {displayedFloorplans.map((floorplan) => (
-          <FloorplanCard key={floorplan.id} floorplan={floorplan} />
+          <FloorplanCard
+            key={floorplan.id}
+            floorplan={floorplan}
+            onOpenGallery={handleOpenGallery}
+            onScheduleTour={onScheduleTour}
+          />
         ))}
       </div>
 
@@ -185,6 +239,15 @@ export default function FloorplansSection({
           </Button>
         </div>
       )}
+
+      {/* Lightbox */}
+      <Lightbox
+        images={lightboxImages}
+        initialIndex={0}
+        open={lightboxOpen}
+        onOpenChange={setLightboxOpen}
+        title={lightboxTitle}
+      />
     </div>
   );
 }
