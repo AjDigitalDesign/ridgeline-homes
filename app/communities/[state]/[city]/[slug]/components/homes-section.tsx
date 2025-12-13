@@ -1,15 +1,53 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Camera, MapPin, Calendar, Calculator } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { Home } from "@/lib/api";
-import { getHomeUrl } from "@/lib/url";
+import { Lightbox } from "@/components/ui/lightbox";
+import { FavoriteButton } from "@/components/ui/favorite-button";
+
+// Simplified home type that works with embedded community homes
+export interface CommunityHome {
+  id: string;
+  name: string;
+  slug: string;
+  lotNumber?: string | null;
+  price: number | null;
+  bedrooms: number | null;
+  bathrooms: number | null;
+  squareFeet: number | null;
+  garages?: number | null;
+  stories?: number | null;
+  status: string;
+  gallery: string[];
+  openHouseDate?: string | null;
+  city?: string | null;
+  state?: string | null;
+  street?: string | null;
+  address?: string | null;
+  zipCode?: string | null;
+  marketingHeadline?: string | null;
+  showMarketingHeadline?: boolean;
+  community?: {
+    id: string;
+    name: string;
+    slug: string;
+    city: string | null;
+    state: string | null;
+  } | null;
+  floorplan?: {
+    id: string;
+    name: string;
+    slug: string;
+  } | null;
+}
 
 interface HomesSectionProps {
-  homes: Home[];
+  homes: CommunityHome[];
   communitySlug: string;
+  onScheduleTour?: (homeId: string, homeName: string) => void;
 }
 
 function formatPrice(price: number | null) {
@@ -41,28 +79,72 @@ function getStatusBadge(status: string) {
   switch (status) {
     case "AVAILABLE":
       return {
-        label: "Active",
-        className: "bg-main-secondary text-main-primary",
+        label: "Available Now",
+        className: "bg-green-500 text-white shadow-lg shadow-green-500/30 animate-pulse",
       };
     case "UNDER_CONSTRUCTION":
       return {
         label: "Under Construction",
-        className: "bg-gray-600 text-white",
+        className: "bg-amber-500 text-white shadow-lg shadow-amber-500/30",
       };
     case "SOLD":
-      return { label: "Sold", className: "bg-gray-400 text-white" };
+      return {
+        label: "Sold",
+        className: "bg-red-500 text-white shadow-lg shadow-red-500/30",
+      };
+    case "PENDING":
+      return {
+        label: "Pending",
+        className: "bg-orange-500 text-white shadow-lg shadow-orange-500/30",
+      };
+    case "RESERVED":
+      return {
+        label: "Reserved",
+        className: "bg-purple-500 text-white shadow-lg shadow-purple-500/30",
+      };
     default:
-      return { label: status, className: "bg-gray-100 text-gray-800" };
+      return {
+        label: status.replace(/_/g, " "),
+        className: "bg-gray-500 text-white shadow-lg shadow-gray-500/30",
+      };
   }
 }
 
-function HomeCard({ home }: { home: Home }) {
+function getHomeUrl(home: CommunityHome): string {
+  // Build URL based on community context
+  if (home.community) {
+    const state =
+      home.community.state?.toLowerCase().replace(/\s+/g, "-") || "md";
+    const city =
+      home.community.city?.toLowerCase().replace(/\s+/g, "-") || "unknown";
+    return `/homes/${state}/${city}/${home.community.slug}/${home.slug}`;
+  }
+  // Fallback to simple slug-based URL
+  return `/homes/${home.slug}`;
+}
+
+interface HomeCardProps {
+  home: CommunityHome;
+  onOpenGallery: (images: string[], title: string) => void;
+  onScheduleTour?: (homeId: string, homeName: string) => void;
+}
+
+function HomeCard({ home, onOpenGallery, onScheduleTour }: HomeCardProps) {
   const image = home.gallery?.[0] || "";
   const photoCount = home.gallery?.length || 0;
   const location = [home.city, `${home.state} ${home.zipCode || ""}`]
     .filter(Boolean)
     .join(", ");
   const status = getStatusBadge(home.status);
+  const homeUrl = getHomeUrl(home);
+
+  const handlePhotosClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (home.gallery && home.gallery.length > 0) {
+      onOpenGallery(home.gallery, `${home.street || home.name} Gallery`);
+    }
+  };
 
   return (
     <div className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all">
@@ -82,18 +164,30 @@ function HomeCard({ home }: { home: Home }) {
         )}
 
         {/* Status Badge */}
-        <div className="absolute top-4 left-0 right-0 flex justify-center">
+        <div className="absolute top-4 left-4">
           <span
-            className={`px-4 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-full ${status.className}`}
+            className={`px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-full ${status.className}`}
           >
             {status.label}
           </span>
         </div>
 
+        {/* Favorite Button */}
+        <FavoriteButton
+          type="home"
+          itemId={home.id}
+          className="absolute top-4 right-4"
+        />
+
         {/* Bottom overlay with photos and map buttons */}
-        <div className="absolute bottom-4 left-4 right-4 flex items-center gap-2">
+        <div className={`absolute left-4 right-4 flex items-center gap-2 ${
+          home.marketingHeadline && home.showMarketingHeadline ? "bottom-12" : "bottom-4"
+        }`}>
           {photoCount > 0 && (
-            <button className="flex items-center gap-2 px-3 py-2 bg-white/95 hover:bg-white rounded-full text-xs font-semibold text-main-primary transition-colors">
+            <button
+              onClick={handlePhotosClick}
+              className="flex items-center gap-2 px-3 py-2 bg-white/95 hover:bg-white rounded-full text-xs font-semibold text-main-primary transition-colors"
+            >
               {photoCount} Photos
               <Camera className="size-4" />
             </button>
@@ -102,6 +196,15 @@ function HomeCard({ home }: { home: Home }) {
             <MapPin className="size-4 text-main-primary" />
           </button>
         </div>
+
+        {/* Marketing Headline Banner */}
+        {home.marketingHeadline && home.showMarketingHeadline && (
+          <div className="absolute bottom-0 left-0 right-0 bg-main-secondary px-4 py-2">
+            <p className="text-sm font-medium text-main-primary truncate">
+              {home.marketingHeadline}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Content */}
@@ -173,35 +276,30 @@ function HomeCard({ home }: { home: Home }) {
           )}
         </div>
 
-        {/* Community & Floor Plan */}
-        <div className="flex items-start justify-between gap-4 py-4 text-sm">
-          <div>
-            <p className="text-gray-500">Community</p>
-            <p className="font-semibold text-main-secondary">
-              {home.community?.name || "—"}
-            </p>
+        {/* Floor Plan */}
+        {home.floorplan && (
+          <div className="py-4 text-sm">
+            <p className="text-gray-500">Floor Plan</p>
+            <Link
+              href={`/plans/${home.floorplan.slug}`}
+              className="font-semibold text-main-secondary hover:underline"
+            >
+              {home.floorplan.name}
+            </Link>
           </div>
-          {home.floorplan && (
-            <div className="text-right">
-              <p className="text-gray-500">Floor Plan</p>
-              <p className="font-semibold text-main-secondary">
-                {home.floorplan.name}
-              </p>
-            </div>
-          )}
-        </div>
+        )}
 
         {/* CTAs */}
         <div className="flex items-center gap-3">
-          <Link
-            href={`${getHomeUrl(home)}?schedule=true`}
+          <button
+            onClick={() => onScheduleTour?.(home.id, home.street || home.name)}
             className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-main-secondary text-main-primary text-sm font-semibold rounded-full hover:bg-main-secondary/90 transition-colors"
           >
             Schedule Tour
             <Calendar className="size-4" />
-          </Link>
+          </button>
           <Link
-            href={getHomeUrl(home)}
+            href={homeUrl}
             className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-main-primary text-white text-sm font-semibold rounded-full hover:bg-main-primary/90 transition-colors"
           >
             Detail
@@ -216,9 +314,20 @@ function HomeCard({ home }: { home: Home }) {
 export default function HomesSection({
   homes,
   communitySlug,
+  onScheduleTour,
 }: HomesSectionProps) {
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxImages, setLightboxImages] = useState<string[]>([]);
+  const [lightboxTitle, setLightboxTitle] = useState("");
+
   const displayedHomes = homes.slice(0, 6);
   const hasMore = homes.length > 6;
+
+  const handleOpenGallery = (images: string[], title: string) => {
+    setLightboxImages(images);
+    setLightboxTitle(title);
+    setLightboxOpen(true);
+  };
 
   return (
     <div>
@@ -231,9 +340,22 @@ export default function HomesSection({
       </div>
 
       {/* Homes Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div
+        className={`grid gap-6 ${
+          displayedHomes.length === 1
+            ? "grid-cols-1 max-w-md mx-auto"
+            : displayedHomes.length === 2
+              ? "grid-cols-1 md:grid-cols-2 max-w-3xl mx-auto"
+              : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+        }`}
+      >
         {displayedHomes.map((home) => (
-          <HomeCard key={home.id} home={home} />
+          <HomeCard
+            key={home.id}
+            home={home}
+            onOpenGallery={handleOpenGallery}
+            onScheduleTour={onScheduleTour}
+          />
         ))}
       </div>
 
@@ -248,6 +370,15 @@ export default function HomesSection({
           </Button>
         </div>
       )}
+
+      {/* Lightbox */}
+      <Lightbox
+        images={lightboxImages}
+        initialIndex={0}
+        open={lightboxOpen}
+        onOpenChange={setLightboxOpen}
+        title={lightboxTitle}
+      />
     </div>
   );
 }

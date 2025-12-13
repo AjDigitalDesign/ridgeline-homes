@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
-import { fetchCommunity, fetchHomes, fetchFloorplans } from "@/lib/api";
+import { fetchCommunity, fetchFloorplans } from "@/lib/api";
 import CommunityDetailClient from "./community-detail-client";
 import {
   generateCommunityMetadata,
@@ -32,18 +32,28 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 async function getCommunityData(slug: string) {
   try {
-    const [communityRes, homesRes, floorplansRes] = await Promise.all([
+    const [communityRes, floorplansRes] = await Promise.all([
       fetchCommunity(slug),
-      fetchHomes({ communitySlug: slug, limit: 12 }).catch(() => ({ data: [] })),
       fetchFloorplans({ communitySlug: slug, limit: 20 }).catch(() => ({ data: [] })),
     ]);
 
+    const community = communityRes.data;
+
+    // Use homes from community data (already included in API response)
+    // Filter to only show AVAILABLE homes
+    const allHomes = Array.isArray(community?.homes) ? community.homes : [];
+    const homes = allHomes.filter((home: { status: string }) => home.status === "AVAILABLE");
+
+    // Deep clone homes to ensure proper serialization to client
+    const serializedHomes = JSON.parse(JSON.stringify(homes));
+
     return {
-      community: communityRes.data,
-      homes: Array.isArray(homesRes.data) ? homesRes.data : [],
+      community,
+      homes: serializedHomes,
       floorplans: Array.isArray(floorplansRes.data) ? floorplansRes.data : [],
     };
-  } catch {
+  } catch (err) {
+    console.error("[SERVER getCommunityData] Error:", err);
     return null;
   }
 }

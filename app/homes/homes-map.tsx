@@ -74,11 +74,18 @@ export default function HomesMap({
 
   // Initialize map
   useEffect(() => {
-    if (!mapContainerRef.current || !MAPBOX_TOKEN) return;
+    if (!MAPBOX_TOKEN) return;
 
     let map: any;
+    let isMounted = true;
 
     const initMap = async () => {
+      // Wait for next tick to ensure DOM is ready
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      // Check if container is available and component is still mounted
+      if (!mapContainerRef.current || !isMounted) return;
+
       const mapboxgl = (await import("mapbox-gl")).default;
 
       mapboxgl.accessToken = MAPBOX_TOKEN;
@@ -178,6 +185,7 @@ export default function HomesMap({
     initMap();
 
     return () => {
+      isMounted = false;
       if (map) {
         map.remove();
       }

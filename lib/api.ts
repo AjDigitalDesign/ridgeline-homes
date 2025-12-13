@@ -139,6 +139,40 @@ export interface Community {
       photo: string | null;
     };
   }>;
+  homes?: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    lotNumber: string | null;
+    price: number | null;
+    bedrooms: number | null;
+    bathrooms: number | null;
+    squareFeet: number | null;
+    garages?: number | null;
+    stories?: number | null;
+    status: string;
+    gallery: string[];
+    openHouseDate: string | null;
+    city?: string | null;
+    state?: string | null;
+    street?: string | null;
+    address?: string | null;
+    zipCode?: string | null;
+    marketingHeadline?: string | null;
+    showMarketingHeadline?: boolean;
+    community?: {
+      id: string;
+      name: string;
+      slug: string;
+      city: string | null;
+      state: string | null;
+    } | null;
+    floorplan?: {
+      id: string;
+      name: string;
+      slug: string;
+    } | null;
+  }>;
   _count: {
     homes: number;
   };
@@ -245,9 +279,58 @@ export interface Floorplan {
       id: string;
       name: string;
       slug: string;
+      city: string | null;
+      state: string | null;
     };
   }>;
-  _count: {
+  homes: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    price: number | null;
+    status: string;
+    gallery: string[];
+    city: string | null;
+    state: string | null;
+    bedrooms: number | null;
+    bathrooms: number | null;
+    squareFeet: number | null;
+    garages: number | null;
+    marketingHeadline: string | null;
+    showMarketingHeadline: boolean;
+    community: {
+      id: string;
+      name: string;
+      slug: string;
+      city: string | null;
+      state: string | null;
+    } | null;
+  }>;
+  salesTeams: Array<{
+    id: string;
+    floorplanId: string;
+    salesTeamId: string;
+    isPrimary: boolean;
+    displayOrder: number;
+    salesTeam: {
+      id: string;
+      name: string;
+      title: string | null;
+      email: string | null;
+      phone: string | null;
+      photo: string | null;
+      profile: string | null;
+    };
+  }>;
+  seo: {
+    title: string | null;
+    description: string | null;
+    keywords: string | null;
+    ogTitle: string | null;
+    ogDescription: string | null;
+    ogImage: string | null;
+  } | null;
+  _count?: {
     homes: number;
   };
 }

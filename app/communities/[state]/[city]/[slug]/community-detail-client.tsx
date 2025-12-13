@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import type { Community, Home, Floorplan } from "@/lib/api";
+import type { Community, Floorplan } from "@/lib/api";
+import type { CommunityHome } from "./components/homes-section";
 import { Lightbox } from "@/components/ui/lightbox";
 
 import BackNavigation from "./components/back-navigation";
@@ -16,11 +17,20 @@ import VideoSection from "./components/video-section";
 import LocationSection from "./components/location-section";
 import SalesTeamSection from "./components/sales-team-section";
 import ContactForm from "./components/contact-form";
+import { ContactForm as ReusableContactForm } from "@/components/forms";
 
 interface CommunityDetailClientProps {
   community: Community;
-  homes: Home[];
+  homes: CommunityHome[];
   floorplans: Floorplan[];
+}
+
+interface ScheduleModalState {
+  open: boolean;
+  type: "home" | "floorplan" | "community";
+  homeId?: string;
+  floorplanId?: string;
+  entityName?: string;
 }
 
 export type SectionId =
@@ -45,9 +55,17 @@ export default function CommunityDetailClient({
 }: CommunityDetailClientProps) {
   const [activeSection, setActiveSection] = useState<SectionId>("description");
   const [showContactModal, setShowContactModal] = useState(false);
-  const [contactModalType, setContactModalType] = useState<"tour" | "info">("tour");
+  const [contactModalType, setContactModalType] = useState<"tour" | "info">(
+    "tour"
+  );
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+
+  // Schedule tour modal state for homes/floorplans
+  const [scheduleModal, setScheduleModal] = useState<ScheduleModalState>({
+    open: false,
+    type: "community",
+  });
 
   // Section refs for scroll tracking
   const sectionRefs = useRef<Record<SectionId, HTMLElement | null>>({
@@ -67,15 +85,24 @@ export default function CommunityDetailClient({
     community.middleSchool ||
     community.highSchool;
 
-  const hasAmenitiesOrSchools = (community.amenities?.length ?? 0) > 0 || !!hasSchools;
+  const hasAmenitiesOrSchools =
+    (community.amenities?.length ?? 0) > 0 || !!hasSchools;
 
   const sections: Section[] = [
     { id: "description", label: "Description", visible: true },
-    { id: "homes", label: "Available Homes", visible: homes.length > 0 },
     { id: "floorplans", label: "Floor Plans", visible: floorplans.length > 0 },
-    { id: "amenities", label: "Schools & Amenities", visible: hasAmenitiesOrSchools },
+    { id: "homes", label: "Available Homes", visible: homes.length > 0 },
+    {
+      id: "amenities",
+      label: "Schools & Amenities",
+      visible: hasAmenitiesOrSchools,
+    },
     { id: "video", label: "Community Video", visible: !!community.videoUrl },
-    { id: "location", label: "Location & Directions", visible: !!(community.latitude && community.longitude) },
+    {
+      id: "location",
+      label: "Location & Directions",
+      visible: !!(community.latitude && community.longitude),
+    },
     { id: "contact", label: "Contact Us", visible: true },
   ];
 
@@ -116,7 +143,8 @@ export default function CommunityDetailClient({
     const element = sectionRefs.current[sectionId];
     if (element) {
       const offset = 150; // Account for sticky nav
-      const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+      const elementPosition =
+        element.getBoundingClientRect().top + window.scrollY;
       window.scrollTo({
         top: elementPosition - offset,
         behavior: "smooth",
@@ -137,6 +165,28 @@ export default function CommunityDetailClient({
   const openGallery = (index: number = 0) => {
     setLightboxIndex(index);
     setLightboxOpen(true);
+  };
+
+  const handleScheduleHomeTour = (homeId: string, homeName: string) => {
+    setScheduleModal({
+      open: true,
+      type: "home",
+      homeId,
+      entityName: homeName,
+    });
+  };
+
+  const handleScheduleFloorplanTour = (floorplanId: string, floorplanName: string) => {
+    setScheduleModal({
+      open: true,
+      type: "floorplan",
+      floorplanId,
+      entityName: floorplanName,
+    });
+  };
+
+  const closeScheduleModal = () => {
+    setScheduleModal({ open: false, type: "community" });
   };
 
   return (
@@ -177,31 +227,45 @@ export default function CommunityDetailClient({
         {/* 1. Description Section - Marketing headline & description */}
         <section
           id="description"
-          ref={(el) => { sectionRefs.current.description = el; }}
+          ref={(el) => {
+            sectionRefs.current.description = el;
+          }}
           className="scroll-mt-[150px]"
         >
           <OverviewSection community={community} homesCount={homes.length} />
         </section>
 
-        {/* 2. Homes Section */}
-        {homes.length > 0 && (
-          <section
-            id="homes"
-            ref={(el) => { sectionRefs.current.homes = el; }}
-            className="scroll-mt-[150px] mt-12 lg:mt-16"
-          >
-            <HomesSection homes={homes} communitySlug={community.slug} />
-          </section>
-        )}
-
-        {/* 3. Floorplans Section */}
+        {/* 2. Floorplans Section */}
         {floorplans.length > 0 && (
           <section
             id="floorplans"
-            ref={(el) => { sectionRefs.current.floorplans = el; }}
+            ref={(el) => {
+              sectionRefs.current.floorplans = el;
+            }}
             className="scroll-mt-[150px] mt-12 lg:mt-16"
           >
-            <FloorplansSection floorplans={floorplans} communitySlug={community.slug} />
+            <FloorplansSection
+              floorplans={floorplans}
+              communitySlug={community.slug}
+              onScheduleTour={handleScheduleFloorplanTour}
+            />
+          </section>
+        )}
+
+        {/* 3. Homes Section */}
+        {homes.length > 0 && (
+          <section
+            id="homes"
+            ref={(el) => {
+              sectionRefs.current.homes = el;
+            }}
+            className="scroll-mt-[150px] mt-12 lg:mt-16"
+          >
+            <HomesSection
+              homes={homes}
+              communitySlug={community.slug}
+              onScheduleTour={handleScheduleHomeTour}
+            />
           </section>
         )}
 
@@ -209,7 +273,9 @@ export default function CommunityDetailClient({
         {hasAmenitiesOrSchools && (
           <section
             id="amenities"
-            ref={(el) => { sectionRefs.current.amenities = el; }}
+            ref={(el) => {
+              sectionRefs.current.amenities = el;
+            }}
             className="scroll-mt-[150px] mt-12 lg:mt-16"
           >
             <SchoolsAmenitiesSection
@@ -226,7 +292,9 @@ export default function CommunityDetailClient({
         {community.videoUrl && (
           <section
             id="video"
-            ref={(el) => { sectionRefs.current.video = el; }}
+            ref={(el) => {
+              sectionRefs.current.video = el;
+            }}
             className="scroll-mt-[150px] mt-12 lg:mt-16"
           >
             <VideoSection
@@ -240,7 +308,9 @@ export default function CommunityDetailClient({
         {community.latitude && community.longitude && (
           <section
             id="location"
-            ref={(el) => { sectionRefs.current.location = el; }}
+            ref={(el) => {
+              sectionRefs.current.location = el;
+            }}
             className="scroll-mt-[150px] mt-12 lg:mt-16"
           >
             <LocationSection community={community} />
@@ -257,7 +327,9 @@ export default function CommunityDetailClient({
         {/* Contact Section */}
         <section
           id="contact"
-          ref={(el) => { sectionRefs.current.contact = el; }}
+          ref={(el) => {
+            sectionRefs.current.contact = el;
+          }}
           className="scroll-mt-20 mt-12 lg:mt-16"
         >
           <ContactForm
@@ -285,6 +357,19 @@ export default function CommunityDetailClient({
           isModal={true}
           type={contactModalType}
           onClose={() => setShowContactModal(false)}
+        />
+      )}
+
+      {/* Schedule Tour Modal for Homes/Floorplans */}
+      {scheduleModal.open && (
+        <ReusableContactForm
+          type="tour"
+          communityId={community.id}
+          homeId={scheduleModal.homeId}
+          floorplanId={scheduleModal.floorplanId}
+          entityName={scheduleModal.entityName}
+          isModal={true}
+          onClose={closeScheduleModal}
         />
       )}
     </main>

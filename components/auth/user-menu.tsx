@@ -124,6 +124,7 @@ export function MobileUserMenu() {
   const { user, isLoading, isAuthenticated, signOut } = useAuth();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const handleSignOut = async () => {
     setIsSigningOut(true);
@@ -139,7 +140,7 @@ export function MobileUserMenu() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-4">
-        <Loader2 className="size-5 animate-spin text-main-primary" />
+        <Loader2 className="size-5 animate-spin text-white" />
       </div>
     );
   }
@@ -147,14 +148,12 @@ export function MobileUserMenu() {
   if (!isAuthenticated || !user) {
     return (
       <>
-        <div className="border-t pt-4 mt-4">
-          <Button
-            onClick={() => setAuthModalOpen(true)}
-            className="w-full bg-main-secondary text-main-primary hover:bg-main-secondary/90"
-          >
-            Sign In
-          </Button>
-        </div>
+        <Button
+          onClick={() => setAuthModalOpen(true)}
+          className="w-full bg-main-secondary text-main-primary hover:bg-main-secondary/90"
+        >
+          Sign In
+        </Button>
         <AuthModal open={authModalOpen} onOpenChange={setAuthModalOpen} />
       </>
     );
@@ -170,45 +169,66 @@ export function MobileUserMenu() {
     : user.email?.slice(0, 2).toUpperCase() || "U";
 
   return (
-    <div className="border-t pt-4 mt-4">
-      <div className="flex items-center gap-3 mb-4 px-2">
-        <div className="flex items-center justify-center size-10 rounded-full bg-main-secondary text-main-primary font-semibold">
-          {initials}
+    <div>
+      {/* Collapsible trigger */}
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="flex items-center justify-between w-full py-2 text-white"
+      >
+        <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center size-10 rounded-full bg-main-secondary text-main-primary font-semibold">
+            {initials}
+          </div>
+          <div className="min-w-0 text-left">
+            <p className="font-medium text-white truncate">
+              {user.name || "User"}
+            </p>
+            <p className="text-xs text-slate-400 truncate">{user.email}</p>
+          </div>
         </div>
-        <div className="min-w-0">
-          <p className="font-medium text-main-primary truncate">
-            {user.name || "User"}
-          </p>
-          <p className="text-xs text-gray-500 truncate">{user.email}</p>
+        <ChevronDown
+          className={`size-5 text-slate-400 transition-transform ${
+            isExpanded ? "rotate-180" : ""
+          }`}
+        />
+      </button>
+
+      {/* Expandable content */}
+      <div
+        className={`grid transition-all duration-200 ${
+          isExpanded ? "grid-rows-[1fr] mt-3" : "grid-rows-[0fr]"
+        }`}
+      >
+        <div className="overflow-hidden">
+          <div className="space-y-1 bg-slate-800/50 rounded-lg p-2">
+            <Link
+              href="/account/favorites"
+              className="flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg text-white hover:bg-slate-700/50 transition-colors"
+            >
+              <Heart className="size-5 text-main-secondary" />
+              Favorites
+            </Link>
+            <Link
+              href="/account/profile"
+              className="flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg text-white hover:bg-slate-700/50 transition-colors"
+            >
+              <User className="size-5 text-main-secondary" />
+              Profile
+            </Link>
+            <button
+              onClick={handleSignOut}
+              disabled={isSigningOut}
+              className="flex items-center gap-3 w-full px-3 py-2.5 text-sm rounded-lg bg-main-secondary text-main-primary hover:bg-main-secondary/90 transition-colors mt-2"
+            >
+              {isSigningOut ? (
+                <Loader2 className="size-5 animate-spin" />
+              ) : (
+                <LogOut className="size-5" />
+              )}
+              Sign Out
+            </button>
+          </div>
         </div>
-      </div>
-      <div className="space-y-1">
-        <Link
-          href="/account/favorites"
-          className="flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg hover:bg-gray-100 transition-colors"
-        >
-          <Heart className="size-5 text-main-primary" />
-          Favorites
-        </Link>
-        <Link
-          href="/account/profile"
-          className="flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg hover:bg-gray-100 transition-colors"
-        >
-          <User className="size-5 text-main-primary" />
-          Profile
-        </Link>
-        <button
-          onClick={handleSignOut}
-          disabled={isSigningOut}
-          className="flex items-center gap-3 w-full px-3 py-2.5 text-sm rounded-lg bg-main-primary text-white hover:bg-main-primary/90 transition-colors mt-2"
-        >
-          {isSigningOut ? (
-            <Loader2 className="size-5 animate-spin" />
-          ) : (
-            <LogOut className="size-5" />
-          )}
-          Sign Out
-        </button>
       </div>
     </div>
   );

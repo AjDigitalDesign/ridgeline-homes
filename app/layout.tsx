@@ -33,7 +33,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${outfit.variable} ${inter.variable} antialiased`}
+        className={`${outfit.variable} ${inter.variable} antialiased overflow-x-hidden`}
       >
         <QueryProvider>
           <AuthProvider>

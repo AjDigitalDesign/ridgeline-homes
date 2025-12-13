@@ -41,7 +41,7 @@ export function Header() {
           <div
             className={cn(
               "transition-all duration-300",
-              isScrolled ? "w-36 lg:w-60" : "w-44 lg:w-56 xl:w-64"
+              isScrolled ? "w-50 lg:w-60" : "w-48 lg:w-56 xl:w-64"
             )}
           >
             <MainLogo />

@@ -23,7 +23,7 @@ export default function MarketAreasSection({
   }
 
   return (
-    <section className="bg-[#C0CDD1] py-16 lg:py-24 overflow-hidden">
+    <section className="bg-[#C0CDD1] py-16 lg:py-24 overflow-x-clip relative">
       <div className="container mx-auto px-4 lg:px-10 xl:px-20 2xl:px-24">
         <div className="flex flex-col lg:flex-row lg:items-start gap-8 lg:gap-16">
           {/* Left Content */}
@@ -44,7 +44,7 @@ export default function MarketAreasSection({
           <AnimateOnScroll
             animation="fade-in-right"
             delay={200}
-            className="lg:w-2/3 -mr-4 lg:-mr-10 xl:-mr-16 overflow-hidden"
+            className="lg:w-2/3 -mr-4 lg:-mr-10 xl:-mr-16"
           >
             <Swiper
               modules={[Navigation]}

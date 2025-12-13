@@ -37,6 +37,31 @@ function formatPrice(price: number | null) {
   }).format(price);
 }
 
+function getCommunityStatusBadge(status: string | null | undefined) {
+  switch (status) {
+    case "ACTIVE":
+      return {
+        label: "Available Now",
+        className: "bg-green-500 text-white border-green-500 animate-pulse",
+      };
+    case "COMING_SOON":
+      return {
+        label: "Coming Soon",
+        className: "bg-blue-500 text-white border-blue-500",
+      };
+    case "SOLD_OUT":
+      return {
+        label: "Sold Out",
+        className: "bg-gray-400 text-white border-gray-400",
+      };
+    default:
+      return {
+        label: status?.replace(/_/g, " ") || "Available",
+        className: "bg-main-secondary text-main-primary border-main-secondary",
+      };
+  }
+}
+
 function calculateMonthlyPayment(price: number): string {
   // Rough estimate: 30-year mortgage at ~7% interest, 20% down
   const downPayment = price * 0.2;
@@ -220,12 +245,16 @@ export default function CommunityHeader({
                 </div>
               )}
 
-              <Button
-                variant="outline"
-                className="border-main-primary text-main-primary hover:bg-main-primary hover:text-white uppercase text-xs font-semibold tracking-wider"
-              >
-                Available Now
-              </Button>
+              {(() => {
+                const statusBadge = getCommunityStatusBadge(community.status);
+                return (
+                  <span
+                    className={`px-4 py-2 rounded-full text-sm font-bold uppercase tracking-wider shadow-md ${statusBadge.className}`}
+                  >
+                    {statusBadge.label}
+                  </span>
+                );
+              })()}
             </div>
           </div>
 
