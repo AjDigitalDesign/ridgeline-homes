@@ -18,8 +18,8 @@ import findYourHome from "@/public/abouttwo.jpg";
 
 const components: { title: string; href: string; description: string }[] = [
   {
-    title: "Gallery",
-    href: "/gallery",
+    title: "Photos",
+    href: "/photos",
     description: "Collection of images and videos.",
   },
   {
