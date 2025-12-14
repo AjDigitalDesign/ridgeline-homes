@@ -292,6 +292,142 @@ export function generateFloorplanMetadata(
 }
 
 /**
+ * Generate metadata for blog post pages
+ */
+interface BlogPostMetadataOptions {
+  title: string;
+  excerpt?: string | null;
+  featureImage?: string | null;
+  categories?: { name: string; slug: string }[];
+  seo?: {
+    title?: string | null;
+    description?: string | null;
+    keywords?: string | null;
+    ogTitle?: string | null;
+    ogDescription?: string | null;
+    ogImage?: string | null;
+    twitterTitle?: string | null;
+    twitterDescription?: string | null;
+    twitterImage?: string | null;
+    canonicalUrl?: string | null;
+    index?: boolean;
+    follow?: boolean;
+  } | null;
+}
+
+export function generateBlogPostMetadata(post: BlogPostMetadataOptions): Metadata {
+  const defaultDescription = post.excerpt || `Read "${post.title}" on our blog.`;
+  const categoryNames = post.categories?.map(c => c.name) || [];
+
+  return generateMetadata({
+    title: post.seo?.title || post.title,
+    description: post.seo?.description || defaultDescription,
+    keywords: post.seo?.keywords?.split(",").map(k => k.trim()) || [
+      "blog",
+      ...categoryNames,
+      "home building",
+    ],
+    image: post.seo?.ogImage || post.featureImage || undefined,
+    noIndex: post.seo?.index === false,
+    canonical: post.seo?.canonicalUrl || undefined,
+    openGraph: {
+      title: post.seo?.ogTitle || post.title,
+      description: post.seo?.ogDescription || defaultDescription,
+      image: post.seo?.ogImage || post.featureImage || undefined,
+      type: "article",
+    },
+    twitter: {
+      title: post.seo?.twitterTitle || post.seo?.ogTitle || post.title,
+      description: post.seo?.twitterDescription || post.seo?.ogDescription || defaultDescription,
+      image: post.seo?.twitterImage || post.seo?.ogImage || post.featureImage || undefined,
+    },
+  });
+}
+
+/**
+ * Generate metadata for blog listing page
+ */
+interface BlogPageMetadataOptions {
+  seo?: {
+    title?: string | null;
+    description?: string | null;
+    keywords?: string | null;
+    ogTitle?: string | null;
+    ogDescription?: string | null;
+    ogImage?: string | null;
+    twitterTitle?: string | null;
+    twitterDescription?: string | null;
+    twitterImage?: string | null;
+    canonicalUrl?: string | null;
+    index?: boolean;
+    follow?: boolean;
+  } | null;
+}
+
+export function generateBlogPageMetadata(page: BlogPageMetadataOptions): Metadata {
+  const defaultDescription = "Read the latest news, tips, and insights about home building.";
+
+  return generateMetadata({
+    title: page.seo?.title || "Blog",
+    description: page.seo?.description || defaultDescription,
+    keywords: page.seo?.keywords?.split(",").map(k => k.trim()) || [
+      "home building blog",
+      "real estate news",
+      "home tips",
+      "Maryland homes",
+    ],
+    image: page.seo?.ogImage || undefined,
+    noIndex: page.seo?.index === false,
+    canonical: page.seo?.canonicalUrl || undefined,
+    openGraph: {
+      title: page.seo?.ogTitle || "Blog",
+      description: page.seo?.ogDescription || defaultDescription,
+      image: page.seo?.ogImage || undefined,
+    },
+    twitter: {
+      title: page.seo?.twitterTitle || page.seo?.ogTitle || "Blog",
+      description: page.seo?.twitterDescription || page.seo?.ogDescription || defaultDescription,
+      image: page.seo?.twitterImage || page.seo?.ogImage || undefined,
+    },
+  });
+}
+
+/**
+ * JSON-LD structured data for blog posts (Article schema)
+ */
+export function generateBlogPostJsonLd(post: {
+  title: string;
+  excerpt?: string | null;
+  featureImage?: string | null;
+  publishDate?: string | null;
+  createdAt?: string;
+  slug: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: post.title,
+    description: post.excerpt || undefined,
+    image: post.featureImage || undefined,
+    datePublished: post.publishDate || post.createdAt,
+    dateModified: post.publishDate || post.createdAt,
+    author: {
+      "@type": "Organization",
+      name: siteConfig.name,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: siteConfig.name,
+      url: siteConfig.url,
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `${siteConfig.url}/blog/${post.slug}`,
+    },
+  };
+}
+
+/**
  * JSON-LD structured data for communities (LocalBusiness schema)
  */
 export function generateCommunityJsonLd(community: {
