@@ -642,3 +642,255 @@ export interface ListingSettings {
 // Fetch listing settings for search pages (communities, homes, floorplans)
 export const fetchListingSettings = (type: "communities" | "homes" | "floorplans") =>
   api.get<ListingSettings>(`/api/public/listing-settings/${type}`);
+
+// Gallery types
+export interface GalleryTag {
+  id: string;
+  name: string;
+  slug: string;
+  imageCount: number;
+}
+
+export interface GalleryImage {
+  id: string;
+  url: string;
+  alt: string | null;
+  caption: string | null;
+  displayOrder: number;
+  tag: GalleryTag | null;
+}
+
+export interface GalleryResponse {
+  images: GalleryImage[];
+  tags: GalleryTag[];
+}
+
+export interface GalleryPage {
+  id: string;
+  name: string;
+  slug: string;
+  content: string | null;
+  pageType: "GALLERY";
+  galleryBannerImage: string | null;
+  galleryBannerTitle: string | null;
+  seo: {
+    title: string | null;
+    description: string | null;
+    keywords: string | null;
+    ogTitle: string | null;
+    ogDescription: string | null;
+    ogImage: string | null;
+  } | null;
+}
+
+// Fetch gallery page
+export const fetchGalleryPage = () =>
+  api.get<GalleryPage[]>("/api/public/pages", { params: { pageType: "GALLERY" } });
+
+// Fetch gallery images with optional tag filter
+export const fetchGalleryImages = (tag?: string) =>
+  api.get<GalleryResponse>("/api/public/gallery", { params: tag ? { tag } : undefined });
+
+// Our Process page types
+export interface ProcessStep {
+  id: string;
+  title: string;
+  shortTitle: string;
+  description: string;
+  mediaType: "image" | "video";
+  mediaUrl: string;
+}
+
+export interface OurProcessPage {
+  id: string;
+  name: string;
+  slug: string;
+  content: string | null;
+  pageType: "OUR_PROCESS";
+  processBannerImage: string | null;
+  processBannerTitle: string | null;
+  processIntroTitle: string | null;
+  processIntroDescription: string | null;
+  processIntroContent: string | null;
+  processIntroCta: string | null;
+  processIntroCtaLink: string | null;
+  processIntroMediaType: "image" | "video" | null;
+  processIntroMediaUrl: string | null;
+  processStepsTitle: string | null;
+  processSteps: ProcessStep[];
+  seo: {
+    title: string | null;
+    description: string | null;
+    keywords: string | null;
+    ogTitle: string | null;
+    ogDescription: string | null;
+    ogImage: string | null;
+  } | null;
+}
+
+// Fetch Our Process page
+export const fetchOurProcessPage = () =>
+  api.get<OurProcessPage>("/api/public/pages/our-process");
+
+// Videos page types
+export interface VideoItem {
+  id: string;
+  url: string;
+  title: string;
+  pageUrl: string;
+  displayOrder: number;
+}
+
+export interface VideosPage {
+  id: string;
+  name: string;
+  slug: string;
+  pageType: "VIDEO";
+  videoBannerImage: string | null;
+  videoBannerTitle: string | null;
+  videoItems: VideoItem[];
+  seo: {
+    title: string | null;
+    description: string | null;
+    keywords: string | null;
+    ogTitle: string | null;
+    ogDescription: string | null;
+    ogImage: string | null;
+  } | null;
+}
+
+// Fetch Videos page
+export const fetchVideosPage = () =>
+  api.get<VideosPage>("/api/public/pages/videos");
+
+// Virtual Tours page types
+export interface VirtualTourItem {
+  id: string;
+  url: string;
+  title: string;
+  pageUrl: string;
+  displayOrder: number;
+}
+
+export interface VirtualToursPage {
+  id: string;
+  name: string;
+  slug: string;
+  pageType: "VIRTUAL_TOUR";
+  virtualTourBannerImage: string | null;
+  virtualTourBannerTitle: string | null;
+  virtualTourItems: VirtualTourItem[];
+  seo: {
+    title: string | null;
+    description: string | null;
+    keywords: string | null;
+    ogTitle: string | null;
+    ogDescription: string | null;
+    ogImage: string | null;
+  } | null;
+}
+
+// Fetch Virtual Tours page
+export const fetchVirtualToursPage = () =>
+  api.get<VirtualToursPage>("/api/public/pages/virtual-tours");
+
+// Blog types
+export interface BlogAuthor {
+  id: string;
+  name: string;
+  avatar: string | null;
+}
+
+export interface BlogCategory {
+  id: string;
+  name: string;
+  slug: string;
+  postCount: number;
+}
+
+export interface BlogTag {
+  id: string;
+  name: string;
+  slug: string;
+  postCount: number;
+}
+
+export interface BlogPost {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string | null;
+  content: string | null;
+  featureImage: string | null;
+  publishDate: string | null;
+  createdAt: string;
+  categories: BlogCategory[];
+  tags: BlogTag[];
+  seo?: {
+    title: string | null;
+    description: string | null;
+    keywords: string | null;
+    ogTitle: string | null;
+    ogDescription: string | null;
+    ogImage: string | null;
+  } | null;
+}
+
+export interface BlogPostsResponse {
+  posts: BlogPost[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+export interface BlogPage {
+  id: string;
+  name: string;
+  slug: string;
+  pageType: "BLOG";
+  blogBannerImage: string | null;
+  blogBannerTitle: string | null;
+  seo: {
+    title: string | null;
+    description: string | null;
+    keywords: string | null;
+    ogTitle: string | null;
+    ogDescription: string | null;
+    ogImage: string | null;
+  } | null;
+}
+
+// Fetch blog posts with pagination
+export const fetchBlogPosts = (params?: {
+  page?: number;
+  limit?: number;
+  categorySlug?: string;
+  tagSlug?: string;
+}) => {
+  const searchParams = new URLSearchParams();
+  if (params?.page) searchParams.set("page", params.page.toString());
+  if (params?.limit) searchParams.set("limit", params.limit.toString());
+  if (params?.categorySlug) searchParams.set("category", params.categorySlug);
+  if (params?.tagSlug) searchParams.set("tag", params.tagSlug);
+  const query = searchParams.toString();
+  return api.get<BlogPostsResponse>(`/api/public/blog/posts${query ? `?${query}` : ""}`);
+};
+
+// Fetch single blog post by slug
+export const fetchBlogPost = (slug: string) =>
+  api.get<BlogPost>(`/api/public/blog/posts/${slug}`);
+
+// Fetch blog categories
+export const fetchBlogCategories = () =>
+  api.get<BlogCategory[]>("/api/public/blog/categories");
+
+// Fetch blog tags
+export const fetchBlogTags = () =>
+  api.get<BlogTag[]>("/api/public/blog/tags");
+
+// Fetch blog page settings
+export const fetchBlogPage = () =>
+  api.get<BlogPage>("/api/public/pages/blog");
