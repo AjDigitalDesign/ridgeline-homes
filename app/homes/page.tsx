@@ -4,6 +4,10 @@ import { fetchHomes, fetchCommunities, fetchListingSettings } from "@/lib/api";
 import HomesPageClient from "./homes-page-client";
 import { generateMetadata as generateSeoMetadata } from "@/lib/seo";
 
+// Disable caching to always fetch fresh data
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function generateMetadata(): Promise<Metadata> {
   try {
     const { data: listingSettings } = await fetchListingSettings("homes");

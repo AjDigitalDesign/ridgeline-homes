@@ -15,6 +15,10 @@ import {
   fetchHomes,
 } from "@/lib/api";
 
+// Disable caching to always fetch fresh data
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function Home() {
   // Fetch all data with error handling
   const [frontPageRes, tenantRes, marketAreasRes, communitiesRes, homesRes] =
