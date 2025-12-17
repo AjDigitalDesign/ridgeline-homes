@@ -14,7 +14,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import type { Community } from "@/lib/api";
+import { toast } from "sonner";
+import { submitInquiry, type Community } from "@/lib/api";
 
 interface SalesTeamMember {
   isPrimary: boolean;
@@ -63,33 +64,52 @@ export default function ContactSection({
     setIsSubmitting(true);
 
     const formData = new FormData(e.currentTarget);
-    const data = {
-      firstName: formData.get("firstName"),
-      lastName: formData.get("lastName"),
-      email: formData.get("email"),
-      phone: formData.get("phone"),
-      priceMin: formData.get("priceMin"),
-      priceMax: formData.get("priceMax"),
-      moveDate: formData.get("moveDate"),
-      appointmentDate: formData.get("appointmentDate"),
-      message: formData.get("message"),
-      receiveTexts,
-      communityId: community.id,
-      communityName: community.name,
-    };
+    const firstName = formData.get("firstName") as string;
+    const lastName = formData.get("lastName") as string;
+    const email = formData.get("email") as string;
+    const phone = formData.get("phone") as string;
+    const priceMin = formData.get("priceMin") as string;
+    const priceMax = formData.get("priceMax") as string;
+    const moveDate = formData.get("moveDate") as string;
+    const appointmentDate = formData.get("appointmentDate") as string;
+    const message = formData.get("message") as string;
+
+    // Build a comprehensive message with all the form details
+    const messageParts: string[] = [];
+    if (priceMin || priceMax) {
+      const priceRange = [
+        priceMin ? `$${parseInt(priceMin).toLocaleString()}` : "",
+        priceMax ? `$${parseInt(priceMax).toLocaleString()}` : "",
+      ].filter(Boolean).join(" - ");
+      if (priceRange) messageParts.push(`Price Range: ${priceRange}`);
+    }
+    if (moveDate) messageParts.push(`Move Timeline: ${moveDate}`);
+    if (appointmentDate) messageParts.push(`Preferred Appointment: ${appointmentDate}`);
+    if (receiveTexts) messageParts.push("Opt-in for text messages: Yes");
+    if (message) messageParts.push(`\nComments: ${message}`);
+
+    const fullMessage = messageParts.join("\n");
 
     try {
-      const response = await fetch("/api/inquiries", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+      await submitInquiry({
+        type: "INQUIRY",
+        firstName,
+        lastName,
+        email,
+        phone: phone || undefined,
+        message: fullMessage || undefined,
+        communityId: community.id,
       });
 
-      if (response.ok) {
-        setIsSubmitted(true);
-      }
+      setIsSubmitted(true);
+      toast.success("Request submitted successfully!", {
+        description: `Our team at ${community.name} will contact you shortly.`,
+      });
     } catch (error) {
       console.error("Error submitting form:", error);
+      toast.error("Failed to submit your request", {
+        description: "Please try again or contact us directly.",
+      });
     } finally {
       setIsSubmitting(false);
     }
