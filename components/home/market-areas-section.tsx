@@ -29,7 +29,7 @@ export default function MarketAreasSection({
           {/* Left Content */}
           <AnimateOnScroll
             animation="fade-in-left"
-            className="lg:w-1/3 lg:sticky lg:top-32 shrink-0 relative z-20 bg-[#C0CDD1] pr-4 lg:pr-8"
+            className="lg:w-1/3 shrink-0 pr-4 lg:pr-8"
           >
             <h2 className="text-3xl lg:text-4xl xl:text-5xl font-bold text-main-primary leading-tight">
               Where Do You Want to Live?
@@ -44,7 +44,7 @@ export default function MarketAreasSection({
           <AnimateOnScroll
             animation="fade-in-right"
             delay={200}
-            className="lg:w-2/3 -mr-4 lg:-mr-10 xl:-mr-16"
+            className="lg:w-2/3 -mr-4 lg:-mr-10 xl:-mr-16 overflow-hidden"
           >
             <Swiper
               modules={[Navigation]}
@@ -72,7 +72,6 @@ export default function MarketAreasSection({
                   spaceBetween: 24,
                 },
               }}
-              className="!overflow-visible"
             >
               {marketAreas.map((area) => (
                 <SwiperSlide key={area.id}>
