@@ -11,6 +11,7 @@ export const api = axios.create({
     "Content-Type": "application/json",
     "X-API-Key": API_KEY,
     "x-tenant-slug": TENANT_SLUG,
+    "Cache-Control": "no-cache",
   },
 });
 

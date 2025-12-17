@@ -2,11 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import MobileNav from "../header/mobile";
 import MainLogo from "../main-logo";
-import DesktopNav from "../header/desktop";
-import { UserMenu } from "../auth/user-menu";
+import { DesktopNavigation } from "../header/desktop";
 import { cn } from "@/lib/utils";
 
 export function Header() {
@@ -25,55 +23,51 @@ export function Header() {
     <header
       className={cn(
         "fixed left-0 right-0 top-0 z-50 transition-all duration-300",
-        isScrolled
-          ? "bg-main-primary shadow-lg py-2 lg:mt-0"
-          : "bg-main-primary backdrop-blur-sm"
+        isScrolled ? "shadow-lg" : ""
       )}
     >
-      <div className="container mx-auto px-4 lg:px-10 xl:px-20 2xl:px-24">
-        <div
-          className={cn(
-            "mx-auto flex items-center justify-between transition-all duration-300",
-            isScrolled ? "h-20" : "h-20"
-          )}
-        >
-          {/* Logo */}
+      {/* Desktop Layout - Single nav bar */}
+      <div className="hidden xl:flex bg-white">
+        {/* Left: Logo */}
+        <div className="flex items-center pl-4 lg:pl-10 xl:pl-20 2xl:pl-24">
+          <Link href="/" className="shrink-0">
+            <div
+              className={cn(
+                "transition-all duration-300",
+                isScrolled ? "w-48" : "w-56"
+              )}
+            >
+              <MainLogo variant="dark" />
+            </div>
+          </Link>
+        </div>
+
+        {/* Right: Navigation content + Ask Us */}
+        <DesktopNavigation isScrolled={isScrolled} />
+      </div>
+
+      {/* Mobile Layout - Single row */}
+      <div className="xl:hidden bg-main-primary">
+        <div className="container mx-auto px-4">
           <div
             className={cn(
-              "transition-all duration-300",
-              isScrolled ? "w-50 lg:w-60" : "w-48 lg:w-56 xl:w-64"
+              "flex items-center justify-between transition-all duration-300",
+              isScrolled ? "h-16" : "h-20"
             )}
           >
-            <MainLogo />
-          </div>
-
-          {/* Desktop Navigation */}
-          <div className="hidden xl:block">
-            <DesktopNav />
-          </div>
-
-          {/* Right Side */}
-          <div className="flex items-center gap-4">
-            <UserMenu />
-            {/* Have a Question CTA */}
-            <Link
-              href="/contact"
-              className="hidden xl:flex items-center gap-3 hover:opacity-90 transition-opacity"
-            >
-              <div className="relative size-10 rounded-full overflow-hidden border-2 border-main-secondary">
-                <Image
-                  src="/sales-person.png"
-                  alt="Sales representative"
-                  fill
-                  className="object-cover"
-                />
+            {/* Logo */}
+            <Link href="/" className="shrink-0">
+              <div
+                className={cn(
+                  "transition-all duration-300",
+                  isScrolled ? "w-40" : "w-44"
+                )}
+              >
+                <MainLogo />
               </div>
-              <span className="text-lg font-medium text-white">
-                Have a Question?
-              </span>
             </Link>
 
-            {/* Mobile Navigation */}
+            {/* Mobile Navigation Icons */}
             <MobileNav />
           </div>
         </div>

@@ -9,9 +9,7 @@ import {
   Phone,
   Mail,
   MessageCircle,
-  BookOpenIcon,
-  LifeBuoyIcon,
-  InfoIcon,
+  Heart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { navigationItems } from "@/lib/constants/navigation";
@@ -23,17 +21,12 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { MobileUserMenu } from "@/components/auth/user-menu";
+import { MobileSearch } from "./mobile-search";
 
 import SalesPerson from "@/public/sales-person.png";
 import Logo from "../main-logo";
 
 type NavItemType = (typeof navigationItems)[number];
-
-const IconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  BookOpenIcon,
-  LifeBuoyIcon,
-  InfoIcon,
-};
 
 function MobileNavItem({
   item,
@@ -80,8 +73,6 @@ function MobileNavItem({
       >
         <div className="overflow-hidden">
           {item.items.map((child) => {
-            const Icon =
-              "icon" in child && child.icon ? IconMap[child.icon] : null;
             return (
               <Link
                 key={child.href}
@@ -89,7 +80,6 @@ function MobileNavItem({
                 onClick={onClose}
                 className="flex items-center gap-2 py-2 pl-4 text-sm text-slate-300 transition-colors hover:text-amber-400"
               >
-                {Icon && <Icon className="size-4 opacity-60" />}
                 {child.label}
               </Link>
             );
@@ -100,95 +90,119 @@ function MobileNavItem({
   );
 }
 
-export default function MobileNav() {
-  const [open, setOpen] = useState(false);
+// Mobile header icons component (search, favorites, menu)
+export function MobileHeaderIcons() {
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <button className="rounded-md text-primary p-2 transition-colors hover:bg-zinc-100 xl:hidden">
-          <Menu className="size-6 text-white" />
-        </button>
-      </SheetTrigger>
-      <SheetContent
-        side="right"
-        className="w-full sm:max-w-sm p-0 bg-main-primary border-slate-700"
-        closeClassName="text-white"
+    <div className="flex items-center gap-1 xl:hidden">
+      {/* Search */}
+      <MobileSearch />
+
+      {/* Favorites */}
+      <Link
+        href="/account/favorites"
+        className="flex items-center justify-center size-10 rounded-full text-white hover:bg-white/10 transition-colors"
+        aria-label="Favorites"
       >
-        {/* Header with Logo */}
-        <SheetHeader className="border-b border-slate-700/50 px-6 py-4">
-          <SheetTitle className="flex items-center gap-2">
-            <div className="w-44">
-              <Logo />
-            </div>
-          </SheetTitle>
-        </SheetHeader>
+        <Heart className="size-5" />
+      </Link>
 
-        {/* Navigation Items */}
-        <div className="flex h-[calc(100%-180px)] flex-col overflow-y-auto px-6 py-4">
-          {navigationItems.map((item) => (
-            <MobileNavItem
-              key={item.label}
-              item={item}
-              onClose={() => setOpen(false)}
-            />
-          ))}
-        </div>
-
-        {/* Footer Actions */}
-        <div className="border-t border-slate-700/50 p-6 space-y-4">
-          {/* User Menu (Sign In / Account) */}
-          <MobileUserMenu />
-
-          {/* Ask Kelly Contact Section */}
-          <div className="flex w-full items-center justify-between gap-10 pt-2">
-            {/* Profile Image with decorative lines */}
-            <div className="flex items-center gap-3 flex-row">
-              <div className="relative size-16 rounded-full overflow-hidden border border-white">
-                <Image
-                  src={SalesPerson}
-                  alt="Kelly"
-                  height={80}
-                  width={80}
-                  className="object-cover"
-                />
+      {/* Menu */}
+      <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+        <SheetTrigger asChild>
+          <button
+            className="flex items-center justify-center size-10 rounded-full text-white hover:bg-white/10 transition-colors"
+            aria-label="Menu"
+          >
+            <Menu className="size-6" />
+          </button>
+        </SheetTrigger>
+        <SheetContent
+          side="right"
+          className="w-full sm:max-w-sm p-0 bg-main-primary border-slate-700"
+          closeClassName="text-white"
+        >
+          {/* Header with Logo */}
+          <SheetHeader className="border-b border-slate-700/50 px-6 py-4">
+            <SheetTitle className="flex items-center gap-2">
+              <div className="w-44">
+                <Logo />
               </div>
-              {/* Text */}
-              <div className="flex flex-col">
-                <span className="text-xs text-slate-400">Questions?</span>
-                <span className="text-sm font-bold text-white tracking-wide">
-                  ASK KELLY
-                </span>
-              </div>
-            </div>
+            </SheetTitle>
+          </SheetHeader>
 
-            {/* Contact Icons */}
-            <div className="flex items-center gap-3 ">
-              <a
-                href="tel:+1234567890"
-                className="text-slate-300 hover:text-white transition-colors"
-                aria-label="Call Kelly"
-              >
-                <Phone className="size-5" />
-              </a>
-              <a
-                href="sms:+1234567890"
-                className="text-slate-300 hover:text-white transition-colors"
-                aria-label="Text Kelly"
-              >
-                <MessageCircle className="size-5" />
-              </a>
-              <a
-                href="mailto:kelly@ridgelinehomes.com"
-                className="text-slate-300 hover:text-white transition-colors"
-                aria-label="Email Kelly"
-              >
-                <Mail className="size-5" />
-              </a>
+          {/* Navigation Items */}
+          <div className="flex h-[calc(100%-180px)] flex-col overflow-y-auto px-6 py-4">
+            {navigationItems.map((item) => (
+              <MobileNavItem
+                key={item.label}
+                item={item}
+                onClose={() => setMenuOpen(false)}
+              />
+            ))}
+          </div>
+
+          {/* Footer Actions */}
+          <div className="border-t border-slate-700/50 p-6 space-y-4">
+            {/* User Menu (Sign In / Account) */}
+            <MobileUserMenu />
+
+            {/* Ask Kelly Contact Section */}
+            <div className="flex w-full items-center justify-between gap-10 pt-2">
+              {/* Profile Image with decorative lines */}
+              <div className="flex items-center gap-3 flex-row">
+                <div className="relative size-16 rounded-full overflow-hidden border border-white">
+                  <Image
+                    src={SalesPerson}
+                    alt="Sales Representative"
+                    height={80}
+                    width={80}
+                    className="object-cover"
+                  />
+                </div>
+                {/* Text */}
+                <div className="flex flex-col">
+                  <span className="text-xs text-slate-400">Questions?</span>
+                  <span className="text-sm font-bold text-white tracking-wide">
+                    ASK US
+                  </span>
+                </div>
+              </div>
+
+              {/* Contact Icons */}
+              <div className="flex items-center gap-3">
+                <a
+                  href="tel:+1234567890"
+                  className="text-slate-300 hover:text-white transition-colors"
+                  aria-label="Call Us"
+                >
+                  <Phone className="size-5" />
+                </a>
+                <a
+                  href="sms:+1234567890"
+                  className="text-slate-300 hover:text-white transition-colors"
+                  aria-label="Text Us"
+                >
+                  <MessageCircle className="size-5" />
+                </a>
+                <a
+                  href="mailto:info@ridgelinehomes.com"
+                  className="text-slate-300 hover:text-white transition-colors"
+                  aria-label="Email Us"
+                >
+                  <Mail className="size-5" />
+                </a>
+              </div>
             </div>
           </div>
-        </div>
-      </SheetContent>
-    </Sheet>
+        </SheetContent>
+      </Sheet>
+    </div>
   );
+}
+
+// Keep the original export for backwards compatibility
+export default function MobileNav() {
+  return <MobileHeaderIcons />;
 }
