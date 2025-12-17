@@ -78,20 +78,24 @@ export function FindYourHomeDropdown({ className }: FindYourHomeDropdownProps) {
   const [navigationData, setNavigationData] = useState<NavigationState[]>([]);
   const [expandedState, setExpandedState] = useState<string | null>(null);
 
+  // Load navigation data when dropdown opens
   useEffect(() => {
     async function loadNavigation() {
       if (!open || navigationData.length > 0) return;
 
+      console.log("FindYourHome: Starting to load navigation data...");
       setIsLoading(true);
       try {
         const response = await fetchNavigation({ previewLimit: 5, type: "communities" });
+        console.log("FindYourHome: Raw API response:", response);
         // Handle both array response and wrapped { communities: [...] } response
         const data = response.data;
+        console.log("FindYourHome: response.data:", data);
         const communities = Array.isArray(data) ? data : (data?.communities || []);
-        console.log("Navigation data loaded:", communities);
+        console.log("FindYourHome: Parsed communities:", communities);
         setNavigationData(communities);
       } catch (error) {
-        console.error("Failed to load navigation:", error);
+        console.error("FindYourHome: Failed to load navigation:", error);
       } finally {
         setIsLoading(false);
       }
