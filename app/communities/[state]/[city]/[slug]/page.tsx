@@ -44,9 +44,8 @@ async function getCommunityData(slug: string) {
     const community = communityRes.data;
 
     // Use homes from community data (already included in API response)
-    // Filter to only show AVAILABLE homes
-    const allHomes = Array.isArray(community?.homes) ? community.homes : [];
-    const homes = allHomes.filter((home: { status: string }) => home.status === "AVAILABLE");
+    // Show all published homes regardless of status
+    const homes = Array.isArray(community?.homes) ? community.homes : [];
 
     // Deep clone homes to ensure proper serialization to client
     const serializedHomes = JSON.parse(JSON.stringify(homes));
