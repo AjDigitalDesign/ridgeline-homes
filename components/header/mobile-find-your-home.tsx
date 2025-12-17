@@ -23,7 +23,10 @@ export function MobileFindYourHome({ onClose }: MobileFindYourHomeProps) {
       setIsLoading(true);
       try {
         const response = await fetchNavigation({ previewLimit: 5, type: "communities" });
-        setNavigationData(response.data.communities || []);
+        // Handle both array response and wrapped { communities: [...] } response
+        const data = response.data;
+        const communities = Array.isArray(data) ? data : (data?.communities || []);
+        setNavigationData(communities);
       } catch (error) {
         console.error("Failed to load navigation:", error);
       } finally {

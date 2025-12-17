@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ChevronDown, ChevronRight, MapPin, Loader2 } from "lucide-react";
+import { ChevronDown, Loader2 } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -19,7 +19,7 @@ export function FindYourHomeDropdown({ className }: FindYourHomeDropdownProps) {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [navigationData, setNavigationData] = useState<NavigationState[]>([]);
-  const [activeState, setActiveState] = useState<string | null>(null);
+  const [expandedState, setExpandedState] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadNavigation() {
@@ -27,12 +27,11 @@ export function FindYourHomeDropdown({ className }: FindYourHomeDropdownProps) {
 
       setIsLoading(true);
       try {
-        const response = await fetchNavigation({ previewLimit: 3, type: "communities" });
-        setNavigationData(response.data.communities || []);
-        // Set first state as active by default
-        if (response.data.communities?.length > 0) {
-          setActiveState(response.data.communities[0].state);
-        }
+        const response = await fetchNavigation({ previewLimit: 5, type: "communities" });
+        // Handle both array response and wrapped { communities: [...] } response
+        const data = response.data;
+        const communities = Array.isArray(data) ? data : (data?.communities || []);
+        setNavigationData(communities);
       } catch (error) {
         console.error("Failed to load navigation:", error);
       } finally {
@@ -47,7 +46,9 @@ export function FindYourHomeDropdown({ className }: FindYourHomeDropdownProps) {
     setOpen(false);
   };
 
-  const activeStateData = navigationData.find((s) => s.state === activeState);
+  const toggleState = (state: string) => {
+    setExpandedState(expandedState === state ? null : state);
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -69,108 +70,81 @@ export function FindYourHomeDropdown({ className }: FindYourHomeDropdownProps) {
       </PopoverTrigger>
       <PopoverContent
         align="start"
-        className="w-[500px] p-0 shadow-xl border-0"
+        className="w-[220px] p-0 shadow-xl border-0 bg-main-primary rounded-none"
         sideOffset={12}
       >
+        {/* Header */}
+        <div className="px-4 py-3 border-b border-slate-600">
+          <p className="text-sm font-semibold text-white uppercase tracking-wide">
+            Communities
+          </p>
+          <div className="mt-1.5 w-12 h-0.5 bg-main-secondary" />
+        </div>
+
         {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="size-8 animate-spin text-main-primary" />
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="size-6 animate-spin text-white" />
           </div>
         ) : navigationData.length === 0 ? (
-          <div className="p-6 text-center text-gray-500">
-            <MapPin className="size-8 mx-auto mb-2 text-gray-400" />
-            <p>No communities available</p>
+          <div className="px-4 py-6 text-center text-slate-400 text-sm">
+            No communities available
           </div>
         ) : (
-          <div className="flex">
-            {/* States Column */}
-            <div className="w-1/3 bg-gray-50 border-r">
-              <div className="p-3 border-b bg-main-primary">
-                <p className="text-sm font-semibold text-white uppercase tracking-wide">
-                  Select State
-                </p>
-              </div>
-              <div className="py-2">
-                {navigationData.map((stateData) => (
-                  <button
-                    key={stateData.state}
-                    onMouseEnter={() => setActiveState(stateData.state)}
-                    onClick={() => setActiveState(stateData.state)}
+          <div className="py-2">
+            {navigationData.map((stateData) => (
+              <div key={stateData.state}>
+                {/* State Button */}
+                <button
+                  onClick={() => toggleState(stateData.state)}
+                  className={cn(
+                    "w-full flex items-center justify-between px-4 py-2.5 text-sm font-semibold uppercase tracking-wide transition-colors",
+                    expandedState === stateData.state
+                      ? "text-main-secondary"
+                      : "text-white hover:text-main-secondary"
+                  )}
+                >
+                  <span>{stateData.state}</span>
+                  <ChevronDown
                     className={cn(
-                      "w-full flex items-center justify-between px-4 py-2.5 text-sm font-medium transition-colors",
-                      activeState === stateData.state
-                        ? "bg-white text-main-primary border-l-2 border-main-secondary"
-                        : "text-gray-600 hover:bg-white hover:text-main-primary"
+                      "size-4 transition-transform",
+                      expandedState === stateData.state && "rotate-180"
                     )}
-                  >
-                    <span>{stateData.state}</span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-400">
-                        {stateData.totalCommunities}
-                      </span>
-                      <ChevronRight className="size-4 text-gray-400" />
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
+                  />
+                </button>
 
-            {/* Cities Column */}
-            <div className="flex-1">
-              <div className="p-3 border-b bg-main-primary">
-                <p className="text-sm font-semibold text-white uppercase tracking-wide">
-                  {activeState ? `Communities in ${activeState}` : "Select a State"}
-                </p>
-              </div>
-              {activeStateData && (
-                <div className="p-4">
-                  {/* Preview Cities */}
-                  <div className="space-y-1 mb-4">
-                    {activeStateData.previewCities.map((cityData) => (
+                {/* Cities - Expandable */}
+                <div
+                  className={cn(
+                    "overflow-hidden transition-all duration-200",
+                    expandedState === stateData.state
+                      ? "max-h-[300px]"
+                      : "max-h-0"
+                  )}
+                >
+                  <div className="pb-2">
+                    {stateData.previewCities.map((cityData) => (
                       <Link
                         key={cityData.city}
-                        href={`/communities?state=${activeStateData.state}&city=${encodeURIComponent(cityData.city)}`}
+                        href={`/communities?state=${stateData.state}&city=${encodeURIComponent(cityData.city)}`}
                         onClick={handleLinkClick}
-                        className="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-gray-50 transition-colors group"
+                        className="block px-8 py-2 text-sm text-slate-300 hover:text-main-secondary transition-colors"
                       >
-                        <div className="flex items-center gap-2">
-                          <MapPin className="size-4 text-main-secondary" />
-                          <span className="text-sm font-medium text-main-primary group-hover:text-main-secondary">
-                            {cityData.city}
-                          </span>
-                        </div>
-                        <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-                          {cityData.count} {cityData.count === 1 ? "community" : "communities"}
-                        </span>
+                        {cityData.city}
                       </Link>
                     ))}
-                  </div>
-
-                  {/* View All Link */}
-                  {activeStateData.hasMoreCities && (
-                    <Link
-                      href={`/communities?state=${activeStateData.state}`}
-                      onClick={handleLinkClick}
-                      className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-main-primary text-white text-sm font-semibold rounded-lg hover:bg-main-primary/90 transition-colors"
-                    >
-                      View All {activeStateData.state} Communities
-                      <ChevronRight className="size-4" />
-                    </Link>
-                  )}
-
-                  {/* Browse All */}
-                  <div className="mt-4 pt-4 border-t">
-                    <Link
-                      href="/communities"
-                      onClick={handleLinkClick}
-                      className="flex items-center justify-center gap-2 w-full px-4 py-2.5 border border-main-primary text-main-primary text-sm font-semibold rounded-lg hover:bg-main-primary hover:text-white transition-colors"
-                    >
-                      Browse All Communities
-                    </Link>
+                    {stateData.hasMoreCities && (
+                      <Link
+                        href={`/communities?state=${stateData.state}`}
+                        onClick={handleLinkClick}
+                        className="block px-8 py-2 text-sm text-main-secondary hover:text-main-secondary/80 transition-colors"
+                      >
+                        View All →
+                      </Link>
+                    )}
                   </div>
                 </div>
-              )}
-            </div>
+              </div>
+            ))}
           </div>
         )}
       </PopoverContent>
