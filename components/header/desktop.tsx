@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Heart, Mail, Home } from "lucide-react";
 import { NavSearch } from "./nav-search";
 import { AskUsDropdown } from "./ask-us-dropdown";
+import { FindYourHomeDropdown } from "./find-your-home-dropdown";
 import { mainNavItems, utilityNavItems } from "@/lib/constants/navigation";
 import { cn } from "@/lib/utils";
 
@@ -12,12 +13,12 @@ export function DesktopNavigation({ isScrolled }: { isScrolled: boolean }) {
   return (
     <div className="flex-1 flex">
       {/* Middle section: Stacked top bar and nav bar */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col py-2">
         {/* Top row: Search | Contact | Warranty | Favorites - all aligned right */}
         <div
           className={cn(
-            "flex items-center justify-end gap-6 pr-6 transition-all duration-300",
-            isScrolled ? "py-2" : "py-3"
+            "flex items-center justify-end gap-6 pr-8 transition-all duration-300",
+            isScrolled ? "py-1" : "py-2"
           )}
         >
           {/* Search Icon (opens lightbox) */}
@@ -47,13 +48,16 @@ export function DesktopNavigation({ isScrolled }: { isScrolled: boolean }) {
         </div>
 
         {/* Bottom row: Main nav links - aligned right */}
-        <div className="flex justify-end pr-6">
+        <div className="flex justify-end pr-8">
           <nav
             className={cn(
               "flex items-center gap-8 border-t border-gray-200 transition-all duration-300",
-              isScrolled ? "py-2" : "py-3"
+              isScrolled ? "py-1" : "py-2"
             )}
           >
+            {/* Find Your Home Dropdown */}
+            <FindYourHomeDropdown className="text-main-primary hover:text-main-secondary" />
+
             {mainNavItems.map((item) => (
               <Link
                 key={item.href}

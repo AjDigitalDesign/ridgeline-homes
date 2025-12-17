@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/sheet";
 import { MobileUserMenu } from "@/components/auth/user-menu";
 import { MobileSearch } from "./mobile-search";
+import { MobileFindYourHome } from "./mobile-find-your-home";
 
 import SalesPerson from "@/public/sales-person.png";
 import Logo from "../main-logo";
@@ -134,6 +135,10 @@ export function MobileHeaderIcons() {
 
           {/* Navigation Items */}
           <div className="flex h-[calc(100%-180px)] flex-col overflow-y-auto px-6 py-4">
+            {/* Find Your Home - Dynamic navigation */}
+            <MobileFindYourHome onClose={() => setMenuOpen(false)} />
+
+            {/* Other navigation items */}
             {navigationItems.map((item) => (
               <MobileNavItem
                 key={item.label}

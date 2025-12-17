@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { MortgageCalculator } from "@/components/mortgage-calculator";
 import type { Home } from "@/lib/api";
 import { getStateSlug, getCitySlug } from "@/lib/url";
+import { getHomeStatusBadge } from "@/lib/home-status";
 
 interface HomeHeaderProps {
   home: Home;
@@ -46,25 +47,6 @@ function calculateMonthlyPayment(price: number) {
   }).format(monthlyPayment);
 }
 
-function formatStatus(status: string): string {
-  const statusMap: Record<string, string> = {
-    FOR_SALE: "For Sale",
-    AVAILABLE: "Available",
-    SOLD: "Sold",
-    PENDING: "Pending",
-    UNDER_CONTRACT: "Under Contract",
-    UNDER_CONSTRUCTION: "Under Construction",
-    MOVE_IN_READY: "Move-In Ready",
-    COMING_SOON: "Coming Soon",
-  };
-  return (
-    statusMap[status] ||
-    status
-      .split("_")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(" ")
-  );
-}
 
 function formatOpenHouseDate(dateString: string | null): string | null {
   if (!dateString) return null;
@@ -251,8 +233,8 @@ export default function HomeHeader({
 
               {/* Status Badge */}
               <div className="lg:ml-auto">
-                <span className="inline-block px-5 py-2.5 text-xs  rounded-lg bg-main-secondary text-main-primary">
-                  {formatStatus(home.status)}
+                <span className={`inline-block px-5 py-2.5 text-xs rounded-lg ${getHomeStatusBadge(home.status).className}`}>
+                  {getHomeStatusBadge(home.status).label}
                 </span>
               </div>
             </div>

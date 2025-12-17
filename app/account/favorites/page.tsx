@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { useFavorites, useRemoveFavorite } from "@/hooks/use-favorites";
 import type { Favorite, FavoriteType } from "@/lib/api";
 import { getStateSlug, getCitySlug, getHomeUrl } from "@/lib/url";
+import { getHomeStatusBadge } from "@/lib/home-status";
 
 type TabType = "homes" | "floorplans" | "communities";
 
@@ -72,8 +73,8 @@ function HomeFavoriteCard({ favorite, onRemove }: { favorite: Favorite; onRemove
         )}
         {/* Status badge */}
         <div className="absolute top-3 left-3">
-          <span className="px-3 py-1 bg-main-secondary text-main-primary text-xs font-semibold rounded-full">
-            {home.status === "AVAILABLE" ? "Available Homes For Sale" : home.status}
+          <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getHomeStatusBadge(home.status).className}`}>
+            {getHomeStatusBadge(home.status).label}
           </span>
         </div>
         {/* Remove button */}
