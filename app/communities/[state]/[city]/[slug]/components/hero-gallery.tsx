@@ -33,7 +33,7 @@ export default function HeroGallery({
         {/* Main Large Image - Left Side */}
         <button
           onClick={() => onOpenGallery(0)}
-          className="relative lg:col-span-2 overflow-hidden rounded-lg lg:rounded-xl group"
+          className="relative lg:col-span-2 overflow-hidden rounded-lg lg:rounded-xs group"
         >
           <Image
             src={mainImage}
@@ -51,7 +51,7 @@ export default function HeroGallery({
             <button
               key={index}
               onClick={() => onOpenGallery(index + 1)}
-              className="relative overflow-hidden rounded-lg lg:rounded-xl group"
+              className="relative overflow-hidden rounded-xs lg:rounded-xs group"
             >
               <Image
                 src={image}
@@ -66,7 +66,9 @@ export default function HeroGallery({
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                   <div className="text-center text-white">
                     <Camera className="size-6 mx-auto mb-1" />
-                    <p className="text-sm font-semibold">+{remainingCount} more</p>
+                    <p className="text-sm font-semibold">
+                      +{remainingCount} more
+                    </p>
                   </div>
                 </div>
               )}

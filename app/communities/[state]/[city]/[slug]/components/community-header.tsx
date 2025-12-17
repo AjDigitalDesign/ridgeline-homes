@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Phone, Calendar, ArrowRight, Calculator } from "lucide-react";
+import { Phone, Calendar, ArrowRight, Calculator, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MortgageCalculator } from "@/components/mortgage-calculator";
 import type { Community } from "@/lib/api";
@@ -256,6 +256,34 @@ export default function CommunityHeader({
                 );
               })()}
             </div>
+
+            {/* Office Hours */}
+            {community.salesOfficeHours && (
+              <div className="flex items-start gap-3 mt-4 pt-4 border-t border-gray-200">
+                <Clock className="size-5 text-main-primary shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1">
+                    Office Hours
+                  </p>
+                  <div className="text-sm text-main-primary">
+                    {typeof community.salesOfficeHours === "string" ? (
+                      <p>{community.salesOfficeHours}</p>
+                    ) : (
+                      <div className="space-y-0.5">
+                        {Object.entries(community.salesOfficeHours).map(
+                          ([day, hours]) => (
+                            <p key={day}>
+                              <span className="font-medium">{day}:</span>{" "}
+                              {String(hours)}
+                            </p>
+                          )
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Right Side - Contact Card */}

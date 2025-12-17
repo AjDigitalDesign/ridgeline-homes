@@ -14,8 +14,8 @@ import FloorplansSection from "./components/floorplans-section";
 import HomesSection from "./components/homes-section";
 import SchoolsAmenitiesSection from "./components/schools-amenities-section";
 import VideoSection from "./components/video-section";
-import LocationSection from "./components/location-section";
-import SalesTeamSection from "./components/sales-team-section";
+import AreaMapSection from "./components/area-map-section";
+import ContactSection from "./components/contact-section";
 import ContactForm from "./components/contact-form";
 import { ContactForm as ReusableContactForm } from "@/components/forms";
 
@@ -39,7 +39,7 @@ export type SectionId =
   | "floorplans"
   | "amenities"
   | "video"
-  | "location"
+  | "area"
   | "contact";
 
 export interface Section {
@@ -74,7 +74,7 @@ export default function CommunityDetailClient({
     floorplans: null,
     amenities: null,
     video: null,
-    location: null,
+    area: null,
     contact: null,
   });
 
@@ -88,6 +88,10 @@ export default function CommunityDetailClient({
   const hasAmenitiesOrSchools =
     (community.amenities?.length ?? 0) > 0 || !!hasSchools;
 
+  const hasAreaMap =
+    community.nearbyPlacesEnabled &&
+    (community.nearbyPlaceCategories?.length ?? 0) > 0;
+
   const sections: Section[] = [
     { id: "description", label: "Description", visible: true },
     { id: "floorplans", label: "Floor Plans", visible: floorplans.length > 0 },
@@ -97,12 +101,8 @@ export default function CommunityDetailClient({
       label: "Schools & Amenities",
       visible: hasAmenitiesOrSchools,
     },
+    { id: "area", label: "Area Map", visible: !!hasAreaMap },
     { id: "video", label: "Community Video", visible: !!community.videoUrl },
-    {
-      id: "location",
-      label: "Location & Directions",
-      visible: !!(community.latitude && community.longitude),
-    },
     { id: "contact", label: "Contact Us", visible: true },
   ];
 
@@ -288,58 +288,53 @@ export default function CommunityDetailClient({
           </section>
         )}
 
-        {/* 5. Video Section */}
-        {community.videoUrl && (
-          <section
-            id="video"
-            ref={(el) => {
-              sectionRefs.current.video = el;
-            }}
-            className="scroll-mt-[150px] mt-12 lg:mt-16"
-          >
+      </div>
+
+      {/* Area Map Section - Full Width */}
+      {hasAreaMap && (
+        <section
+          id="area"
+          ref={(el) => {
+            sectionRefs.current.area = el;
+          }}
+          className="scroll-mt-[150px] mt-12 lg:mt-16"
+        >
+          <AreaMapSection community={community} />
+        </section>
+      )}
+
+      {/* Video Section - Full Width */}
+      {community.videoUrl && (
+        <section
+          id="video"
+          ref={(el) => {
+            sectionRefs.current.video = el;
+          }}
+          className="scroll-mt-[150px] mt-12 lg:mt-16"
+        >
+          <div className="container mx-auto px-4 lg:px-10 xl:px-20 2xl:px-24">
             <VideoSection
               videoUrl={community.videoUrl}
               communityName={community.name}
             />
-          </section>
-        )}
-
-        {/* 6. Map & Directions Section */}
-        {community.latitude && community.longitude && (
-          <section
-            id="location"
-            ref={(el) => {
-              sectionRefs.current.location = el;
-            }}
-            className="scroll-mt-[150px] mt-12 lg:mt-16"
-          >
-            <LocationSection community={community} />
-          </section>
-        )}
-
-        {/* Sales Team Section */}
-        {(community.salesTeams?.length ?? 0) > 0 && (
-          <section className="mt-12 lg:mt-16">
-            <SalesTeamSection salesTeams={community.salesTeams} />
-          </section>
-        )}
-
-        {/* Contact Section */}
-        <section
-          id="contact"
-          ref={(el) => {
-            sectionRefs.current.contact = el;
-          }}
-          className="scroll-mt-20 mt-12 lg:mt-16"
-        >
-          <ContactForm
-            community={community}
-            isModal={false}
-            type="info"
-            onClose={() => {}}
-          />
+          </div>
         </section>
-      </div>
+      )}
+
+      {/* Contact Section - Full Width */}
+      <section
+        id="contact"
+        ref={(el) => {
+          sectionRefs.current.contact = el;
+        }}
+        className="scroll-mt-20 mt-12 lg:mt-16"
+      >
+        <ContactSection
+          community={community}
+          salesTeams={community.salesTeams}
+          backgroundImage={community.gallery?.[0]}
+        />
+      </section>
 
       {/* Gallery Lightbox */}
       <Lightbox

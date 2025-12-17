@@ -112,6 +112,9 @@ export interface Community {
   garagesMin: number | null;
   garagesMax: number | null;
   directions: string | null;
+  nearbyPlaceCategories: string[] | null;
+  nearbyPlacesEnabled: boolean | null;
+  nearbyPlacesRadius: number | null;
   marketArea: {
     id: string;
     name: string;

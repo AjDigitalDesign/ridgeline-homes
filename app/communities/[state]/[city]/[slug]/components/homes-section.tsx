@@ -7,6 +7,7 @@ import { ArrowRight, Camera, MapPin, Calendar, Calculator } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Lightbox } from "@/components/ui/lightbox";
 import { FavoriteButton } from "@/components/ui/favorite-button";
+import { MortgageCalculator } from "@/components/mortgage-calculator";
 
 // Simplified home type that works with embedded community homes
 export interface CommunityHome {
@@ -127,9 +128,10 @@ interface HomeCardProps {
   home: CommunityHome;
   onOpenGallery: (images: string[], title: string) => void;
   onScheduleTour?: (homeId: string, homeName: string) => void;
+  onOpenCalculator?: (price: number, name: string) => void;
 }
 
-function HomeCard({ home, onOpenGallery, onScheduleTour }: HomeCardProps) {
+function HomeCard({ home, onOpenGallery, onScheduleTour, onOpenCalculator }: HomeCardProps) {
   const image = home.gallery?.[0] || "";
   const photoCount = home.gallery?.length || 0;
   const location = [home.city, `${home.state} ${home.zipCode || ""}`]
@@ -224,10 +226,13 @@ function HomeCard({ home, onOpenGallery, onScheduleTour }: HomeCardProps) {
               {formatPrice(home.price)}
             </p>
             {home.price && (
-              <div className="flex items-center gap-1 text-sm text-gray-500">
+              <button
+                onClick={() => onOpenCalculator?.(home.price!, home.street || home.name)}
+                className="flex items-center gap-1 text-sm text-gray-500 hover:text-main-primary transition-colors"
+              >
                 <span>{calculateMonthlyPayment(home.price)}/mo</span>
                 <Calculator className="size-5" />
-              </div>
+              </button>
             )}
           </div>
         </div>
@@ -319,6 +324,9 @@ export default function HomesSection({
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxImages, setLightboxImages] = useState<string[]>([]);
   const [lightboxTitle, setLightboxTitle] = useState("");
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
+  const [calculatorPrice, setCalculatorPrice] = useState(400000);
+  const [calculatorPropertyName, setCalculatorPropertyName] = useState("");
 
   const displayedHomes = homes.slice(0, 6);
   const hasMore = homes.length > 6;
@@ -327,6 +335,12 @@ export default function HomesSection({
     setLightboxImages(images);
     setLightboxTitle(title);
     setLightboxOpen(true);
+  };
+
+  const handleOpenCalculator = (price: number, name: string) => {
+    setCalculatorPrice(price);
+    setCalculatorPropertyName(name);
+    setCalculatorOpen(true);
   };
 
   return (
@@ -355,6 +369,7 @@ export default function HomesSection({
             home={home}
             onOpenGallery={handleOpenGallery}
             onScheduleTour={onScheduleTour}
+            onOpenCalculator={handleOpenCalculator}
           />
         ))}
       </div>
@@ -378,6 +393,14 @@ export default function HomesSection({
         open={lightboxOpen}
         onOpenChange={setLightboxOpen}
         title={lightboxTitle}
+      />
+
+      {/* Mortgage Calculator Modal */}
+      <MortgageCalculator
+        open={calculatorOpen}
+        onOpenChange={setCalculatorOpen}
+        initialPrice={calculatorPrice}
+        propertyName={calculatorPropertyName}
       />
     </div>
   );
