@@ -547,8 +547,17 @@ export const fetchMarketAreas = () =>
   api.get<MarketArea[]>("/api/public/market-areas");
 
 // Fetch navigation data for "Find Your Home" dropdown
-export const fetchNavigation = (params?: { previewLimit?: number; type?: string }) =>
-  api.get<NavigationData>("/api/public/navigation", { params });
+// Uses local API proxy to avoid CORS issues
+export const fetchNavigation = async (params?: { previewLimit?: number; type?: string }) => {
+  const searchParams = new URLSearchParams();
+  if (params?.previewLimit) searchParams.set("previewLimit", String(params.previewLimit));
+  if (params?.type) searchParams.set("type", params.type);
+
+  const url = `/api/navigation${searchParams.toString() ? `?${searchParams.toString()}` : ""}`;
+  const response = await fetch(url);
+  const data = await response.json();
+  return { data };
+};
 
 // Favorite types
 export type FavoriteType = "home" | "community" | "floorplan";
