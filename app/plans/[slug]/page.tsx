@@ -5,6 +5,10 @@ import { fetchFloorplan } from "@/lib/api";
 import FloorplanDetailClient from "./floorplan-detail-client";
 import { generateMetadata as generateSeoMetadata } from "@/lib/seo";
 
+// Disable caching to always fetch fresh data
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 interface PageProps {
   params: Promise<{
     slug: string;
