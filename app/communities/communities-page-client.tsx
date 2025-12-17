@@ -938,6 +938,10 @@ export default function CommunitiesPageClient({
     };
   }, []);
 
+  // Get URL params for state/city filtering from navigation
+  const urlState = searchParams.get("state");
+  const urlCity = searchParams.get("city");
+
   const [filters, setFilters] = useState({
     city: searchParams.get("marketArea") || "all",
     priceRange: 0,
@@ -956,8 +960,18 @@ export default function CommunitiesPageClient({
   const filteredCommunities = useMemo(() => {
     let result = [...initialCommunities];
 
-    // Filter by city/market area
-    if (filters.city !== "all") {
+    // Filter by state (from navigation dropdown)
+    if (urlState) {
+      result = result.filter((c) => c.state === urlState);
+    }
+
+    // Filter by city (from navigation dropdown)
+    if (urlCity) {
+      result = result.filter((c) => c.city?.toLowerCase() === urlCity.toLowerCase());
+    }
+
+    // Filter by market area (from filter dropdown)
+    if (filters.city !== "all" && !urlState && !urlCity) {
       result = result.filter((c) => c.marketArea?.slug === filters.city);
     }
 
@@ -1000,7 +1014,7 @@ export default function CommunitiesPageClient({
     }
 
     return result;
-  }, [initialCommunities, filters, sortBy]);
+  }, [initialCommunities, filters, sortBy, urlState, urlCity]);
 
   // Count active filters
   const activeFiltersCount = useMemo(() => {
@@ -1009,8 +1023,10 @@ export default function CommunitiesPageClient({
     if (filters.priceRange > 0) count++;
     if (filters.bedrooms !== "any") count++;
     if (filters.bathrooms !== "any") count++;
+    if (urlState) count++;
+    if (urlCity) count++;
     return count;
-  }, [filters]);
+  }, [filters, urlState, urlCity]);
 
   // Calculate price ranges with counts (based on current city filter only)
   const priceRangesWithCounts = useMemo(() => {
@@ -1083,14 +1099,21 @@ export default function CommunitiesPageClient({
   const heroImage =
     listingSettings?.bannerImage ||
     selectedMarketArea?.featureImage ||
+    filteredCommunities[0]?.gallery?.[0] ||
     initialCommunities[0]?.gallery?.[0] ||
     "";
 
-  // Hero title - use listing settings banner title when no market area is selected
-  const heroTitle =
-    selectedMarketArea?.name ||
-    listingSettings?.bannerTitle ||
-    "Our Communities";
+  // Hero title - show city/state from URL params, or market area, or default
+  const heroTitle = urlCity
+    ? urlCity
+    : urlState
+      ? urlState
+      : selectedMarketArea?.name ||
+        listingSettings?.bannerTitle ||
+        "Our Communities";
+
+  // Hero subtitle - show state when filtering by city
+  const heroSubtitle = urlCity && urlState ? urlState : null;
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -1118,9 +1141,9 @@ export default function CommunitiesPageClient({
           >
             <h1 className="text-4xl lg:text-6xl font-bold text-white">
               {heroTitle}
-              {selectedMarketArea?.state ? `, ${selectedMarketArea.state}` : ""}
+              {heroSubtitle ? `, ${heroSubtitle}` : selectedMarketArea?.state ? `, ${selectedMarketArea.state}` : ""}
             </h1>
-            {selectedMarketArea && (
+            {(selectedMarketArea || urlCity || urlState) && (
               <p
                 className={`text-lg lg:text-xl text-white/90 mt-2 uppercase tracking-wider transition-all duration-700 delay-100 ${
                   isAnimated
