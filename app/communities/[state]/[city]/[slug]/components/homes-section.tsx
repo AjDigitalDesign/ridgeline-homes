@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Lightbox } from "@/components/ui/lightbox";
 import { FavoriteButton } from "@/components/ui/favorite-button";
 import { MortgageCalculator } from "@/components/mortgage-calculator";
+import { getHomeStatusBadge } from "@/lib/home-status";
 
 // Simplified home type that works with embedded community homes
 export interface CommunityHome {
@@ -76,40 +77,6 @@ function calculateMonthlyPayment(price: number): string {
   }).format(monthlyPayment);
 }
 
-function getStatusBadge(status: string) {
-  switch (status) {
-    case "AVAILABLE":
-      return {
-        label: "Available Now",
-        className: "bg-green-500 text-white shadow-lg shadow-green-500/30 animate-pulse",
-      };
-    case "UNDER_CONSTRUCTION":
-      return {
-        label: "Under Construction",
-        className: "bg-amber-500 text-white shadow-lg shadow-amber-500/30",
-      };
-    case "SOLD":
-      return {
-        label: "Sold",
-        className: "bg-red-500 text-white shadow-lg shadow-red-500/30",
-      };
-    case "PENDING":
-      return {
-        label: "Pending",
-        className: "bg-orange-500 text-white shadow-lg shadow-orange-500/30",
-      };
-    case "RESERVED":
-      return {
-        label: "Reserved",
-        className: "bg-purple-500 text-white shadow-lg shadow-purple-500/30",
-      };
-    default:
-      return {
-        label: status.replace(/_/g, " "),
-        className: "bg-gray-500 text-white shadow-lg shadow-gray-500/30",
-      };
-  }
-}
 
 function getHomeUrl(home: CommunityHome): string {
   // Build URL based on community context
@@ -137,7 +104,7 @@ function HomeCard({ home, onOpenGallery, onScheduleTour, onOpenCalculator }: Hom
   const location = [home.city, `${home.state} ${home.zipCode || ""}`]
     .filter(Boolean)
     .join(", ");
-  const status = getStatusBadge(home.status);
+  const status = getHomeStatusBadge(home.status);
   const homeUrl = getHomeUrl(home);
 
   const handlePhotosClick = (e: React.MouseEvent) => {

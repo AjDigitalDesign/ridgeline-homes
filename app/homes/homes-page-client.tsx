@@ -21,6 +21,7 @@ import {
   Car,
   Calculator,
 } from "lucide-react";
+import { getHomeStatusBadge } from "@/lib/home-status";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -160,10 +161,8 @@ function HomeCard({
           )}
           {/* Status Badge */}
           <div className="absolute top-4 left-4">
-            <span className="px-3 py-1.5 bg-main-secondary text-main-primary text-xs font-semibold uppercase rounded-full">
-              {home.status === "AVAILABLE"
-                ? "Available"
-                : home.status?.replace(/_/g, " ")}
+            <span className={`px-3 py-1.5 text-xs font-semibold uppercase rounded-full ${getHomeStatusBadge(home.status).className}`}>
+              {getHomeStatusBadge(home.status).label}
             </span>
           </div>
           {/* Favorite Icon */}

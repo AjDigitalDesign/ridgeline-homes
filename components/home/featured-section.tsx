@@ -40,19 +40,23 @@ function formatMonthlyPayment(price: number | null) {
 }
 
 function CommunityCard({ community }: { community: Community }) {
-  const image = community.gallery?.[0] || "";
+  const image = community.gallery?.[0] || null;
   const location = [community.city, community.state].filter(Boolean).join(", ");
 
   return (
     <div className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
       {/* Image */}
       <div className="relative h-[220px] overflow-hidden">
-        <Image
-          src={image}
-          alt={community.name}
-          fill
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
-        />
+        {image ? (
+          <Image
+            src={image}
+            alt={community.name}
+            fill
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <div className="w-full h-full bg-main-primary/20" />
+        )}
         {/* Status Badge */}
         <div className="absolute top-4 left-1/2 -translate-x-1/2">
           <span className="px-4 py-1.5 bg-main-primary text-white text-xs font-semibold uppercase rounded-full">
@@ -183,7 +187,7 @@ function CommunityCard({ community }: { community: Community }) {
 }
 
 function HomeCard({ home }: { home: Home }) {
-  const image = home.gallery?.[0] || "";
+  const image = home.gallery?.[0] || null;
   const location = [home.city, home.state, home.zipCode]
     .filter(Boolean)
     .join(", ");
@@ -193,12 +197,16 @@ function HomeCard({ home }: { home: Home }) {
     <div className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
       {/* Image */}
       <div className="relative h-[220px] overflow-hidden">
-        <Image
-          src={image}
-          alt={home.name}
-          fill
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
-        />
+        {image ? (
+          <Image
+            src={image}
+            alt={home.name}
+            fill
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <div className="w-full h-full bg-main-primary/20" />
+        )}
         {/* Status Badge */}
         <div className="absolute top-4 left-1/2 -translate-x-1/2">
           <span

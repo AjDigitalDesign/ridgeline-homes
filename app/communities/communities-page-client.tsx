@@ -110,7 +110,7 @@ function CommunityCard({
 }) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [calculatorOpen, setCalculatorOpen] = useState(false);
-  const image = community.gallery?.[0] || "";
+  const image = community.gallery?.[0] || null;
   const location = [community.city, community.state].filter(Boolean).join(", ");
   const galleryImages = community.gallery || [];
 
@@ -138,12 +138,16 @@ function CommunityCard({
       >
         {/* Image */}
         <div className="relative h-[200px] lg:h-[220px] overflow-hidden">
-          <Image
-            src={image}
-            alt={community.name}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-          />
+          {image ? (
+            <Image
+              src={image}
+              alt={community.name}
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <div className="w-full h-full bg-main-primary/20" />
+          )}
           {/* Status Badge */}
           <div className="absolute top-4 left-4">
             <span className="px-3 py-1.5 bg-main-primary text-white text-xs font-semibold uppercase rounded-full">
@@ -831,6 +835,8 @@ function ListingSettingsFooter({
 function ActiveFilterTags({
   filters,
   selectedMarketArea,
+  urlState,
+  urlCity,
   onRemoveFilter,
   onClearAll,
 }: {
@@ -841,10 +847,30 @@ function ActiveFilterTags({
     bathrooms: string;
   };
   selectedMarketArea: MarketArea | null;
+  urlState: string | null;
+  urlCity: string | null;
   onRemoveFilter: (key: string, value: any) => void;
   onClearAll: () => void;
 }) {
   const activeFilters: { key: string; label: string; value: any }[] = [];
+
+  // Show city filter from URL params (navigation dropdown)
+  if (urlCity) {
+    activeFilters.push({
+      key: "urlCity",
+      label: urlCity,
+      value: null,
+    });
+  }
+
+  // Show state filter from URL params (navigation dropdown) - only if no city
+  if (urlState && !urlCity) {
+    activeFilters.push({
+      key: "urlState",
+      label: urlState,
+      value: null,
+    });
+  }
 
   if (filters.city !== "all" && selectedMarketArea) {
     activeFilters.push({
@@ -938,6 +964,10 @@ export default function CommunitiesPageClient({
     };
   }, []);
 
+  // Get URL params for state/city filtering from navigation
+  const urlState = searchParams.get("state");
+  const urlCity = searchParams.get("city");
+
   const [filters, setFilters] = useState({
     city: searchParams.get("marketArea") || "all",
     priceRange: 0,
@@ -956,8 +986,18 @@ export default function CommunitiesPageClient({
   const filteredCommunities = useMemo(() => {
     let result = [...initialCommunities];
 
-    // Filter by city/market area
-    if (filters.city !== "all") {
+    // Filter by state (from navigation dropdown)
+    if (urlState) {
+      result = result.filter((c) => c.state === urlState);
+    }
+
+    // Filter by city (from navigation dropdown)
+    if (urlCity) {
+      result = result.filter((c) => c.city?.toLowerCase() === urlCity.toLowerCase());
+    }
+
+    // Filter by market area (from filter dropdown)
+    if (filters.city !== "all" && !urlState && !urlCity) {
       result = result.filter((c) => c.marketArea?.slug === filters.city);
     }
 
@@ -1000,7 +1040,7 @@ export default function CommunitiesPageClient({
     }
 
     return result;
-  }, [initialCommunities, filters, sortBy]);
+  }, [initialCommunities, filters, sortBy, urlState, urlCity]);
 
   // Count active filters
   const activeFiltersCount = useMemo(() => {
@@ -1009,8 +1049,10 @@ export default function CommunitiesPageClient({
     if (filters.priceRange > 0) count++;
     if (filters.bedrooms !== "any") count++;
     if (filters.bathrooms !== "any") count++;
+    if (urlState) count++;
+    if (urlCity) count++;
     return count;
-  }, [filters]);
+  }, [filters, urlState, urlCity]);
 
   // Calculate price ranges with counts (based on current city filter only)
   const priceRangesWithCounts = useMemo(() => {
@@ -1054,20 +1096,30 @@ export default function CommunitiesPageClient({
   // Handle removing a single filter
   const handleRemoveFilter = useCallback(
     (key: string, value: any) => {
+      // Handle URL-based filters (from navigation dropdown)
+      if (key === "urlCity" || key === "urlState") {
+        router.push("/communities");
+        return;
+      }
       handleFiltersChange({ ...filters, [key]: value });
     },
-    [filters, handleFiltersChange]
+    [filters, handleFiltersChange, router]
   );
 
   // Clear all filters
   const handleClearAllFilters = useCallback(() => {
+    // If URL-based filters exist, navigate to clean /communities URL
+    if (urlState || urlCity) {
+      router.push("/communities");
+      return;
+    }
     handleFiltersChange({
       city: "all",
       priceRange: 0,
       bedrooms: "any",
       bathrooms: "any",
     });
-  }, [handleFiltersChange]);
+  }, [handleFiltersChange, router, urlState, urlCity]);
 
   // Handle card click to select community and open popup on map
   const handleCardClick = useCallback((community: Community) => {
@@ -1083,14 +1135,21 @@ export default function CommunitiesPageClient({
   const heroImage =
     listingSettings?.bannerImage ||
     selectedMarketArea?.featureImage ||
+    filteredCommunities[0]?.gallery?.[0] ||
     initialCommunities[0]?.gallery?.[0] ||
     "";
 
-  // Hero title - use listing settings banner title when no market area is selected
-  const heroTitle =
-    selectedMarketArea?.name ||
-    listingSettings?.bannerTitle ||
-    "Our Communities";
+  // Hero title - show city/state from URL params, or market area, or default
+  const heroTitle = urlCity
+    ? urlCity
+    : urlState
+      ? urlState
+      : selectedMarketArea?.name ||
+        listingSettings?.bannerTitle ||
+        "Our Communities";
+
+  // Hero subtitle - show state when filtering by city
+  const heroSubtitle = urlCity && urlState ? urlState : null;
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -1118,9 +1177,9 @@ export default function CommunitiesPageClient({
           >
             <h1 className="text-4xl lg:text-6xl font-bold text-white">
               {heroTitle}
-              {selectedMarketArea?.state ? `, ${selectedMarketArea.state}` : ""}
+              {heroSubtitle ? `, ${heroSubtitle}` : selectedMarketArea?.state ? `, ${selectedMarketArea.state}` : ""}
             </h1>
-            {selectedMarketArea && (
+            {(selectedMarketArea || urlCity || urlState) && (
               <p
                 className={`text-lg lg:text-xl text-white/90 mt-2 uppercase tracking-wider transition-all duration-700 delay-100 ${
                   isAnimated
@@ -1388,6 +1447,8 @@ export default function CommunitiesPageClient({
         <ActiveFilterTags
           filters={filters}
           selectedMarketArea={selectedMarketArea}
+          urlState={urlState}
+          urlCity={urlCity}
           onRemoveFilter={handleRemoveFilter}
           onClearAll={handleClearAllFilters}
         />
@@ -1421,6 +1482,8 @@ export default function CommunitiesPageClient({
               <ActiveFilterTags
                 filters={filters}
                 selectedMarketArea={selectedMarketArea}
+                urlState={urlState}
+                urlCity={urlCity}
                 onRemoveFilter={handleRemoveFilter}
                 onClearAll={handleClearAllFilters}
               />
@@ -1464,6 +1527,8 @@ export default function CommunitiesPageClient({
             <ActiveFilterTags
               filters={filters}
               selectedMarketArea={selectedMarketArea}
+              urlState={urlState}
+              urlCity={urlCity}
               onRemoveFilter={handleRemoveFilter}
               onClearAll={handleClearAllFilters}
             />

@@ -34,7 +34,7 @@ export function Header() {
             <div
               className={cn(
                 "transition-all duration-300",
-                isScrolled ? "w-48" : "w-56"
+                isScrolled ? "w-56" : "w-64"
               )}
             >
               <MainLogo variant="dark" />
@@ -60,7 +60,7 @@ export function Header() {
               <div
                 className={cn(
                   "transition-all duration-300",
-                  isScrolled ? "w-40" : "w-44"
+                  isScrolled ? "w-48" : "w-56"
                 )}
               >
                 <MainLogo />

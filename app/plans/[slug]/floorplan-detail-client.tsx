@@ -35,6 +35,7 @@ import { Button } from "@/components/ui/button";
 import { FavoriteButton } from "@/components/ui/favorite-button";
 import { MortgageCalculator } from "@/components/mortgage-calculator";
 import { getStateSlug, getCitySlug } from "@/lib/url";
+import { getHomeStatusBadge } from "@/lib/home-status";
 
 import BackNavigation from "./components/back-navigation";
 import HeroGallery from "./components/hero-gallery";
@@ -267,7 +268,7 @@ export default function FloorplanDetailClient({
             ref={(el) => {
               sectionRefs.current.description = el;
             }}
-            className="scroll-mt-[150px]"
+            className="scroll-mt-[120px] xl:scroll-mt-[176px]"
           >
             <div className="text-center mb-8">
               <h2 className="text-3xl lg:text-4xl font-bold text-main-primary mb-2">
@@ -293,7 +294,7 @@ export default function FloorplanDetailClient({
             ref={(el) => {
               sectionRefs.current.elevations = el;
             }}
-            className="scroll-mt-[150px] mt-12 lg:mt-16"
+            className="scroll-mt-[120px] xl:scroll-mt-[176px] mt-12 lg:mt-16"
           >
             <div className="text-center mb-8">
               <h2 className="text-3xl lg:text-4xl font-bold text-main-primary mb-2">
@@ -329,7 +330,7 @@ export default function FloorplanDetailClient({
             ref={(el) => {
               sectionRefs.current.floorplans = el;
             }}
-            className="scroll-mt-[150px] mt-12 lg:mt-16"
+            className="scroll-mt-[120px] xl:scroll-mt-[176px] mt-12 lg:mt-16"
           >
             <div className="text-center mb-8">
               <h2 className="text-3xl lg:text-4xl font-bold text-main-primary mb-2">
@@ -369,7 +370,7 @@ export default function FloorplanDetailClient({
             ref={(el) => {
               sectionRefs.current.virtualtour = el;
             }}
-            className="scroll-mt-[150px] mt-12 lg:mt-16"
+            className="scroll-mt-[120px] xl:scroll-mt-[176px] mt-12 lg:mt-16"
           >
             <div className="text-center mb-8">
               <h2 className="text-3xl lg:text-4xl font-bold text-main-primary mb-2">
@@ -397,7 +398,7 @@ export default function FloorplanDetailClient({
             ref={(el) => {
               sectionRefs.current.videotour = el;
             }}
-            className="scroll-mt-[150px] mt-12 lg:mt-16"
+            className="scroll-mt-[120px] xl:scroll-mt-[176px] mt-12 lg:mt-16"
           >
             <div className="text-center mb-8">
               <h2 className="text-3xl lg:text-4xl font-bold text-main-primary mb-2">
@@ -430,7 +431,7 @@ export default function FloorplanDetailClient({
             ref={(el) => {
               sectionRefs.current.features = el;
             }}
-            className="scroll-mt-[150px] mt-12 lg:mt-16"
+            className="scroll-mt-[120px] xl:scroll-mt-[176px] mt-12 lg:mt-16"
           >
             <div className="text-center mb-8">
               <h2 className="text-3xl lg:text-4xl font-bold text-main-primary">
@@ -467,7 +468,7 @@ export default function FloorplanDetailClient({
             ref={(el) => {
               sectionRefs.current.homes = el;
             }}
-            className="scroll-mt-[150px] mt-12 lg:mt-16"
+            className="scroll-mt-[120px] xl:scroll-mt-[176px] mt-12 lg:mt-16"
           >
             <div className="text-center mb-8">
               <h2 className="text-3xl lg:text-4xl font-bold text-main-primary">
@@ -511,10 +512,8 @@ export default function FloorplanDetailClient({
                       )}
                       {/* Status Badge */}
                       <div className="absolute top-4 left-4">
-                        <span className="px-3 py-1.5 bg-main-secondary text-main-primary text-xs font-semibold uppercase rounded-full">
-                          {home.status === "AVAILABLE"
-                            ? "Available"
-                            : home.status?.replace(/_/g, " ")}
+                        <span className={`px-3 py-1.5 text-xs font-semibold uppercase rounded-full ${getHomeStatusBadge(home.status).className}`}>
+                          {getHomeStatusBadge(home.status).label}
                         </span>
                       </div>
                       {/* Favorite Icon */}
@@ -658,7 +657,7 @@ export default function FloorplanDetailClient({
         )}
 
         {/* Contact Section */}
-        <section className="scroll-mt-[150px] mt-12 lg:mt-16">
+        <section className="scroll-mt-[120px] xl:scroll-mt-[176px] mt-12 lg:mt-16">
           <FloorplanContactForm
             floorplan={floorplan}
             isModal={false}

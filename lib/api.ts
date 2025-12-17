@@ -546,6 +546,19 @@ export interface MarketArea {
 export const fetchMarketAreas = () =>
   api.get<MarketArea[]>("/api/public/market-areas");
 
+// Fetch navigation data for "Find Your Home" dropdown
+// Uses local API proxy to avoid CORS issues
+export const fetchNavigation = async (params?: { previewLimit?: number; type?: string }) => {
+  const searchParams = new URLSearchParams();
+  if (params?.previewLimit) searchParams.set("previewLimit", String(params.previewLimit));
+  if (params?.type) searchParams.set("type", params.type);
+
+  const url = `/api/navigation${searchParams.toString() ? `?${searchParams.toString()}` : ""}`;
+  const response = await fetch(url);
+  const data = await response.json();
+  return { data };
+};
+
 // Favorite types
 export type FavoriteType = "home" | "community" | "floorplan";
 
@@ -567,6 +580,29 @@ export interface CreateFavoriteData {
   homeId?: string;
   communityId?: string;
   floorplanId?: string;
+}
+
+// Navigation types for "Find Your Home" dropdown
+export interface NavigationCity {
+  city: string;
+  count: number;
+}
+
+export interface NavigationCounty {
+  county: string;
+  count: number;
+}
+
+export interface NavigationState {
+  state: string;
+  totalCommunities: number;
+  previewCities: NavigationCity[];
+  hasMoreCities: boolean;
+  counties: NavigationCounty[];
+}
+
+export interface NavigationData {
+  communities: NavigationState[];
 }
 
 // Local API client for proxied requests (avoids CORS issues)
