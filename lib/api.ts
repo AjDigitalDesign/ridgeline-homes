@@ -24,13 +24,18 @@ export const authApi = axios.create({
   },
 });
 
-// Add request interceptor to include auth token for public api
+// Add request interceptor to include auth token and cache-busting for public api
 api.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
     const sessionToken = localStorage.getItem("session_token");
     if (sessionToken) {
       config.headers.Authorization = `Bearer ${sessionToken}`;
     }
+    // Add cache-busting timestamp to prevent browser caching
+    config.params = {
+      ...config.params,
+      _t: Date.now(),
+    };
   }
   return config;
 });
