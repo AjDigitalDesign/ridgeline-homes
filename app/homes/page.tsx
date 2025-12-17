@@ -46,7 +46,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 async function getInitialData() {
   const [homesRes, communitiesRes, listingSettingsRes] = await Promise.all([
-    fetchHomes({ status: "AVAILABLE" }).catch(() => ({ data: [] })),
+    fetchHomes().catch(() => ({ data: [] })),
     fetchCommunities({ status: "ACTIVE" }).catch(() => ({ data: [] })),
     fetchListingSettings("homes").catch(() => ({ data: null })),
   ]);
