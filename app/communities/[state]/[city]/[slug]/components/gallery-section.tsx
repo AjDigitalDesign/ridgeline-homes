@@ -40,7 +40,11 @@ export default function GallerySection({
         <div className="flex items-center gap-3">
           {interactiveSiteMap && (
             <Button asChild variant="outline" size="sm">
-              <a href={interactiveSiteMap} target="_blank" rel="noopener noreferrer">
+              <a
+                href={interactiveSiteMap}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <Map className="size-4 mr-2" />
                 Site Map
               </a>
@@ -66,11 +70,17 @@ export default function GallerySection({
           <button
             key={index}
             onClick={() => onOpenGallery(index)}
-            className={`relative overflow-hidden rounded-xl group ${
+            className={`relative overflow-hidden rounded-xs group ${
               index === 0 ? "col-span-2 row-span-2" : ""
             }`}
           >
-            <div className={`relative ${index === 0 ? "h-[300px] lg:h-[400px]" : "h-[150px] lg:h-[190px]"}`}>
+            <div
+              className={`relative ${
+                index === 0
+                  ? "h-[300px] lg:h-[400px]"
+                  : "h-[150px] lg:h-[190px]"
+              }`}
+            >
               <Image
                 src={image}
                 alt={`Gallery image ${index + 1}`}
@@ -84,7 +94,9 @@ export default function GallerySection({
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                   <div className="text-center text-white">
                     <Camera className="size-8 mx-auto mb-2" />
-                    <p className="text-lg font-semibold">+{remainingCount} more</p>
+                    <p className="text-lg font-semibold">
+                      +{remainingCount} more
+                    </p>
                   </div>
                 </div>
               )}
@@ -98,12 +110,16 @@ export default function GallerySection({
         <div className="mt-6">
           <div className="flex items-center gap-2 mb-4">
             <Play className="size-5 text-main-primary" />
-            <h3 className="text-lg font-semibold text-main-primary">Video Tour</h3>
+            <h3 className="text-lg font-semibold text-main-primary">
+              Video Tour
+            </h3>
           </div>
-          <div className="relative aspect-video rounded-xl overflow-hidden bg-gray-100">
+          <div className="relative aspect-video rounded-xs overflow-hidden bg-gray-100">
             {videoUrl.includes("youtube") || videoUrl.includes("youtu.be") ? (
               <iframe
-                src={videoUrl.replace("watch?v=", "embed/").replace("youtu.be/", "youtube.com/embed/")}
+                src={videoUrl
+                  .replace("watch?v=", "embed/")
+                  .replace("youtu.be/", "youtube.com/embed/")}
                 className="absolute inset-0 w-full h-full"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
