@@ -81,12 +81,16 @@ export default function MarketAreasSection({
                   >
                     {/* Background Image */}
                     <div className="absolute inset-0">
-                      <Image
-                        src={area.featureImage || ""}
-                        alt={area.name}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-110"
-                      />
+                      {area.featureImage ? (
+                        <Image
+                          src={area.featureImage}
+                          alt={area.name}
+                          fill
+                          className="object-cover transition-transform duration-500 group-hover:scale-110"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-main-primary/20" />
+                      )}
                       {/* Overlay for readability */}
                       <div className="absolute inset-0 bg-black/40" />
                       <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-black/20" />
