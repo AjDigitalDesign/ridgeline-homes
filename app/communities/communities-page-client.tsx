@@ -110,7 +110,7 @@ function CommunityCard({
 }) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [calculatorOpen, setCalculatorOpen] = useState(false);
-  const image = community.gallery?.[0] || "";
+  const image = community.gallery?.[0] || null;
   const location = [community.city, community.state].filter(Boolean).join(", ");
   const galleryImages = community.gallery || [];
 
@@ -138,12 +138,16 @@ function CommunityCard({
       >
         {/* Image */}
         <div className="relative h-[200px] lg:h-[220px] overflow-hidden">
-          <Image
-            src={image}
-            alt={community.name}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-          />
+          {image ? (
+            <Image
+              src={image}
+              alt={community.name}
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <div className="w-full h-full bg-main-primary/20" />
+          )}
           {/* Status Badge */}
           <div className="absolute top-4 left-4">
             <span className="px-3 py-1.5 bg-main-primary text-white text-xs font-semibold uppercase rounded-full">
@@ -831,6 +835,8 @@ function ListingSettingsFooter({
 function ActiveFilterTags({
   filters,
   selectedMarketArea,
+  urlState,
+  urlCity,
   onRemoveFilter,
   onClearAll,
 }: {
@@ -841,10 +847,30 @@ function ActiveFilterTags({
     bathrooms: string;
   };
   selectedMarketArea: MarketArea | null;
+  urlState: string | null;
+  urlCity: string | null;
   onRemoveFilter: (key: string, value: any) => void;
   onClearAll: () => void;
 }) {
   const activeFilters: { key: string; label: string; value: any }[] = [];
+
+  // Show city filter from URL params (navigation dropdown)
+  if (urlCity) {
+    activeFilters.push({
+      key: "urlCity",
+      label: urlCity,
+      value: null,
+    });
+  }
+
+  // Show state filter from URL params (navigation dropdown) - only if no city
+  if (urlState && !urlCity) {
+    activeFilters.push({
+      key: "urlState",
+      label: urlState,
+      value: null,
+    });
+  }
 
   if (filters.city !== "all" && selectedMarketArea) {
     activeFilters.push({
@@ -1070,20 +1096,30 @@ export default function CommunitiesPageClient({
   // Handle removing a single filter
   const handleRemoveFilter = useCallback(
     (key: string, value: any) => {
+      // Handle URL-based filters (from navigation dropdown)
+      if (key === "urlCity" || key === "urlState") {
+        router.push("/communities");
+        return;
+      }
       handleFiltersChange({ ...filters, [key]: value });
     },
-    [filters, handleFiltersChange]
+    [filters, handleFiltersChange, router]
   );
 
   // Clear all filters
   const handleClearAllFilters = useCallback(() => {
+    // If URL-based filters exist, navigate to clean /communities URL
+    if (urlState || urlCity) {
+      router.push("/communities");
+      return;
+    }
     handleFiltersChange({
       city: "all",
       priceRange: 0,
       bedrooms: "any",
       bathrooms: "any",
     });
-  }, [handleFiltersChange]);
+  }, [handleFiltersChange, router, urlState, urlCity]);
 
   // Handle card click to select community and open popup on map
   const handleCardClick = useCallback((community: Community) => {
@@ -1411,6 +1447,8 @@ export default function CommunitiesPageClient({
         <ActiveFilterTags
           filters={filters}
           selectedMarketArea={selectedMarketArea}
+          urlState={urlState}
+          urlCity={urlCity}
           onRemoveFilter={handleRemoveFilter}
           onClearAll={handleClearAllFilters}
         />
@@ -1444,6 +1482,8 @@ export default function CommunitiesPageClient({
               <ActiveFilterTags
                 filters={filters}
                 selectedMarketArea={selectedMarketArea}
+                urlState={urlState}
+                urlCity={urlCity}
                 onRemoveFilter={handleRemoveFilter}
                 onClearAll={handleClearAllFilters}
               />
@@ -1487,6 +1527,8 @@ export default function CommunitiesPageClient({
             <ActiveFilterTags
               filters={filters}
               selectedMarketArea={selectedMarketArea}
+              urlState={urlState}
+              urlCity={urlCity}
               onRemoveFilter={handleRemoveFilter}
               onClearAll={handleClearAllFilters}
             />

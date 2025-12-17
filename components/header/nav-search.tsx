@@ -4,8 +4,6 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Search, MapPin, Home, FileText, Loader2, X } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
-import { fetchCommunities, fetchHomes, fetchFloorplans } from "@/lib/api";
-import type { Community, Home as HomeType, Floorplan } from "@/lib/api";
 import {
   Dialog,
   DialogContent,
@@ -50,84 +48,12 @@ export function NavSearch() {
 
       setIsLoading(true);
       try {
-        const [communitiesRes, homesRes, floorplansRes] = await Promise.all([
-          fetchCommunities({ limit: 5 }).catch(() => ({ data: [] })),
-          fetchHomes({ limit: 5 }).catch(() => ({ data: [] })),
-          fetchFloorplans({ limit: 5 }).catch(() => ({ data: [] })),
-        ]);
-
-        const searchLower = debouncedQuery.toLowerCase();
-        const searchResults: SearchResult[] = [];
-
-        // Filter communities
-        const communities = (communitiesRes.data || []) as Community[];
-        communities
-          .filter(
-            (c) =>
-              c.name.toLowerCase().includes(searchLower) ||
-              c.city?.toLowerCase().includes(searchLower) ||
-              c.state?.toLowerCase().includes(searchLower)
-          )
-          .slice(0, 3)
-          .forEach((c) => {
-            const state = c.state?.toLowerCase().replace(/\s+/g, "-") || "";
-            const city = c.city?.toLowerCase().replace(/\s+/g, "-") || "";
-            searchResults.push({
-              type: "community",
-              id: c.id,
-              name: c.name,
-              subtitle: [c.city, c.state].filter(Boolean).join(", "),
-              href: `/communities/${state}/${city}/${c.slug}`,
-            });
-          });
-
-        // Filter homes
-        const homes = (homesRes.data || []) as HomeType[];
-        homes
-          .filter(
-            (h) =>
-              h.name?.toLowerCase().includes(searchLower) ||
-              h.address?.toLowerCase().includes(searchLower) ||
-              h.street?.toLowerCase().includes(searchLower) ||
-              h.city?.toLowerCase().includes(searchLower)
-          )
-          .slice(0, 3)
-          .forEach((h) => {
-            const community = h.community;
-            const state =
-              community?.state?.toLowerCase().replace(/\s+/g, "-") ||
-              h.state?.toLowerCase().replace(/\s+/g, "-") ||
-              "";
-            const city =
-              community?.city?.toLowerCase().replace(/\s+/g, "-") ||
-              h.city?.toLowerCase().replace(/\s+/g, "-") ||
-              "";
-            const communitySlug = community?.slug || "";
-            searchResults.push({
-              type: "home",
-              id: h.id,
-              name: h.street || h.address || h.name,
-              subtitle: [h.city, h.state].filter(Boolean).join(", "),
-              href: `/homes/${state}/${city}/${communitySlug}/${h.slug}`,
-            });
-          });
-
-        // Filter floorplans
-        const floorplans = (floorplansRes.data || []) as Floorplan[];
-        floorplans
-          .filter((f) => f.name.toLowerCase().includes(searchLower))
-          .slice(0, 3)
-          .forEach((f) => {
-            searchResults.push({
-              type: "floorplan",
-              id: f.id,
-              name: f.name,
-              subtitle: `${f.baseBedrooms} Beds | ${f.baseBathrooms} Baths | ${f.baseSquareFeet?.toLocaleString()} Sq Ft`,
-              href: `/plans/${f.slug}`,
-            });
-          });
-
-        setResults(searchResults);
+        // Use the server-side API route to avoid CORS issues
+        const response = await fetch(
+          `/api/search?q=${encodeURIComponent(debouncedQuery)}`
+        );
+        const data = await response.json();
+        setResults(data.results || []);
       } catch (error) {
         console.error("Search error:", error);
         setResults([]);

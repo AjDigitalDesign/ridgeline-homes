@@ -237,31 +237,51 @@ function FloorplanCard({
           {/* Available In Communities */}
           {availableCommunities.length > 0 && (
             <div className="mt-3 pt-3 border-t border-gray-100">
-              <Select>
-                <SelectTrigger className="w-full h-9 text-xs border-gray-200">
-                  <div className="flex items-center gap-1.5">
-                    <MapPin className="size-3.5 shrink-0 text-gray-400" />
-                    <span className="text-gray-500">Available in</span>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button className="w-full flex items-center justify-between h-9 px-3 text-xs border border-gray-200 rounded-md hover:bg-gray-50 transition-colors">
+                    <div className="flex items-center gap-1.5">
+                      <MapPin className="size-3.5 shrink-0 text-main-secondary" />
+                      <span className="text-gray-600">
+                        Available in{" "}
+                        <span className="font-semibold text-main-primary">
+                          {availableCommunities.length} {availableCommunities.length === 1 ? "community" : "communities"}
+                        </span>
+                      </span>
+                    </div>
+                    <ChevronDown className="size-3.5 text-gray-400" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[280px] p-2" align="start">
+                  <p className="px-2 py-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                    Available Communities
+                  </p>
+                  <div className="mt-1 space-y-0.5">
+                    {availableCommunities.map((community) => {
+                      const url = `/communities/${getStateSlug(
+                        community.state
+                      )}/${getCitySlug(community.city)}/${community.slug}`;
+                      return (
+                        <Link
+                          key={community.id}
+                          href={url}
+                          className="flex items-center gap-2 px-2 py-2 text-sm rounded-md hover:bg-gray-100 text-main-primary transition-colors"
+                        >
+                          <MapPin className="size-4 shrink-0 text-main-secondary" />
+                          <div className="min-w-0">
+                            <span className="block font-medium truncate">{community.name}</span>
+                            {(community.city || community.state) && (
+                              <span className="block text-xs text-gray-500 truncate">
+                                {[community.city, community.state].filter(Boolean).join(", ")}
+                              </span>
+                            )}
+                          </div>
+                        </Link>
+                      );
+                    })}
                   </div>
-                </SelectTrigger>
-                <SelectContent className="w-full">
-                  {availableCommunities.map((community) => {
-                    const url = `/communities/${getStateSlug(
-                      community.state
-                    )}/${getCitySlug(community.city)}/${community.slug}`;
-                    return (
-                      <Link
-                        key={community.id}
-                        href={url}
-                        className="flex items-center gap-2 px-2 py-2 text-sm rounded-md hover:bg-gray-100 text-main-primary transition-colors cursor-pointer"
-                      >
-                        <MapPin className="size-4 shrink-0 text-gray-400" />
-                        <span className="truncate">{community.name}</span>
-                      </Link>
-                    );
-                  })}
-                </SelectContent>
-              </Select>
+                </PopoverContent>
+              </Popover>
             </div>
           )}
 

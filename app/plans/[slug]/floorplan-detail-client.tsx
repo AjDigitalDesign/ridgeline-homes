@@ -268,7 +268,7 @@ export default function FloorplanDetailClient({
             ref={(el) => {
               sectionRefs.current.description = el;
             }}
-            className="scroll-mt-[150px]"
+            className="scroll-mt-[120px] xl:scroll-mt-[176px]"
           >
             <div className="text-center mb-8">
               <h2 className="text-3xl lg:text-4xl font-bold text-main-primary mb-2">
@@ -294,7 +294,7 @@ export default function FloorplanDetailClient({
             ref={(el) => {
               sectionRefs.current.elevations = el;
             }}
-            className="scroll-mt-[150px] mt-12 lg:mt-16"
+            className="scroll-mt-[120px] xl:scroll-mt-[176px] mt-12 lg:mt-16"
           >
             <div className="text-center mb-8">
               <h2 className="text-3xl lg:text-4xl font-bold text-main-primary mb-2">
@@ -330,7 +330,7 @@ export default function FloorplanDetailClient({
             ref={(el) => {
               sectionRefs.current.floorplans = el;
             }}
-            className="scroll-mt-[150px] mt-12 lg:mt-16"
+            className="scroll-mt-[120px] xl:scroll-mt-[176px] mt-12 lg:mt-16"
           >
             <div className="text-center mb-8">
               <h2 className="text-3xl lg:text-4xl font-bold text-main-primary mb-2">
@@ -370,7 +370,7 @@ export default function FloorplanDetailClient({
             ref={(el) => {
               sectionRefs.current.virtualtour = el;
             }}
-            className="scroll-mt-[150px] mt-12 lg:mt-16"
+            className="scroll-mt-[120px] xl:scroll-mt-[176px] mt-12 lg:mt-16"
           >
             <div className="text-center mb-8">
               <h2 className="text-3xl lg:text-4xl font-bold text-main-primary mb-2">
@@ -398,7 +398,7 @@ export default function FloorplanDetailClient({
             ref={(el) => {
               sectionRefs.current.videotour = el;
             }}
-            className="scroll-mt-[150px] mt-12 lg:mt-16"
+            className="scroll-mt-[120px] xl:scroll-mt-[176px] mt-12 lg:mt-16"
           >
             <div className="text-center mb-8">
               <h2 className="text-3xl lg:text-4xl font-bold text-main-primary mb-2">
@@ -431,7 +431,7 @@ export default function FloorplanDetailClient({
             ref={(el) => {
               sectionRefs.current.features = el;
             }}
-            className="scroll-mt-[150px] mt-12 lg:mt-16"
+            className="scroll-mt-[120px] xl:scroll-mt-[176px] mt-12 lg:mt-16"
           >
             <div className="text-center mb-8">
               <h2 className="text-3xl lg:text-4xl font-bold text-main-primary">
@@ -468,7 +468,7 @@ export default function FloorplanDetailClient({
             ref={(el) => {
               sectionRefs.current.homes = el;
             }}
-            className="scroll-mt-[150px] mt-12 lg:mt-16"
+            className="scroll-mt-[120px] xl:scroll-mt-[176px] mt-12 lg:mt-16"
           >
             <div className="text-center mb-8">
               <h2 className="text-3xl lg:text-4xl font-bold text-main-primary">
@@ -657,7 +657,7 @@ export default function FloorplanDetailClient({
         )}
 
         {/* Contact Section */}
-        <section className="scroll-mt-[150px] mt-12 lg:mt-16">
+        <section className="scroll-mt-[120px] xl:scroll-mt-[176px] mt-12 lg:mt-16">
           <FloorplanContactForm
             floorplan={floorplan}
             isModal={false}

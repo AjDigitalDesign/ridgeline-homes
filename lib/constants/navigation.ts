@@ -17,10 +17,55 @@ export const mainNavItems = [
   {
     label: "News & Events",
     href: "/blog",
+    hasDropdown: true,
   },
   {
     label: "About Us",
     href: "/about-us",
+    hasDropdown: true,
+  },
+];
+
+// About Us dropdown items
+export const aboutUsDropdownItems = [
+  {
+    label: "About Us",
+    href: "/about-us",
+    description: "Learn more about our company.",
+  },
+  {
+    label: "Gallery",
+    href: "/photos",
+    description: "View our photo gallery.",
+  },
+  {
+    label: "Our Process",
+    href: "/our-process",
+    description: "Learn about our home building process.",
+  },
+  {
+    label: "Energy Efficiency",
+    href: "/our-process/energy-efficiency",
+    description: "Learn about energy-efficient homes.",
+  },
+  {
+    label: "Financing",
+    href: "/financing",
+    description: "Explore financing options.",
+  },
+];
+
+// News & Events dropdown items
+export const newsEventsDropdownItems = [
+  {
+    label: "Blog",
+    href: "/blog",
+    description: "Read our latest news and updates.",
+  },
+  {
+    label: "Events",
+    href: "/events",
+    description: "View upcoming events.",
   },
 ];
 
@@ -49,60 +94,53 @@ export const navigationItems = [
   {
     label: "News & Events",
     href: "/blog",
-    submenu: false,
-  },
-  {
+    submenu: true,
+    type: "simple",
     items: [
       {
-        label: "Photos",
+        label: "Blog",
+        href: "/blog",
+        description: "Read our latest news and updates.",
+      },
+      {
+        label: "Events",
+        href: "/events",
+        description: "View upcoming events.",
+      },
+    ],
+  },
+  {
+    label: "About Us",
+    href: "/about-us",
+    submenu: true,
+    type: "simple",
+    items: [
+      {
+        label: "About Us",
+        href: "/about-us",
+        description: "Learn more about our company.",
+      },
+      {
+        label: "Gallery",
         href: "/photos",
         description: "View our photo gallery.",
       },
-      {
-        label: "Videos",
-        href: "/videos",
-        description: "Watch our video gallery.",
-      },
-      {
-        label: "Virtual Tours",
-        href: "/virtual-tours",
-        description: "Take virtual tours of our homes.",
-      },
-    ],
-    label: "Gallery",
-    submenu: true,
-    type: "simple",
-  },
-  {
-    items: [
       {
         label: "Our Process",
         href: "/our-process",
         description: "Learn about our home building process.",
       },
       {
-        label: "Design Center",
-        href: "/design-center",
-        description: "Explore design options.",
-      },
-      {
         label: "Energy Efficiency",
         href: "/our-process/energy-efficiency",
         description: "Learn about energy-efficient homes.",
       },
+      {
+        label: "Financing",
+        href: "/financing",
+        description: "Explore financing options.",
+      },
     ],
-    label: "Resources",
-    submenu: true,
-    type: "simple",
-  },
-  {
-    items: [
-      { href: "/about-us", label: "About Us" },
-      { href: "/careers", label: "Careers" },
-    ],
-    label: "About",
-    submenu: true,
-    type: "simple",
   },
   {
     label: "Contact",
