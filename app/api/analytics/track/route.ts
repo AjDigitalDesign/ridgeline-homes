@@ -25,8 +25,9 @@ async function getTenantId(): Promise<string> {
     }
 
     const data = await response.json();
-    cachedTenantId = data?.id || "";
-    return cachedTenantId;
+    const tenantId = data?.id || "";
+    cachedTenantId = tenantId;
+    return tenantId;
   } catch (error) {
     console.error("Tenant fetch error:", error);
     return "";
