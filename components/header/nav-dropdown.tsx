@@ -40,17 +40,14 @@ export function NavDropdown({ label, items, className }: NavDropdownProps) {
         >
           {label}
           <ChevronDown
-            className={cn(
-              "size-4 transition-transform",
-              open && "rotate-180"
-            )}
+            className={cn("size-4 transition-transform", open && "rotate-180")}
           />
         </button>
       </PopoverTrigger>
       <PopoverContent
         align="start"
         className="w-[220px] p-0 shadow-xl border-0 bg-main-primary rounded-none"
-        sideOffset={12}
+        sideOffset={20}
       >
         {/* Header */}
         <div className="px-4 py-3 border-b border-slate-600">
