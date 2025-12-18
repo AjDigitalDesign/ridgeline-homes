@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import type { Community, Floorplan } from "@/lib/api";
 import type { CommunityHome } from "./components/homes-section";
 import { Lightbox } from "@/components/ui/lightbox";
+import { useAnalytics } from "@/hooks/use-analytics";
 
 import BackNavigation from "./components/back-navigation";
 import HeroGallery from "./components/hero-gallery";
@@ -53,6 +54,12 @@ export default function CommunityDetailClient({
   homes,
   floorplans,
 }: CommunityDetailClientProps) {
+  // Track page view with entity data
+  useAnalytics({
+    entityId: community.id,
+    entitySlug: community.slug,
+  });
+
   const [activeSection, setActiveSection] = useState<SectionId>("description");
   const [showContactModal, setShowContactModal] = useState(false);
   const [contactModalType, setContactModalType] = useState<"tour" | "info">(

@@ -42,7 +42,7 @@ import { FavoriteButton } from "@/components/ui/favorite-button";
 import { MortgageCalculator } from "@/components/mortgage-calculator";
 import CommunityMap from "./community-map";
 import type { Community, MarketArea, ListingSettings } from "@/lib/api";
-import { getCommunityUrl, getCommunityUrlWithParams } from "@/lib/url";
+import { getCommunityUrl, getCommunityUrlWithParams, getStateName } from "@/lib/url";
 import { Calculator } from "lucide-react";
 
 interface CommunitiesPageClientProps {
@@ -100,12 +100,12 @@ function formatMonthlyPayment(price: number | null) {
 function CommunityCard({
   community,
   onHover,
-  onClick,
+  onSelect,
   isHighlighted,
 }: {
   community: Community;
   onHover?: (id: string | null) => void;
-  onClick?: (community: Community) => void;
+  onSelect?: (community: Community | null) => void;
   isHighlighted?: boolean;
 }) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -126,15 +126,23 @@ function CommunityCard({
     setCalculatorOpen(true);
   };
 
+  const handleMouseEnter = () => {
+    onHover?.(community.id);
+    onSelect?.(community);
+  };
+
+  const handleMouseLeave = () => {
+    onHover?.(null);
+  };
+
   return (
     <>
       <div
         className={`group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all cursor-pointer ${
           isHighlighted ? "ring-2 ring-main-secondary shadow-lg" : ""
         }`}
-        onMouseEnter={() => onHover?.(community.id)}
-        onMouseLeave={() => onHover?.(null)}
-        onClick={() => onClick?.(community)}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
         {/* Image */}
         <div className="relative h-[200px] lg:h-[220px] overflow-hidden">
@@ -551,6 +559,7 @@ function MobileFilters({
   sortBy,
   onSortChange,
   marketAreas,
+  states,
   activeFiltersCount,
 }: {
   filters: any;
@@ -558,10 +567,16 @@ function MobileFilters({
   sortBy: string;
   onSortChange: (sort: string) => void;
   marketAreas: MarketArea[];
+  states: string[];
   activeFiltersCount: number;
 }) {
   const bedroomOptions = ["any", "2", "3", "4", "5"];
   const bathroomOptions = ["any", "2", "3", "4"];
+
+  // Filter market areas by selected state
+  const filteredMarketAreas = filters.state === "all"
+    ? marketAreas
+    : marketAreas.filter((area) => area.state === filters.state);
 
   return (
     <div className="lg:hidden flex items-center gap-2 px-4 py-3 bg-white border-b overflow-x-auto">
@@ -587,6 +602,35 @@ function MobileFilters({
           </SheetHeader>
           <div className="flex-1 overflow-y-auto px-4 pb-4">
             <div className="flex flex-col gap-6 py-6">
+              {/* State - only show if more than one state */}
+              {states.length > 1 && (
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-3 block">
+                    State
+                  </label>
+                  <Select
+                    value={filters.state}
+                    onValueChange={(value) =>
+                      onFiltersChange({ ...filters, state: value, city: "all" })
+                    }
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="All States">
+                        {filters.state !== "all" ? getStateName(filters.state) : "All States"}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All States</SelectItem>
+                      {states.map((state) => (
+                        <SelectItem key={state} value={state}>
+                          {getStateName(state)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
               {/* City */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-3 block">
@@ -603,7 +647,7 @@ function MobileFilters({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Cities</SelectItem>
-                    {marketAreas.map((area) => (
+                    {filteredMarketAreas.map((area) => (
                       <SelectItem key={area.id} value={area.slug}>
                         {area.name}
                       </SelectItem>
@@ -841,6 +885,7 @@ function ActiveFilterTags({
   onClearAll,
 }: {
   filters: {
+    state: string;
     city: string;
     priceRange: number;
     bedrooms: string;
@@ -854,6 +899,15 @@ function ActiveFilterTags({
 }) {
   const activeFilters: { key: string; label: string; value: any }[] = [];
 
+  // Show state filter from URL params (navigation dropdown)
+  if (urlState) {
+    activeFilters.push({
+      key: "urlState",
+      label: getStateName(urlState),
+      value: null,
+    });
+  }
+
   // Show city filter from URL params (navigation dropdown)
   if (urlCity) {
     activeFilters.push({
@@ -863,12 +917,12 @@ function ActiveFilterTags({
     });
   }
 
-  // Show state filter from URL params (navigation dropdown) - only if no city
-  if (urlState && !urlCity) {
+  // Show state filter from filter dropdown (only if no URL params)
+  if (filters.state !== "all" && !urlState && !urlCity) {
     activeFilters.push({
-      key: "urlState",
-      label: urlState,
-      value: null,
+      key: "state",
+      label: getStateName(filters.state),
+      value: "all",
     });
   }
 
@@ -969,12 +1023,28 @@ export default function CommunitiesPageClient({
   const urlCity = searchParams.get("city");
 
   const [filters, setFilters] = useState({
+    state: "all",
     city: searchParams.get("marketArea") || "all",
     priceRange: 0,
     bedrooms: "any",
     bathrooms: "any",
   });
   const [sortBy, setSortBy] = useState("featured");
+
+  // Get unique states from market areas
+  const states = useMemo(() => {
+    const stateSet = new Set<string>();
+    marketAreas.forEach((area) => {
+      if (area.state) stateSet.add(area.state);
+    });
+    return Array.from(stateSet).sort();
+  }, [marketAreas]);
+
+  // Filter market areas by selected state
+  const filteredMarketAreas = useMemo(() => {
+    if (filters.state === "all") return marketAreas;
+    return marketAreas.filter((area) => area.state === filters.state);
+  }, [marketAreas, filters.state]);
 
   // Get selected market area
   const selectedMarketArea = useMemo(() => {
@@ -994,6 +1064,11 @@ export default function CommunitiesPageClient({
     // Filter by city (from navigation dropdown)
     if (urlCity) {
       result = result.filter((c) => c.city?.toLowerCase() === urlCity.toLowerCase());
+    }
+
+    // Filter by state (from filter dropdown)
+    if (filters.state !== "all" && !urlState && !urlCity) {
+      result = result.filter((c) => c.state === filters.state);
     }
 
     // Filter by market area (from filter dropdown)
@@ -1114,6 +1189,7 @@ export default function CommunitiesPageClient({
       return;
     }
     handleFiltersChange({
+      state: "all",
       city: "all",
       priceRange: 0,
       bedrooms: "any",
@@ -1121,23 +1197,13 @@ export default function CommunitiesPageClient({
     });
   }, [handleFiltersChange, router, urlState, urlCity]);
 
-  // Handle card click to select community and open popup on map
-  const handleCardClick = useCallback((community: Community) => {
-    setSelectedCommunityId(community.id);
-  }, []);
-
-  // Handle marker select from map
+  // Handle marker select from map (also used by card hover)
   const handleMarkerSelect = useCallback((community: Community | null) => {
     setSelectedCommunityId(community?.id || null);
   }, []);
 
-  // Hero background image - use listing settings banner, then market area, then first community
-  const heroImage =
-    listingSettings?.bannerImage ||
-    selectedMarketArea?.featureImage ||
-    filteredCommunities[0]?.gallery?.[0] ||
-    initialCommunities[0]?.gallery?.[0] ||
-    "";
+  // Hero background image - only use listing settings banner image (no fallback to gallery images)
+  const heroImage = listingSettings?.bannerImage || "";
 
   // Hero title - show city/state from URL params, or market area, or default
   const heroTitle = urlCity
@@ -1154,8 +1220,8 @@ export default function CommunitiesPageClient({
   return (
     <main className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <section className="relative h-[300px] lg:h-[450px] overflow-hidden">
-        {heroImage && (
+      <section className="relative h-[300px] lg:h-[450px] overflow-hidden pt-16 xl:pt-24">
+        {heroImage ? (
           <Image
             src={heroImage}
             alt={selectedMarketArea?.name || "Communities"}
@@ -1165,9 +1231,11 @@ export default function CommunitiesPageClient({
             }`}
             priority
           />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-main-primary to-main-primary/80" />
         )}
         <div className="absolute inset-0 bg-black/40" />
-        <div className="absolute inset-0 flex items-center justify-center text-center">
+        <div className="absolute inset-0 flex items-center justify-center text-center pt-16 xl:pt-24">
           <div
             className={`transition-all duration-700 ${
               isAnimated
@@ -1204,11 +1272,60 @@ export default function CommunitiesPageClient({
       <MobileQuickLinks />
 
       {/* Desktop Filters Bar */}
-      <div className="hidden lg:block bg-white border-b sticky top-0 z-30">
+      <div className="hidden xl:block bg-white border-b sticky top-[88px] z-30">
         <div className="container mx-auto px-4 lg:px-10 xl:px-20 2xl:px-24">
           <div className="flex items-center justify-between py-4">
             {/* Left Filters */}
             <div className="flex items-center gap-3">
+              {/* State Filter - only show if more than one state */}
+              {states.length > 1 && (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      className={`flex items-center gap-2 px-4 py-2.5 border rounded-full text-sm font-medium transition-colors ${
+                        filters.state !== "all"
+                          ? "border-main-primary bg-main-primary/5 text-main-primary"
+                          : "border-gray-200 text-main-primary hover:border-main-primary"
+                      }`}
+                    >
+                      {filters.state !== "all" ? getStateName(filters.state) : "State"}
+                      <ChevronDown className="size-4" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-64 p-2" align="start">
+                    <button
+                      onClick={() =>
+                        handleFiltersChange({ ...filters, state: "all", city: "all" })
+                      }
+                      className={`w-full text-left px-3 py-2 text-sm rounded-md transition-colors ${
+                        filters.state === "all"
+                          ? "bg-main-primary/10 text-main-primary font-medium"
+                          : "hover:bg-gray-100"
+                      }`}
+                    >
+                      All States
+                    </button>
+                    <div className="max-h-[300px] overflow-y-auto">
+                      {states.map((state) => (
+                        <button
+                          key={state}
+                          onClick={() =>
+                            handleFiltersChange({ ...filters, state, city: "all" })
+                          }
+                          className={`w-full text-left px-3 py-2 text-sm rounded-md transition-colors ${
+                            filters.state === state
+                              ? "bg-main-primary/10 text-main-primary font-medium"
+                              : "hover:bg-gray-100"
+                          }`}
+                        >
+                          {getStateName(state)}
+                        </button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              )}
+
               {/* City Filter */}
               <Popover>
                 <PopoverTrigger asChild>
@@ -1241,7 +1358,7 @@ export default function CommunitiesPageClient({
                     </button>
                   </div>
                   <div className="max-h-[300px] overflow-y-auto p-2">
-                    {marketAreas.map((area) => (
+                    {filteredMarketAreas.map((area) => (
                       <button
                         key={area.id}
                         onClick={() =>
@@ -1406,6 +1523,7 @@ export default function CommunitiesPageClient({
         sortBy={sortBy}
         onSortChange={setSortBy}
         marketAreas={marketAreas}
+        states={states}
         activeFiltersCount={activeFiltersCount}
       />
 
@@ -1502,7 +1620,7 @@ export default function CommunitiesPageClient({
                   <CommunityCard
                     community={community}
                     onHover={setHoveredCommunityId}
-                    onClick={handleCardClick}
+                    onSelect={handleMarkerSelect}
                     isHighlighted={
                       hoveredCommunityId === community.id ||
                       selectedCommunityId === community.id
@@ -1559,6 +1677,7 @@ export default function CommunitiesPageClient({
                 className="mt-4"
                 onClick={() =>
                   handleFiltersChange({
+                    state: "all",
                     city: "all",
                     priceRange: 0,
                     bedrooms: "any",

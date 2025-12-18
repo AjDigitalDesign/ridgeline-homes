@@ -48,7 +48,7 @@ import { FavoriteButton } from "@/components/ui/favorite-button";
 import { MortgageCalculator } from "@/components/mortgage-calculator";
 import HomesMap from "./homes-map";
 import type { Home, Community, ListingSettings } from "@/lib/api";
-import { getHomeUrl } from "@/lib/url";
+import { getHomeUrl, getStateName } from "@/lib/url";
 
 interface HomesPageClientProps {
   initialHomes: Home[];
@@ -105,12 +105,12 @@ function formatMonthlyPayment(price: number | null) {
 function HomeCard({
   home,
   onHover,
-  onClick,
+  onSelect,
   isHighlighted,
 }: {
   home: Home;
   onHover?: (id: string | null) => void;
-  onClick?: (home: Home) => void;
+  onSelect?: (home: Home | null) => void;
   isHighlighted?: boolean;
 }) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -135,15 +135,23 @@ function HomeCard({
     setCalculatorOpen(true);
   };
 
+  const handleMouseEnter = () => {
+    onHover?.(home.id);
+    onSelect?.(home);
+  };
+
+  const handleMouseLeave = () => {
+    onHover?.(null);
+  };
+
   return (
     <>
       <div
         className={`group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all cursor-pointer ${
           isHighlighted ? "ring-2 ring-main-secondary shadow-lg" : ""
         }`}
-        onMouseEnter={() => onHover?.(home.id)}
-        onMouseLeave={() => onHover?.(null)}
-        onClick={() => onClick?.(home)}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
         {/* Image */}
         <div className="relative h-[200px] lg:h-[220px] overflow-hidden">
@@ -567,6 +575,7 @@ function MobileFilters({
   onSortChange,
   communities,
   cities,
+  states,
   activeFiltersCount,
 }: {
   filters: any;
@@ -575,6 +584,7 @@ function MobileFilters({
   onSortChange: (sort: string) => void;
   communities: Community[];
   cities: string[];
+  states: string[];
   activeFiltersCount: number;
 }) {
   const bedroomOptions = ["any", "2", "3", "4", "5"];
@@ -609,6 +619,35 @@ function MobileFilters({
           </SheetHeader>
           <div className="flex-1 overflow-y-auto px-4 pb-4">
             <div className="flex flex-col gap-6 py-4">
+              {/* State - only show if more than one state */}
+              {states.length > 1 && (
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">
+                    State
+                  </label>
+                  <Select
+                    value={filters.state}
+                    onValueChange={(value) =>
+                      onFiltersChange({ ...filters, state: value, city: "all" })
+                    }
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="All States">
+                        {filters.state !== "all" ? getStateName(filters.state) : "All States"}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All States</SelectItem>
+                      {states.map((state) => (
+                        <SelectItem key={state} value={state}>
+                          {getStateName(state)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
               {/* City */}
               <div>
                 <label className="text-sm font-medium text-gray-700 mb-2 block">
@@ -814,10 +853,13 @@ function ActiveFilterTags({
   filters,
   selectedCity,
   selectedCommunity,
+  urlState,
+  urlCity,
   onRemoveFilter,
   onClearAll,
 }: {
   filters: {
+    state: string;
     city: string;
     priceRange: number;
     bedrooms: string;
@@ -827,12 +869,42 @@ function ActiveFilterTags({
   };
   selectedCity: string | null;
   selectedCommunity: Community | null;
+  urlState: string | null;
+  urlCity: string | null;
   onRemoveFilter: (key: string, value: any) => void;
   onClearAll: () => void;
 }) {
   const activeFilters: { key: string; label: string; value: any }[] = [];
 
-  if (filters.city !== "all" && selectedCity) {
+  // Show state filter from URL params (navigation dropdown)
+  if (urlState) {
+    activeFilters.push({
+      key: "urlState",
+      label: getStateName(urlState),
+      value: null,
+    });
+  }
+
+  // Show city filter from URL params (navigation dropdown)
+  if (urlCity) {
+    activeFilters.push({
+      key: "urlCity",
+      label: urlCity,
+      value: null,
+    });
+  }
+
+  // Show state filter from filter dropdown (only if no URL params)
+  if (filters.state !== "all" && !urlState && !urlCity) {
+    activeFilters.push({
+      key: "state",
+      label: getStateName(filters.state),
+      value: "all",
+    });
+  }
+
+  // Show city filter from filter dropdown (only if no URL params)
+  if (filters.city !== "all" && selectedCity && !urlState && !urlCity) {
     activeFilters.push({
       key: "city",
       label: selectedCity,
@@ -983,8 +1055,13 @@ export default function HomesPageClient({
     };
   }, []);
 
+  // Get URL params for state/city filtering from navigation
+  const urlState = searchParams.get("state");
+  const urlCity = searchParams.get("city");
+
   const [filters, setFilters] = useState({
-    city: searchParams.get("city") || "all",
+    state: "all",
+    city: "all",
     priceRange: 0,
     bedrooms: "any",
     bathrooms: "any",
@@ -993,15 +1070,28 @@ export default function HomesPageClient({
   });
   const [sortBy, setSortBy] = useState("featured");
 
-  // Get unique cities from homes
+  // Get unique states from homes
+  const states = useMemo(() => {
+    const stateSet = new Set<string>();
+    initialHomes.forEach((home) => {
+      const state = home.state || home.community?.state;
+      if (state) stateSet.add(state);
+    });
+    return Array.from(stateSet).sort();
+  }, [initialHomes]);
+
+  // Get unique cities from homes (filtered by selected state)
   const cities = useMemo(() => {
     const citySet = new Set<string>();
     initialHomes.forEach((home) => {
+      const homeState = home.state || home.community?.state;
+      // If a state filter is active, only include cities from that state
+      if (filters.state !== "all" && homeState !== filters.state) return;
       const city = home.city || home.community?.city;
       if (city) citySet.add(city);
     });
     return Array.from(citySet).sort();
-  }, [initialHomes]);
+  }, [initialHomes, filters.state]);
 
   // Get selected city and community
   const selectedCity = filters.city !== "all" ? filters.city : null;
@@ -1014,8 +1104,29 @@ export default function HomesPageClient({
   const filteredHomes = useMemo(() => {
     let result = [...initialHomes];
 
-    // Filter by city
-    if (filters.city !== "all") {
+    // Filter by state (from navigation dropdown URL params)
+    if (urlState) {
+      result = result.filter(
+        (h) => h.state === urlState || h.community?.state === urlState
+      );
+    }
+
+    // Filter by city (from navigation dropdown URL params)
+    if (urlCity) {
+      result = result.filter(
+        (h) => h.city?.toLowerCase() === urlCity.toLowerCase() || h.community?.city?.toLowerCase() === urlCity.toLowerCase()
+      );
+    }
+
+    // Filter by state (from filter dropdown) - only if no URL params
+    if (filters.state !== "all" && !urlState && !urlCity) {
+      result = result.filter(
+        (h) => h.state === filters.state || h.community?.state === filters.state
+      );
+    }
+
+    // Filter by city (from filter dropdown) - only if no URL params
+    if (filters.city !== "all" && !urlState && !urlCity) {
       result = result.filter(
         (h) => h.city === filters.city || h.community?.city === filters.city
       );
@@ -1070,7 +1181,7 @@ export default function HomesPageClient({
     }
 
     return result;
-  }, [initialHomes, filters, sortBy]);
+  }, [initialHomes, filters, sortBy, urlState, urlCity]);
 
   // Count active filters
   const activeFiltersCount = useMemo(() => {
@@ -1129,14 +1240,25 @@ export default function HomesPageClient({
   // Handle removing a single filter
   const handleRemoveFilter = useCallback(
     (key: string, value: any) => {
+      // If removing URL-based filters, navigate to clean URL
+      if (key === "urlState" || key === "urlCity") {
+        router.push("/homes");
+        return;
+      }
       handleFiltersChange({ ...filters, [key]: value });
     },
-    [filters, handleFiltersChange]
+    [filters, handleFiltersChange, router]
   );
 
   // Clear all filters
   const handleClearAllFilters = useCallback(() => {
+    // If URL-based filters exist, navigate to clean /homes URL
+    if (urlState || urlCity) {
+      router.push("/homes");
+      return;
+    }
     handleFiltersChange({
+      state: "all",
       city: "all",
       priceRange: 0,
       bedrooms: "any",
@@ -1144,21 +1266,15 @@ export default function HomesPageClient({
       community: "all",
       sqft: "any",
     });
-  }, [handleFiltersChange]);
+  }, [handleFiltersChange, router, urlState, urlCity]);
 
-  // Handle card click
-  const handleCardClick = useCallback((home: Home) => {
-    setSelectedHomeId(home.id);
-  }, []);
-
-  // Handle marker select from map
+  // Handle marker select from map (also used by card hover)
   const handleMarkerSelect = useCallback((home: Home | null) => {
     setSelectedHomeId(home?.id || null);
   }, []);
 
-  // Hero background image - use listing settings banner, then first home
-  const heroImage =
-    listingSettings?.bannerImage || initialHomes[0]?.gallery?.[0] || "";
+  // Hero background image - only use listing settings banner image (no fallback to gallery images)
+  const heroImage = listingSettings?.bannerImage || "";
 
   // Hero title - use listing settings banner title
   const heroTitle = listingSettings?.bannerTitle || "Quick Move-In Homes";
@@ -1166,7 +1282,7 @@ export default function HomesPageClient({
   return (
     <main className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <section className="relative h-[300px] lg:h-[450px] overflow-hidden">
+      <section className="relative h-[300px] lg:h-[450px] overflow-hidden pt-16 xl:pt-24">
         {heroImage ? (
           <Image
             src={heroImage}
@@ -1178,10 +1294,10 @@ export default function HomesPageClient({
             priority
           />
         ) : (
-          <div className="absolute inset-0 bg-main-primary" />
+          <div className="absolute inset-0 bg-gradient-to-br from-main-primary to-main-primary/80" />
         )}
         <div className="absolute inset-0 bg-black/40" />
-        <div className="absolute inset-0 flex items-center justify-center text-center">
+        <div className="absolute inset-0 flex items-center justify-center text-center pt-16 xl:pt-24">
           <div
             className={`transition-all duration-700 ${
               isAnimated
@@ -1206,11 +1322,60 @@ export default function HomesPageClient({
       <MobileQuickLinks />
 
       {/* Desktop Filters Bar */}
-      <div className="hidden lg:block bg-white/95 backdrop-blur-sm border-b sticky top-20 z-30">
+      <div className="hidden xl:block bg-white/95 backdrop-blur-sm border-b sticky top-[88px] z-30">
         <div className="container mx-auto px-4 lg:px-10 xl:px-20 2xl:px-24">
           <div className="flex items-center justify-between py-4">
             {/* Left Filters */}
             <div className="flex items-center gap-3">
+              {/* State Filter */}
+              {states.length > 0 && (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      className={`flex items-center gap-2 px-4 py-2.5 border rounded-full text-sm font-medium transition-colors ${
+                        filters.state !== "all"
+                          ? "border-main-primary bg-main-primary/5 text-main-primary"
+                          : "border-gray-200 text-main-primary hover:border-main-primary"
+                      }`}
+                    >
+                      {filters.state !== "all" ? getStateName(filters.state) : "State"}
+                      <ChevronDown className="size-4" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-64 p-2" align="start">
+                    <button
+                      onClick={() =>
+                        handleFiltersChange({ ...filters, state: "all", city: "all" })
+                      }
+                      className={`w-full text-left px-3 py-2 text-sm rounded-md transition-colors ${
+                        filters.state === "all"
+                          ? "bg-main-primary/10 text-main-primary font-medium"
+                          : "hover:bg-gray-100"
+                      }`}
+                    >
+                      All States
+                    </button>
+                    <div className="max-h-[300px] overflow-y-auto">
+                      {states.map((state) => (
+                        <button
+                          key={state}
+                          onClick={() =>
+                            handleFiltersChange({ ...filters, state, city: "all" })
+                          }
+                          className={`w-full text-left px-3 py-2 text-sm rounded-md transition-colors ${
+                            filters.state === state
+                              ? "bg-main-primary/10 text-main-primary font-medium"
+                              : "hover:bg-gray-100"
+                          }`}
+                        >
+                          {getStateName(state)}
+                        </button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              )}
+
               {/* City Filter */}
               <Popover>
                 <PopoverTrigger asChild>
@@ -1389,6 +1554,7 @@ export default function HomesPageClient({
         onSortChange={setSortBy}
         communities={communities}
         cities={cities}
+        states={states}
         activeFiltersCount={activeFiltersCount}
       />
 
@@ -1431,6 +1597,8 @@ export default function HomesPageClient({
           filters={filters}
           selectedCity={selectedCity}
           selectedCommunity={selectedCommunity}
+          urlState={urlState}
+          urlCity={urlCity}
           onRemoveFilter={handleRemoveFilter}
           onClearAll={handleClearAllFilters}
         />
@@ -1465,6 +1633,8 @@ export default function HomesPageClient({
                 filters={filters}
                 selectedCity={selectedCity}
                 selectedCommunity={selectedCommunity}
+                urlState={urlState}
+                urlCity={urlCity}
                 onRemoveFilter={handleRemoveFilter}
                 onClearAll={handleClearAllFilters}
               />
@@ -1483,7 +1653,7 @@ export default function HomesPageClient({
                   <HomeCard
                     home={home}
                     onHover={setHoveredHomeId}
-                    onClick={handleCardClick}
+                    onSelect={handleMarkerSelect}
                     isHighlighted={
                       hoveredHomeId === home.id || selectedHomeId === home.id
                     }
@@ -1508,6 +1678,8 @@ export default function HomesPageClient({
               filters={filters}
               selectedCity={selectedCity}
               selectedCommunity={selectedCommunity}
+              urlState={urlState}
+              urlCity={urlCity}
               onRemoveFilter={handleRemoveFilter}
               onClearAll={handleClearAllFilters}
             />

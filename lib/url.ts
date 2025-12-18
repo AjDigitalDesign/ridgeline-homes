@@ -70,6 +70,39 @@ const STATE_ABBREVIATIONS: Record<string, string> = {
 };
 
 /**
+ * Reverse map of abbreviations to full state names
+ */
+const STATE_NAMES: Record<string, string> = Object.entries(STATE_ABBREVIATIONS).reduce(
+  (acc, [name, abbr]) => {
+    acc[abbr] = name
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+    return acc;
+  },
+  {} as Record<string, string>
+);
+
+/**
+ * Gets the full state name from an abbreviation or returns the input if already full name
+ */
+export function getStateName(state: string | null): string {
+  if (!state) return "";
+  const normalized = state.toLowerCase().trim();
+
+  // If it's a 2-letter abbreviation, look up the full name
+  if (normalized.length === 2) {
+    return STATE_NAMES[normalized] || state.toUpperCase();
+  }
+
+  // Assume it's already a full name, capitalize properly
+  return normalized
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+/**
  * Gets the state abbreviation in lowercase for URL
  * Handles both full state names and abbreviations
  */

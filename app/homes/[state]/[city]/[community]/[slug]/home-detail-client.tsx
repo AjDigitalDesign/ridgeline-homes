@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import type { Home } from "@/lib/api";
 import { Lightbox } from "@/components/ui/lightbox";
+import { useAnalytics } from "@/hooks/use-analytics";
 import {
   GraduationCap,
   School,
@@ -75,6 +76,12 @@ interface HomeDetailClientProps {
 export default function HomeDetailClient({
   home,
 }: HomeDetailClientProps) {
+  // Track page view with entity data
+  useAnalytics({
+    entityId: home.id,
+    entitySlug: home.slug,
+  });
+
   const [activeSection, setActiveSection] = useState<HomeSectionId>("overview");
   const [showContactModal, setShowContactModal] = useState(false);
   const [contactModalType, setContactModalType] = useState<"tour" | "info">("tour");

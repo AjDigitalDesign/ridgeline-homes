@@ -161,16 +161,14 @@ export default function HomesMap({
 
           el.addEventListener("click", (e) => {
             e.stopPropagation();
-            onMarkerSelect(home);
-            map.flyTo({
-              center: [home.longitude!, home.latitude!],
-              zoom: 15,
-              duration: 500,
-            });
+            // Navigate to home detail page on click
+            window.location.href = getHomeUrl(home);
           });
 
           el.addEventListener("mouseenter", () => {
             onMarkerHover(home.id);
+            // Open popup on hover
+            onMarkerSelect(home);
           });
 
           el.addEventListener("mouseleave", () => {
@@ -213,6 +211,7 @@ export default function HomesMap({
       }
     });
 
+    // Only pan to marker on hover (without changing zoom)
     if (
       hoveredHomeId &&
       hoveredHomeId !== lastHoveredIdRef.current &&
@@ -223,9 +222,9 @@ export default function HomesMap({
     ) {
       const home = validHomes.find((h) => h.id === hoveredHomeId);
       if (home?.latitude && home?.longitude) {
-        mapRef.current.flyTo({
+        // Pan to location without changing zoom level
+        mapRef.current.easeTo({
           center: [home.longitude, home.latitude],
-          zoom: 14,
           duration: 500,
         });
       }
@@ -234,13 +233,12 @@ export default function HomesMap({
     lastHoveredIdRef.current = hoveredHomeId;
   }, [hoveredHomeId, selectedHomeId, validHomes, isMapLoaded, isUserInteracting]);
 
-  // Fly to selected home (when clicking card)
+  // Ease to selected home (when hovering card) - pan only, no zoom change
   useEffect(() => {
     if (selectedHome && mapRef.current && isMapLoaded) {
-      mapRef.current.flyTo({
+      mapRef.current.easeTo({
         center: [selectedHome.longitude, selectedHome.latitude],
-        zoom: 15,
-        duration: 500,
+        duration: 300,
       });
     }
   }, [selectedHome, isMapLoaded]);
