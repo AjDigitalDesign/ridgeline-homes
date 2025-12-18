@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Outfit, Inter } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/components/providers/query-provider";
@@ -8,6 +9,7 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { Toaster } from "@/components/ui/sonner";
 import { AnalyticsProvider } from "@/components/analytics-provider";
+import { AdvancedAnalyticsProvider } from "@/components/advanced-analytics";
 import { generateMetadata as generateSeoMetadata, siteConfig } from "@/lib/seo";
 
 const outfit = Outfit({
@@ -38,11 +40,15 @@ export default function RootLayout({
         <QueryProvider>
           <AuthProvider>
             <FavoritesProvider>
-              <AnalyticsProvider />
-              <Header />
-              {children}
-              <Footer />
-              <Toaster />
+              <Suspense fallback={null}>
+                <AdvancedAnalyticsProvider>
+                  <AnalyticsProvider />
+                  <Header />
+                  {children}
+                  <Footer />
+                  <Toaster />
+                </AdvancedAnalyticsProvider>
+              </Suspense>
             </FavoritesProvider>
           </AuthProvider>
         </QueryProvider>
