@@ -18,7 +18,7 @@ interface UseAnalyticsOptions {
 interface TrackingData {
   visitorId: string;
   sessionId: string;
-  pageUrl: string;
+  page: string;
   pageType: string;
   entityId?: string;
   entitySlug?: string;
@@ -169,7 +169,7 @@ export function useAnalytics(options: UseAnalyticsOptions) {
       const data: TrackingData = {
         visitorId: getVisitorId(),
         sessionId: getSessionId(),
-        pageUrl: window.location.href,
+        page: window.location.href,
         pageType: detectPageType(pathname),
         entityId,
         entitySlug,
@@ -236,7 +236,7 @@ export function useAnalytics(options: UseAnalyticsOptions) {
         const data = {
           visitorId: getVisitorId(),
           sessionId: getSessionId(),
-          pageUrl: window.location.href,
+          page: window.location.href,
           timeOnPage,
           scrollDepth,
         };

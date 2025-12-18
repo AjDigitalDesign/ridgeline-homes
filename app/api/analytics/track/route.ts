@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchTenant } from "@/lib/api";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+const API_KEY = process.env.NEXT_PUBLIC_API_KEY || "";
+const TENANT_SLUG = process.env.NEXT_PUBLIC_TENANT_SLUG || "";
 
 // Cache tenant ID to avoid repeated fetches
 let cachedTenantId: string | null = null;
@@ -10,10 +11,24 @@ async function getTenantId(): Promise<string> {
   if (cachedTenantId) return cachedTenantId;
 
   try {
-    const response = await fetchTenant();
-    cachedTenantId = response.data?.id || "";
+    const response = await fetch(`${API_URL}/api/public/tenant`, {
+      headers: {
+        "Content-Type": "application/json",
+        "X-API-Key": API_KEY,
+        "x-tenant-slug": TENANT_SLUG,
+      },
+    });
+
+    if (!response.ok) {
+      console.error("Failed to fetch tenant:", response.status);
+      return "";
+    }
+
+    const data = await response.json();
+    cachedTenantId = data?.id || "";
     return cachedTenantId;
-  } catch {
+  } catch (error) {
+    console.error("Tenant fetch error:", error);
     return "";
   }
 }
@@ -23,9 +38,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const tenantId = await getTenantId();
 
+    // If no tenant ID, silently succeed (don't block the user experience)
     if (!tenantId) {
-      console.error("Analytics: No tenant ID available");
-      return NextResponse.json({ error: "No tenant ID" }, { status: 400 });
+      console.warn("Analytics: No tenant ID available, skipping tracking");
+      return NextResponse.json({ success: true, skipped: true });
     }
 
     // Forward the tracking data to the external API
@@ -33,6 +49,8 @@ export async function POST(request: NextRequest) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "X-API-Key": API_KEY,
+        "x-tenant-slug": TENANT_SLUG,
         "x-tenant-id": tenantId,
       },
       body: JSON.stringify(body),
@@ -40,20 +58,16 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Analytics tracking failed:", response.status, errorText);
-      return NextResponse.json(
-        { error: "Tracking failed", details: errorText },
-        { status: response.status }
-      );
+      // Log but don't fail - analytics shouldn't break the app
+      console.warn("Analytics tracking failed:", response.status, errorText);
+      return NextResponse.json({ success: false, status: response.status });
     }
 
     const data = await response.json().catch(() => ({ success: true }));
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Analytics tracking error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    // Log but don't fail - analytics shouldn't break the app
+    console.warn("Analytics tracking error:", error);
+    return NextResponse.json({ success: false, error: "Internal error" });
   }
 }
