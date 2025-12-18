@@ -1222,12 +1222,8 @@ export default function PlansPageClient({
     });
   }, [handleFiltersChange]);
 
-  // Hero background image - use listing settings banner, then first floorplan
-  const heroImage =
-    listingSettings?.bannerImage ||
-    initialFloorplans[0]?.elevationGallery?.[0] ||
-    initialFloorplans[0]?.gallery?.[0] ||
-    "";
+  // Hero background image - only use listing settings banner image (no fallback to gallery images)
+  const heroImage = listingSettings?.bannerImage || "";
 
   // Hero title - use listing settings banner title
   const heroTitle = listingSettings?.bannerTitle || "Floor Plans";
@@ -1247,7 +1243,7 @@ export default function PlansPageClient({
             priority
           />
         ) : (
-          <div className="absolute inset-0 bg-main-primary" />
+          <div className="absolute inset-0 bg-gradient-to-br from-main-primary to-main-primary/80" />
         )}
         <div className="absolute inset-0 bg-black/40" />
         <div className="absolute inset-0 flex items-center justify-center text-center">

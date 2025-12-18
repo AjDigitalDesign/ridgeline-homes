@@ -11,15 +11,19 @@ interface BackNavigationProps {
 
 export default function BackNavigation({ home }: BackNavigationProps) {
   const address = home.address || home.street || home.name;
-  const location = [home.city, home.state, home.zipCode].filter(Boolean).join(", ");
+  const location = [home.city, home.state, home.zipCode]
+    .filter(Boolean)
+    .join(", ");
 
   // Build community URL using url utilities
   const communityUrl = home.community
-    ? `/communities/${getStateSlug(home.community.state)}/${getCitySlug(home.community.city)}/${home.community.slug}`
+    ? `/communities/${getStateSlug(home.community.state)}/${getCitySlug(
+        home.community.city
+      )}/${home.community.slug}`
     : null;
 
   return (
-    <div className="bg-white border-b">
+    <div className="bg-white border-b mt-0.5 xl:mt-7 ">
       <div className="container mx-auto px-4 lg:px-10 xl:px-20 2xl:px-24 py-4">
         <div className="flex items-center justify-between">
           <Link

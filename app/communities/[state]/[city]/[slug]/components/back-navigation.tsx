@@ -10,7 +10,7 @@ interface BackNavigationProps {
 
 export default function BackNavigation({ community }: BackNavigationProps) {
   return (
-    <div className="bg-white border-b">
+    <div className="bg-white border-b mt-0.5 xl:mt-7 ">
       <div className="container mx-auto px-4 lg:px-10 xl:px-20 2xl:px-24 py-4">
         <div className="flex items-center justify-between">
           <Link
@@ -29,7 +29,9 @@ export default function BackNavigation({ community }: BackNavigationProps) {
             <span>|</span>
             <span>{community.city}</span>
             <span>|</span>
-            <span className="text-main-primary font-medium">{community.name}</span>
+            <span className="text-main-primary font-medium">
+              {community.name}
+            </span>
           </div>
         </div>
       </div>

@@ -229,16 +229,14 @@ export default function CommunityMap({
 
           el.addEventListener("click", (e) => {
             e.stopPropagation();
-            onMarkerSelect(community);
-            map.flyTo({
-              center: [community.longitude!, community.latitude!],
-              zoom: 13,
-              duration: 500,
-            });
+            // Navigate to community detail page on click
+            window.location.href = `/communities/${community.state?.toLowerCase().slice(0, 2) || "md"}/${community.city?.toLowerCase().replace(/\s+/g, "-") || "unknown"}/${community.slug}`;
           });
 
           el.addEventListener("mouseenter", () => {
             onMarkerHover(community.id);
+            // Open popup on hover
+            onMarkerSelect(community);
           });
 
           el.addEventListener("mouseleave", () => {
@@ -284,7 +282,7 @@ export default function CommunityMap({
       }
     });
 
-    // Only fly to marker on hover if:
+    // Only pan to marker on hover if:
     // - There's a new hovered community
     // - No community is currently selected (popup open)
     // - User is not interacting with map
@@ -300,9 +298,9 @@ export default function CommunityMap({
         (c) => c.id === hoveredCommunityId
       );
       if (community?.latitude && community?.longitude) {
-        mapRef.current.flyTo({
+        // Pan to location without changing zoom level
+        mapRef.current.easeTo({
           center: [community.longitude, community.latitude],
-          zoom: 12,
           duration: 500,
         });
       }
@@ -317,13 +315,12 @@ export default function CommunityMap({
     isUserInteracting,
   ]);
 
-  // Fly to selected community (when clicking card)
+  // Ease to selected community (when hovering card) - pan only, no zoom change
   useEffect(() => {
     if (selectedCommunity && mapRef.current && isMapLoaded) {
-      mapRef.current.flyTo({
+      mapRef.current.easeTo({
         center: [selectedCommunity.longitude, selectedCommunity.latitude],
-        zoom: 13,
-        duration: 500,
+        duration: 300,
       });
     }
   }, [selectedCommunity, isMapLoaded]);

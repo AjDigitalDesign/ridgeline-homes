@@ -68,7 +68,7 @@ export default function DetailNavigation({
   };
 
   return (
-    <nav className="sticky top-[72px] xl:top-[88px] z-40 bg-white border-b shadow-sm">
+    <nav className="sticky top-16 xl:top-24 z-40 bg-white border-b shadow-sm">
       <div className="container mx-auto px-4 lg:px-10 xl:px-20 2xl:px-24">
         <div className="flex items-center justify-between h-14">
           {/* Section Tabs */}

@@ -10,7 +10,7 @@ const SESSION_ID_KEY = "fh_session_id";
 const SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
 
 interface UseAnalyticsOptions {
-  tenantId: string;
+  tenantId?: string;
   entityId?: string;
   entitySlug?: string;
 }
@@ -35,6 +35,31 @@ interface TrackingData {
   screenHeight: number;
   timeOnPage?: number;
   scrollDepth?: number;
+}
+
+// Event tracking types
+export type AnalyticsEventType =
+  | "form_submit"
+  | "cta_click"
+  | "gallery_open"
+  | "virtual_tour_view"
+  | "video_play"
+  | "share_click"
+  | "favorite_toggle"
+  | "search"
+  | "filter_change"
+  | "schedule_tour"
+  | "request_info"
+  | "phone_click"
+  | "email_click"
+  | "directions_click";
+
+export interface AnalyticsEvent {
+  eventType: AnalyticsEventType;
+  entityId?: string;
+  entitySlug?: string;
+  entityType?: "community" | "home" | "floorplan";
+  metadata?: Record<string, string | number | boolean>;
 }
 
 // Generate a unique ID
@@ -161,7 +186,7 @@ export function useAnalytics(options: UseAnalyticsOptions) {
   // Track page view
   const trackPageView = useCallback(
     async (additionalData?: Partial<TrackingData>) => {
-      if (typeof window === "undefined" || !tenantId) return;
+      if (typeof window === "undefined") return;
 
       const { deviceType, browser, os } = parseUserAgent();
       const utmParams = getUtmParams(searchParams);
@@ -232,7 +257,7 @@ export function useAnalytics(options: UseAnalyticsOptions) {
       const scrollDepth = maxScrollRef.current;
 
       // Use sendBeacon for reliability
-      if (navigator.sendBeacon && tenantId) {
+      if (navigator.sendBeacon) {
         const data = {
           visitorId: getVisitorId(),
           sessionId: getSessionId(),
@@ -256,8 +281,40 @@ export function useAnalytics(options: UseAnalyticsOptions) {
     };
   }, [pathname, trackPageView, tenantId]);
 
+  // Track custom events
+  const trackEvent = useCallback(
+    async (event: AnalyticsEvent) => {
+      if (typeof window === "undefined") return;
+
+      const data = {
+        visitorId: getVisitorId(),
+        sessionId: getSessionId(),
+        page: window.location.href,
+        eventType: event.eventType,
+        entityId: event.entityId || entityId,
+        entitySlug: event.entitySlug || entitySlug,
+        entityType: event.entityType,
+        metadata: event.metadata,
+      };
+
+      try {
+        await fetch(ANALYTICS_ENDPOINT, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        });
+      } catch (error) {
+        console.error("Analytics event tracking error:", error);
+      }
+    },
+    [entityId, entitySlug]
+  );
+
   return {
     trackPageView,
+    trackEvent,
     getVisitorId,
     getSessionId: () => getSessionId(),
   };

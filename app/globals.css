@@ -387,8 +387,14 @@ html {
   display: none;
 }
 
-.community-popup .mapboxgl-popup-content {
+.community-popup .mapboxgl-popup-content,
+.home-popup .mapboxgl-popup-content {
   background: transparent !important;
+}
+
+.community-popup,
+.home-popup {
+  z-index: 100 !important;
 }
 
 /* Hide scrollbar utility */

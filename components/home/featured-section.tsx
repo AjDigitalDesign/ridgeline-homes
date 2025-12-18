@@ -3,9 +3,10 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Camera, MapPin, Calendar, Heart } from "lucide-react";
+import { ArrowRight, Camera, MapPin, Calendar, Heart, Calculator } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnimateOnScroll } from "@/components/ui/animate-on-scroll";
+import { MortgageCalculator } from "@/components/mortgage-calculator";
 import type { Community, Home } from "@/lib/api";
 import { getHomeUrl } from "@/lib/url";
 
@@ -40,10 +41,18 @@ function formatMonthlyPayment(price: number | null) {
 }
 
 function CommunityCard({ community }: { community: Community }) {
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
   const image = community.gallery?.[0] || null;
   const location = [community.city, community.state].filter(Boolean).join(", ");
 
+  const handleCalculatorClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setCalculatorOpen(true);
+  };
+
   return (
+    <>
     <div className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
       {/* Image */}
       <div className="relative h-[220px] overflow-hidden">
@@ -109,6 +118,15 @@ function CommunityCard({ community }: { community: Community }) {
                 ? `From ${formatPrice(community.priceMin)}`
                 : "Contact Us"}
             </p>
+            {community.priceMin && (
+              <button
+                onClick={handleCalculatorClick}
+                className="text-xs text-gray-500 flex items-center gap-1 justify-end hover:text-main-primary transition-colors"
+              >
+                {formatMonthlyPayment(community.priceMin)}/mo
+                <Calculator className="size-3.5 text-gray-400" />
+              </button>
+            )}
           </div>
         </div>
 
@@ -183,17 +201,34 @@ function CommunityCard({ community }: { community: Community }) {
         </div>
       </div>
     </div>
+
+    {/* Mortgage Calculator */}
+    <MortgageCalculator
+      open={calculatorOpen}
+      onOpenChange={setCalculatorOpen}
+      initialPrice={community.priceMin || 400000}
+      propertyName={community.name}
+    />
+    </>
   );
 }
 
 function HomeCard({ home }: { home: Home }) {
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
   const image = home.gallery?.[0] || null;
   const location = [home.city, home.state, home.zipCode]
     .filter(Boolean)
     .join(", ");
   const isUnderConstruction = home.status === "UNDER_CONSTRUCTION";
 
+  const handleCalculatorClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setCalculatorOpen(true);
+  };
+
   return (
+    <>
     <div className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
       {/* Image */}
       <div className="relative h-[220px] overflow-hidden">
@@ -262,9 +297,13 @@ function HomeCard({ home }: { home: Home }) {
               {formatPrice(home.price)}
             </p>
             {home.price && (
-              <p className="text-xs text-gray-500">
+              <button
+                onClick={handleCalculatorClick}
+                className="text-xs text-gray-500 flex items-center gap-1 justify-end hover:text-main-primary transition-colors"
+              >
                 {formatMonthlyPayment(home.price)}/mo
-              </p>
+                <Calculator className="size-3.5 text-gray-400" />
+              </button>
             )}
           </div>
         </div>
@@ -359,6 +398,15 @@ function HomeCard({ home }: { home: Home }) {
         </div>
       </div>
     </div>
+
+    {/* Mortgage Calculator */}
+    <MortgageCalculator
+      open={calculatorOpen}
+      onOpenChange={setCalculatorOpen}
+      initialPrice={home.price || 400000}
+      propertyName={home.name}
+    />
+    </>
   );
 }
 
