@@ -85,10 +85,15 @@ export function FindYourHomeDropdown({ className }: FindYourHomeDropdownProps) {
 
       setIsLoading(true);
       try {
-        const response = await fetchNavigation({ previewLimit: 5, type: "communities" });
+        const response = await fetchNavigation({
+          previewLimit: 5,
+          type: "communities",
+        });
         // Handle both array response and wrapped { communities: [...] } response
         const data = response.data;
-        const communities = Array.isArray(data) ? data : (data?.communities || []);
+        const communities = Array.isArray(data)
+          ? data
+          : data?.communities || [];
         setNavigationData(communities);
       } catch (error) {
         console.error("Failed to load navigation:", error);
@@ -119,17 +124,14 @@ export function FindYourHomeDropdown({ className }: FindYourHomeDropdownProps) {
         >
           Find Your Home
           <ChevronDown
-            className={cn(
-              "size-4 transition-transform",
-              open && "rotate-180"
-            )}
+            className={cn("size-4 transition-transform", open && "rotate-180")}
           />
         </button>
       </PopoverTrigger>
       <PopoverContent
         align="start"
         className="w-[220px] p-0 shadow-xl border-0 bg-main-primary rounded-none"
-        sideOffset={12}
+        sideOffset={20}
       >
         {/* Header */}
         <div className="px-4 py-3 border-b border-slate-600">
@@ -183,7 +185,9 @@ export function FindYourHomeDropdown({ className }: FindYourHomeDropdownProps) {
                     {stateData.previewCities.map((cityData) => (
                       <Link
                         key={cityData.city}
-                        href={`/communities?state=${stateData.state}&city=${encodeURIComponent(cityData.city)}`}
+                        href={`/communities?state=${
+                          stateData.state
+                        }&city=${encodeURIComponent(cityData.city)}`}
                         onClick={handleLinkClick}
                         className="block px-8 py-2 text-sm text-slate-300 hover:text-main-secondary transition-colors"
                       >
