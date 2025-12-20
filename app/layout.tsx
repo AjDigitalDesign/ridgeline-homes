@@ -10,6 +10,7 @@ import { Footer } from "@/components/layout/footer";
 import { Toaster } from "@/components/ui/sonner";
 import { AnalyticsProvider } from "@/components/analytics-provider";
 import { AdvancedAnalyticsProvider } from "@/components/advanced-analytics";
+import { ChatWidgetWrapper } from "@/components/ai-chat";
 import { generateMetadata as generateSeoMetadata, siteConfig } from "@/lib/seo";
 
 const outfit = Outfit({
@@ -47,6 +48,7 @@ export default function RootLayout({
                   {children}
                   <Footer />
                   <Toaster />
+                  <ChatWidgetWrapper />
                 </AdvancedAnalyticsProvider>
               </Suspense>
             </FavoritesProvider>
