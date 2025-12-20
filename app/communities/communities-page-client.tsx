@@ -1161,8 +1161,10 @@ export default function CommunitiesPageClient({
       if (newFilters.city !== "all") {
         params.set("marketArea", newFilters.city);
       }
-      router.push(
-        `/communities${params.toString() ? `?${params.toString()}` : ""}`
+      // Use replace with scroll: false to prevent page jumping
+      router.replace(
+        `/communities${params.toString() ? `?${params.toString()}` : ""}`,
+        { scroll: false }
       );
     },
     [router]
@@ -1173,7 +1175,7 @@ export default function CommunitiesPageClient({
     (key: string, value: any) => {
       // Handle URL-based filters (from navigation dropdown)
       if (key === "urlCity" || key === "urlState") {
-        router.push("/communities");
+        router.replace("/communities", { scroll: false });
         return;
       }
       handleFiltersChange({ ...filters, [key]: value });
@@ -1185,7 +1187,7 @@ export default function CommunitiesPageClient({
   const handleClearAllFilters = useCallback(() => {
     // If URL-based filters exist, navigate to clean /communities URL
     if (urlState || urlCity) {
-      router.push("/communities");
+      router.replace("/communities", { scroll: false });
       return;
     }
     handleFiltersChange({
