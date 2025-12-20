@@ -49,7 +49,11 @@ export function ChatWidget({ tenantId, onLeadCaptured }: ChatWidgetProps) {
       {/* Chat Window */}
       <div
         className={cn(
-          "fixed bottom-20 right-4 z-50 flex h-[500px] w-[380px] flex-col overflow-hidden rounded-2xl bg-white shadow-2xl transition-all duration-300 ease-in-out sm:bottom-24 sm:right-6",
+          "fixed z-50 flex flex-col overflow-hidden bg-white shadow-2xl transition-all duration-300 ease-in-out",
+          // Mobile: full screen with safe area insets
+          "inset-0 rounded-none",
+          // Desktop: positioned widget
+          "sm:inset-auto sm:bottom-24 sm:right-6 sm:h-[500px] sm:w-[380px] sm:rounded-2xl",
           isOpen
             ? "translate-y-0 scale-100 opacity-100"
             : "pointer-events-none translate-y-4 scale-95 opacity-0"
@@ -57,8 +61,11 @@ export function ChatWidget({ tenantId, onLeadCaptured }: ChatWidgetProps) {
       >
         {/* Header */}
         <div
-          className="flex items-center justify-between px-4 py-3 text-white"
-          style={{ backgroundColor: primaryColor }}
+          className="flex shrink-0 items-center justify-between px-4 py-3 text-white sm:py-3"
+          style={{
+            backgroundColor: primaryColor,
+            paddingTop: 'max(0.75rem, env(safe-area-inset-top, 0.75rem))'
+          }}
         >
           <div>
             <h3 className="font-semibold">{config.headerTitle}</h3>
@@ -105,7 +112,10 @@ export function ChatWidget({ tenantId, onLeadCaptured }: ChatWidgetProps) {
         {/* Input */}
         <form
           onSubmit={handleSubmit}
-          className="border-t border-gray-100 p-3"
+          className="shrink-0 border-t border-gray-100 p-3"
+          style={{
+            paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0.75rem))'
+          }}
         >
           <div className="flex items-center gap-2">
             <input

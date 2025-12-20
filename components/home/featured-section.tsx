@@ -7,6 +7,7 @@ import { ArrowRight, Camera, MapPin, Calendar, Heart, Calculator } from "lucide-
 import { Button } from "@/components/ui/button";
 import { AnimateOnScroll } from "@/components/ui/animate-on-scroll";
 import { MortgageCalculator } from "@/components/mortgage-calculator";
+import { Lightbox } from "@/components/ui/lightbox";
 import type { Community, Home } from "@/lib/api";
 import { getHomeUrl } from "@/lib/url";
 
@@ -42,13 +43,23 @@ function formatMonthlyPayment(price: number | null) {
 
 function CommunityCard({ community }: { community: Community }) {
   const [calculatorOpen, setCalculatorOpen] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const image = community.gallery?.[0] || null;
+  const galleryImages = community.gallery || [];
   const location = [community.city, community.state].filter(Boolean).join(", ");
 
   const handleCalculatorClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
     setCalculatorOpen(true);
+  };
+
+  const handleGalleryClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (galleryImages.length >= 2) {
+      setLightboxOpen(true);
+    }
   };
 
   return (
@@ -78,16 +89,27 @@ function CommunityCard({ community }: { community: Community }) {
         </button>
         {/* Bottom Actions */}
         <div
-          className={`absolute left-4 flex items-center gap-2 ${
+          className={`absolute left-4 z-10 flex items-center gap-2 ${
             community.marketingHeadline && community.showMarketingHeadline
               ? "bottom-12"
               : "bottom-4"
           }`}
         >
-          <span className="flex items-center gap-1.5 px-3 py-1.5 bg-main-primary/90 text-white text-xs rounded-full">
-            <Camera className="size-3.5" />
-            {community.gallery?.length || 0} Photos
-          </span>
+          {galleryImages.length >= 2 ? (
+            <button
+              type="button"
+              onClick={handleGalleryClick}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-main-primary/90 hover:bg-main-primary text-white text-xs rounded-full transition-colors cursor-pointer"
+            >
+              <Camera className="size-3.5" />
+              {galleryImages.length} Photos
+            </button>
+          ) : galleryImages.length === 1 ? (
+            <span className="flex items-center gap-1.5 px-3 py-1.5 bg-main-primary/90 text-white text-xs rounded-full">
+              <Camera className="size-3.5" />
+              1 Photo
+            </span>
+          ) : null}
           <span className="flex items-center justify-center size-8 bg-main-secondary rounded-full">
             <MapPin className="size-4 text-main-primary" />
           </span>
@@ -209,13 +231,25 @@ function CommunityCard({ community }: { community: Community }) {
       initialPrice={community.priceMin || 400000}
       propertyName={community.name}
     />
+
+    {/* Gallery Lightbox */}
+    {galleryImages.length >= 2 && (
+      <Lightbox
+        images={galleryImages}
+        open={lightboxOpen}
+        onOpenChange={setLightboxOpen}
+        title={`${community.name} Gallery`}
+      />
+    )}
     </>
   );
 }
 
 function HomeCard({ home }: { home: Home }) {
   const [calculatorOpen, setCalculatorOpen] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const image = home.gallery?.[0] || null;
+  const galleryImages = home.gallery || [];
   const location = [home.city, home.state, home.zipCode]
     .filter(Boolean)
     .join(", ");
@@ -225,6 +259,14 @@ function HomeCard({ home }: { home: Home }) {
     e.stopPropagation();
     e.preventDefault();
     setCalculatorOpen(true);
+  };
+
+  const handleGalleryClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (galleryImages.length >= 2) {
+      setLightboxOpen(true);
+    }
   };
 
   return (
@@ -258,16 +300,27 @@ function HomeCard({ home }: { home: Home }) {
         </button>
         {/* Bottom Actions */}
         <div
-          className={`absolute left-4 flex items-center gap-2 ${
+          className={`absolute left-4 z-10 flex items-center gap-2 ${
             home.marketingHeadline && home.showMarketingHeadline
               ? "bottom-12"
               : "bottom-4"
           }`}
         >
-          <span className="flex items-center gap-1.5 px-3 py-1.5 bg-main-primary/90 text-white text-xs rounded-full">
-            <Camera className="size-3.5" />
-            {home.gallery?.length || 0} Photos
-          </span>
+          {galleryImages.length >= 2 ? (
+            <button
+              type="button"
+              onClick={handleGalleryClick}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-main-primary/90 hover:bg-main-primary text-white text-xs rounded-full transition-colors cursor-pointer"
+            >
+              <Camera className="size-3.5" />
+              {galleryImages.length} Photos
+            </button>
+          ) : galleryImages.length === 1 ? (
+            <span className="flex items-center gap-1.5 px-3 py-1.5 bg-main-primary/90 text-white text-xs rounded-full">
+              <Camera className="size-3.5" />
+              1 Photo
+            </span>
+          ) : null}
           <span className="flex items-center justify-center size-8 bg-main-secondary rounded-full">
             <MapPin className="size-4 text-main-primary" />
           </span>
@@ -406,6 +459,16 @@ function HomeCard({ home }: { home: Home }) {
       initialPrice={home.price || 400000}
       propertyName={home.name}
     />
+
+    {/* Gallery Lightbox */}
+    {galleryImages.length >= 2 && (
+      <Lightbox
+        images={galleryImages}
+        open={lightboxOpen}
+        onOpenChange={setLightboxOpen}
+        title={`${home.name} Gallery`}
+      />
+    )}
     </>
   );
 }

@@ -1232,7 +1232,8 @@ export default function HomesPageClient({
       if (newFilters.community !== "all") {
         params.set("community", newFilters.community);
       }
-      router.push(`/homes${params.toString() ? `?${params.toString()}` : ""}`);
+      // Use replace with scroll: false to prevent page jumping
+      router.replace(`/homes${params.toString() ? `?${params.toString()}` : ""}`, { scroll: false });
     },
     [router]
   );
@@ -1242,7 +1243,7 @@ export default function HomesPageClient({
     (key: string, value: any) => {
       // If removing URL-based filters, navigate to clean URL
       if (key === "urlState" || key === "urlCity") {
-        router.push("/homes");
+        router.replace("/homes", { scroll: false });
         return;
       }
       handleFiltersChange({ ...filters, [key]: value });
@@ -1254,7 +1255,7 @@ export default function HomesPageClient({
   const handleClearAllFilters = useCallback(() => {
     // If URL-based filters exist, navigate to clean /homes URL
     if (urlState || urlCity) {
-      router.push("/homes");
+      router.replace("/homes", { scroll: false });
       return;
     }
     handleFiltersChange({
