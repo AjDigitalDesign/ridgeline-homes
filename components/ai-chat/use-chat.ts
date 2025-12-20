@@ -95,7 +95,7 @@ export function useChat({
       setMessages((prev) => [...prev, assistantMessage]);
 
       try {
-        const response = await fetch(`${API_URL}/api/public/chat/stream`, {
+        const response = await fetch(`${API_URL}/api/public/ai-chat/message`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
