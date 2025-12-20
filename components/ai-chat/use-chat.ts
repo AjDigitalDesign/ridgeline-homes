@@ -8,6 +8,7 @@ import type {
   UseChatReturn,
 } from "./types";
 
+const SESSION_ID_KEY = "chat_session_id";
 const VISITOR_ID_KEY = "chat_visitor_id";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -26,6 +27,17 @@ function getVisitorId(): string {
   return visitorId;
 }
 
+function getStoredSessionId(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem(SESSION_ID_KEY);
+}
+
+function storeSessionId(sessionId: string): void {
+  if (typeof window !== "undefined") {
+    localStorage.setItem(SESSION_ID_KEY, sessionId);
+  }
+}
+
 export function useChat({
   tenantId,
   onLeadCaptured,
@@ -41,10 +53,12 @@ export function useChat({
   });
 
   const visitorIdRef = useRef<string>("");
+  const sessionIdRef = useRef<string | null>(null);
   const configFetchedRef = useRef(false);
 
   useEffect(() => {
     visitorIdRef.current = getVisitorId();
+    sessionIdRef.current = getStoredSessionId();
   }, []);
 
   useEffect(() => {
@@ -71,50 +85,45 @@ export function useChat({
     fetchConfig();
   }, [tenantId]);
 
-  const sendMessage = useCallback(
-    async (content: string) => {
-      if (!content.trim() || isLoading) return;
+  const createSession = useCallback(async (): Promise<string | null> => {
+    try {
+      const response = await fetch(`${API_URL}/api/public/ai-chat/session`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          visitorId: visitorIdRef.current,
+        }),
+      });
 
-      const userMessage: ChatMessage = {
-        id: `user_${Date.now()}`,
-        role: "user",
-        content: content.trim(),
-        timestamp: new Date(),
-      };
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Session creation failed:", response.status, errorText);
+        throw new Error("Failed to create session");
+      }
 
-      setMessages((prev) => [...prev, userMessage]);
-      setIsLoading(true);
+      const data = await response.json();
+      console.log("Session created:", data);
+      const sessionId = data.sessionId || data.id;
+      if (sessionId) {
+        sessionIdRef.current = sessionId;
+        storeSessionId(sessionId);
+        return sessionId;
+      }
+      return null;
+    } catch (error) {
+      console.error("Failed to create chat session:", error);
+      return null;
+    }
+  }, []);
 
-      const assistantMessage: ChatMessage = {
-        id: `assistant_${Date.now()}`,
-        role: "assistant",
-        content: "",
-        timestamp: new Date(),
-      };
+  const handleResponse = useCallback(
+    async (response: Response, messageId: string) => {
+      const contentType = response.headers.get("content-type") || "";
 
-      setMessages((prev) => [...prev, assistantMessage]);
-
-      try {
-        const response = await fetch(`${API_URL}/api/public/ai-chat/message`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            tenantId,
-            visitorId: visitorIdRef.current,
-            message: content.trim(),
-            history: messages.map((m) => ({
-              role: m.role,
-              content: m.content,
-            })),
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to send message");
-        }
-
+      // Check if it's a streaming response (SSE)
+      if (contentType.includes("text/event-stream")) {
         const reader = response.body?.getReader();
         const decoder = new TextDecoder();
 
@@ -143,9 +152,7 @@ export function useChat({
                   fullContent += parsed.content;
                   setMessages((prev) =>
                     prev.map((m) =>
-                      m.id === assistantMessage.id
-                        ? { ...m, content: fullContent }
-                        : m
+                      m.id === messageId ? { ...m, content: fullContent } : m
                     )
                   );
                 }
@@ -159,6 +166,116 @@ export function useChat({
             }
           }
         }
+      } else {
+        // Handle regular JSON response
+        const data = await response.json();
+        console.log("Received JSON response:", data);
+
+        const content =
+          data.response ||
+          data.content ||
+          data.message ||
+          data.text ||
+          data.reply ||
+          "";
+
+        if (content) {
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === messageId ? { ...m, content } : m
+            )
+          );
+        }
+
+        if (data.inquiryId && onLeadCaptured) {
+          onLeadCaptured(data.inquiryId);
+        }
+      }
+    },
+    [onLeadCaptured]
+  );
+
+  const sendMessage = useCallback(
+    async (content: string) => {
+      if (!content.trim() || isLoading) return;
+
+      const userMessage: ChatMessage = {
+        id: `user_${Date.now()}`,
+        role: "user",
+        content: content.trim(),
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, userMessage]);
+      setIsLoading(true);
+
+      const assistantMessage: ChatMessage = {
+        id: `assistant_${Date.now()}`,
+        role: "assistant",
+        content: "",
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, assistantMessage]);
+
+      try {
+        // Ensure we have a session
+        let sessionId = sessionIdRef.current;
+        if (!sessionId) {
+          sessionId = await createSession();
+          if (!sessionId) {
+            throw new Error("Failed to create session");
+          }
+        }
+
+        console.log("Sending message with sessionId:", sessionId);
+        const response = await fetch(`${API_URL}/api/public/ai-chat/message`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            sessionId,
+            content: content.trim(),
+            message: content.trim(),
+          }),
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Message send failed:", response.status, errorText);
+
+          // If session expired, try creating a new one
+          if (response.status === 404) {
+            sessionIdRef.current = null;
+            localStorage.removeItem(SESSION_ID_KEY);
+            const newSessionId = await createSession();
+            if (newSessionId) {
+              // Retry with new session
+              const retryResponse = await fetch(
+                `${API_URL}/api/public/ai-chat/message`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    sessionId: newSessionId,
+                    message: content.trim(),
+                  }),
+                }
+              );
+              if (!retryResponse.ok) {
+                throw new Error("Failed to send message");
+              }
+              await handleResponse(retryResponse, assistantMessage.id);
+              return;
+            }
+          }
+          throw new Error("Failed to send message");
+        }
+
+        await handleResponse(response, assistantMessage.id);
       } catch (error) {
         console.error("Chat error:", error);
         setMessages((prev) =>
@@ -176,7 +293,7 @@ export function useChat({
         setIsLoading(false);
       }
     },
-    [tenantId, messages, isLoading, onLeadCaptured]
+    [isLoading, createSession, handleResponse]
   );
 
   const toggleChat = useCallback(() => {
