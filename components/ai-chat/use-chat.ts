@@ -118,48 +118,77 @@ export function useChat({
     }
   }, []);
 
-  const handleStreamResponse = useCallback(
+  const handleResponse = useCallback(
     async (response: Response, messageId: string) => {
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
+      const contentType = response.headers.get("content-type") || "";
 
-      if (!reader) {
-        throw new Error("No response stream");
-      }
+      // Check if it's a streaming response (SSE)
+      if (contentType.includes("text/event-stream")) {
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
 
-      let fullContent = "";
+        if (!reader) {
+          throw new Error("No response stream");
+        }
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+        let fullContent = "";
 
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split("\n");
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
 
-        for (const line of lines) {
-          if (line.startsWith("data: ")) {
-            const data = line.slice(6);
-            if (data === "[DONE]") continue;
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split("\n");
 
-            try {
-              const parsed = JSON.parse(data);
+          for (const line of lines) {
+            if (line.startsWith("data: ")) {
+              const data = line.slice(6);
+              if (data === "[DONE]") continue;
 
-              if (parsed.content) {
-                fullContent += parsed.content;
-                setMessages((prev) =>
-                  prev.map((m) =>
-                    m.id === messageId ? { ...m, content: fullContent } : m
-                  )
-                );
+              try {
+                const parsed = JSON.parse(data);
+
+                if (parsed.content) {
+                  fullContent += parsed.content;
+                  setMessages((prev) =>
+                    prev.map((m) =>
+                      m.id === messageId ? { ...m, content: fullContent } : m
+                    )
+                  );
+                }
+
+                if (parsed.inquiryId && onLeadCaptured) {
+                  onLeadCaptured(parsed.inquiryId);
+                }
+              } catch {
+                // Ignore parsing errors for incomplete chunks
               }
-
-              if (parsed.inquiryId && onLeadCaptured) {
-                onLeadCaptured(parsed.inquiryId);
-              }
-            } catch {
-              // Ignore parsing errors for incomplete chunks
             }
           }
+        }
+      } else {
+        // Handle regular JSON response
+        const data = await response.json();
+        console.log("Received JSON response:", data);
+
+        const content =
+          data.response ||
+          data.content ||
+          data.message ||
+          data.text ||
+          data.reply ||
+          "";
+
+        if (content) {
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === messageId ? { ...m, content } : m
+            )
+          );
+        }
+
+        if (data.inquiryId && onLeadCaptured) {
+          onLeadCaptured(data.inquiryId);
         }
       }
     },
@@ -239,14 +268,14 @@ export function useChat({
               if (!retryResponse.ok) {
                 throw new Error("Failed to send message");
               }
-              await handleStreamResponse(retryResponse, assistantMessage.id);
+              await handleResponse(retryResponse, assistantMessage.id);
               return;
             }
           }
           throw new Error("Failed to send message");
         }
 
-        await handleStreamResponse(response, assistantMessage.id);
+        await handleResponse(response, assistantMessage.id);
       } catch (error) {
         console.error("Chat error:", error);
         setMessages((prev) =>
@@ -264,7 +293,7 @@ export function useChat({
         setIsLoading(false);
       }
     },
-    [isLoading, createSession, handleStreamResponse]
+    [isLoading, createSession, handleResponse]
   );
 
   const toggleChat = useCallback(() => {
