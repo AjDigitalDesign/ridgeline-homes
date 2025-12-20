@@ -54,7 +54,7 @@ export function useChat({
     async function fetchConfig() {
       try {
         const response = await fetch(
-          `${API_URL}/api/public/chat/config?tenantId=${tenantId}`
+          `${API_URL}/api/public/ai-chat/config?tenantId=${tenantId}`
         );
         if (response.ok) {
           const data = await response.json();
