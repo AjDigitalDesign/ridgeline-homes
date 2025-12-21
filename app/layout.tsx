@@ -23,10 +23,24 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = generateSeoMetadata({
-  title: `${siteConfig.name} | ${siteConfig.tagline}`,
-  description: siteConfig.description,
-});
+export const metadata: Metadata = {
+  metadataBase: new URL(siteConfig.url),
+  ...generateSeoMetadata({
+    title: `${siteConfig.name} | ${siteConfig.tagline}`,
+    description: siteConfig.description,
+    image: `${siteConfig.url}/og-image.jpg`,
+    openGraph: {
+      title: siteConfig.name,
+      description: siteConfig.description,
+      image: `${siteConfig.url}/og-image.jpg`,
+    },
+    twitter: {
+      title: siteConfig.name,
+      description: siteConfig.description,
+      image: `${siteConfig.url}/og-image.jpg`,
+    },
+  }),
+};
 
 export default function RootLayout({
   children,

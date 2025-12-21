@@ -14,8 +14,17 @@ export const siteConfig = {
   },
 };
 
-// Default Open Graph image
-const defaultOgImage = "/og-image.jpg";
+// Default Open Graph image (must be absolute URL for social sharing)
+const defaultOgImage = `${siteConfig.url}/og-image.jpg`;
+
+/**
+ * Parse keywords from string or array format
+ */
+function parseKeywords(keywords: string | string[] | null | undefined): string[] {
+  if (!keywords) return [];
+  if (Array.isArray(keywords)) return keywords.filter(Boolean);
+  return keywords.split(",").map((k) => k.trim()).filter(Boolean);
+}
 
 interface GenerateMetadataOptions {
   title: string;
@@ -127,7 +136,7 @@ interface CommunityMetadataOptions {
   seo?: {
     title?: string | null;
     description?: string | null;
-    keywords?: string[] | null;
+    keywords?: string | string[] | null;
     ogTitle?: string | null;
     ogDescription?: string | null;
     ogImage?: string | null;
@@ -145,11 +154,19 @@ export function generateCommunityMetadata(
       : ""
   }. Schedule a tour today!`;
 
+  const keywords = parseKeywords(community.seo?.keywords) || [
+    "new homes",
+    community.name,
+    community.city || "",
+    community.state || "",
+    "home builder",
+  ].filter(Boolean);
+
   return generateMetadata({
     title: community.seo?.title || community.name,
     description:
       community.seo?.description || community.description || defaultDescription,
-    keywords: community.seo?.keywords || [
+    keywords: keywords.length > 0 ? keywords : [
       "new homes",
       community.name,
       community.city || "",
@@ -186,7 +203,7 @@ interface HomeMetadataOptions {
   seo?: {
     title?: string | null;
     description?: string | null;
-    keywords?: string[] | null;
+    keywords?: string | string[] | null;
     ogTitle?: string | null;
     ogDescription?: string | null;
     ogImage?: string | null;
@@ -209,10 +226,12 @@ export function generateHomeMetadata(home: HomeMetadataOptions): Metadata {
     home.price ? ` - $${home.price.toLocaleString()}` : ""
   }${specs ? `. ${specs}` : ""}. Schedule a tour today!`;
 
+  const keywords = parseKeywords(home.seo?.keywords);
+
   return generateMetadata({
     title: home.seo?.title || address,
     description: home.seo?.description || defaultDescription,
-    keywords: home.seo?.keywords || [
+    keywords: keywords.length > 0 ? keywords : [
       "home for sale",
       home.community?.name || "",
       home.city || "",
@@ -242,7 +261,7 @@ interface FloorplanMetadataOptions {
   seo?: {
     title?: string | null;
     description?: string | null;
-    keywords?: string[] | null;
+    keywords?: string | string[] | null;
     ogTitle?: string | null;
     ogDescription?: string | null;
     ogImage?: string | null;
@@ -273,10 +292,12 @@ export function generateFloorplanMetadata(
     floorplan.elevationGallery?.[0] ||
     floorplan.gallery?.[0];
 
+  const keywords = parseKeywords(floorplan.seo?.keywords);
+
   return generateMetadata({
     title: floorplan.seo?.title || `The ${floorplan.name}`,
     description: floorplan.seo?.description || defaultDescription,
-    keywords: floorplan.seo?.keywords || [
+    keywords: keywords.length > 0 ? keywords : [
       "floor plan",
       floorplan.name,
       "new home",

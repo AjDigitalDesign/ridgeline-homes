@@ -3,7 +3,10 @@ import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { fetchHome } from "@/lib/api";
 import HomeDetailClient from "./home-detail-client";
-import { generateMetadata as generateSeoMetadata } from "@/lib/seo";
+import {
+  generateHomeMetadata,
+  generateMetadata as generateSeoMetadata,
+} from "@/lib/seo";
 
 // Disable caching to always fetch fresh data
 export const dynamic = "force-dynamic";
@@ -23,19 +26,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   try {
     const home = (await fetchHome(slug)).data;
-    const address = home.address || home.street || home.name;
-    const location = [home.city, home.state].filter(Boolean).join(", ");
-    const title = `${address}${location ? ` | ${location}` : ""}`;
-
-    const description = home.marketingHeadline && home.showMarketingHeadline
-      ? home.marketingHeadline
-      : `${home.bedrooms || ""} bed, ${home.bathrooms || ""} bath home${home.squareFeet ? ` with ${home.squareFeet.toLocaleString()} sq ft` : ""}${home.community ? ` in ${home.community.name}` : ""}${location ? `, ${location}` : ""}.`;
-
-    return generateSeoMetadata({
-      title,
-      description,
-      image: home.gallery?.[0],
-    });
+    return generateHomeMetadata(home);
   } catch {
     return generateSeoMetadata({
       title: "Home Not Found",
