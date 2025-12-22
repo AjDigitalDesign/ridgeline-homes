@@ -23,6 +23,7 @@ import {
 import { MobileUserMenu } from "@/components/auth/user-menu";
 import { MobileSearch } from "./mobile-search";
 import { MobileFindYourHome } from "./mobile-find-your-home";
+import { MobileBOYL } from "./mobile-boyl";
 
 import SalesPerson from "@/public/sales-person.png";
 import Logo from "../main-logo";
@@ -137,6 +138,9 @@ export function MobileHeaderIcons() {
           <div className="flex h-[calc(100%-180px)] flex-col overflow-y-auto px-6 py-4">
             {/* Find Your Home - Dynamic navigation */}
             <MobileFindYourHome onClose={() => setMenuOpen(false)} />
+
+            {/* Build on Your Lot - Dynamic navigation */}
+            <MobileBOYL onClose={() => setMenuOpen(false)} />
 
             {/* Other navigation items */}
             {navigationItems.map((item) => (

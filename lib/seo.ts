@@ -81,13 +81,14 @@ export function generateMetadata({
     ? title
     : `${title} | ${siteConfig.name}`;
 
-  const ogImage = image || openGraph?.image || defaultOgImage;
+  // Ensure we have a valid image URL (not empty string)
+  const ogImage = (image && image.trim()) || (openGraph?.image && openGraph.image.trim()) || defaultOgImage;
   const ogTitle = openGraph?.title || title;
   const ogDescription = openGraph?.description || description;
 
   const twitterTitle = twitter?.title || ogTitle;
   const twitterDescription = twitter?.description || ogDescription;
-  const twitterImage = twitter?.image || ogImage;
+  const twitterImage = (twitter?.image && twitter.image.trim()) || ogImage;
 
   return {
     title: fullTitle,

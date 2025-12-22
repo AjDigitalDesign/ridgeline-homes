@@ -5,6 +5,7 @@ import { Mail, Home } from "lucide-react";
 import { NavSearch } from "./nav-search";
 import { AskUsDropdown } from "./ask-us-dropdown";
 import { FindYourHomeDropdown } from "./find-your-home-dropdown";
+import { BOYLDropdown } from "./boyl-dropdown";
 import { NavDropdown } from "./nav-dropdown";
 import { FavoritesLink } from "./favorites-link";
 import {
@@ -59,39 +60,44 @@ export function DesktopNavigation({ isScrolled }: { isScrolled: boolean }) {
             {/* Find Your Home Dropdown */}
             <FindYourHomeDropdown className="text-main-primary hover:text-main-secondary" />
 
-            {mainNavItems.map((item) => {
-              // Render dropdowns for items with hasDropdown
-              if (item.label === "News & Events") {
+            {/* Build on Your Lot Dropdown */}
+            <BOYLDropdown className="text-main-primary hover:text-main-secondary" />
+
+            {mainNavItems
+              .filter((item) => item.label !== "Build on Your Lot")
+              .map((item) => {
+                // Render dropdowns for items with hasDropdown
+                if (item.label === "News & Events") {
+                  return (
+                    <NavDropdown
+                      key={item.href}
+                      label={item.label}
+                      items={newsEventsDropdownItems}
+                      className="text-main-primary hover:text-main-secondary"
+                    />
+                  );
+                }
+                if (item.label === "About Us") {
+                  return (
+                    <NavDropdown
+                      key={item.href}
+                      label={item.label}
+                      items={aboutUsDropdownItems}
+                      className="text-main-primary hover:text-main-secondary"
+                    />
+                  );
+                }
+                // Regular links
                 return (
-                  <NavDropdown
+                  <Link
                     key={item.href}
-                    label={item.label}
-                    items={newsEventsDropdownItems}
-                    className="text-main-primary hover:text-main-secondary"
-                  />
+                    href={item.href}
+                    className="text-sm font-semibold text-main-primary uppercase tracking-wide hover:text-main-secondary transition-colors whitespace-nowrap"
+                  >
+                    {item.label}
+                  </Link>
                 );
-              }
-              if (item.label === "About Us") {
-                return (
-                  <NavDropdown
-                    key={item.href}
-                    label={item.label}
-                    items={aboutUsDropdownItems}
-                    className="text-main-primary hover:text-main-secondary"
-                  />
-                );
-              }
-              // Regular links
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="text-sm font-semibold text-main-primary uppercase tracking-wide hover:text-main-secondary transition-colors whitespace-nowrap"
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
+              })}
           </nav>
         </div>
       </div>

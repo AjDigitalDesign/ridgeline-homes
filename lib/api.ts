@@ -939,3 +939,129 @@ export const fetchBlogTags = () =>
 // Fetch blog page settings
 export const fetchBlogPage = () =>
   api.get<BlogPage>("/api/public/pages/blog");
+
+// =============================================================================
+// Build On Your Lot (BOYL) Types and API Functions
+// =============================================================================
+
+// BOYL Floorplan (embedded in location)
+export interface BOYLFloorplan {
+  floorplanId: string;
+  name: string;
+  slug: string;
+  price: number;
+  sqft: number;
+  bedrooms: number;
+  bathrooms: number;
+  garages: number;
+  gallery: string[];
+  elevationGallery: string[];
+  plansImages: string[];
+  description: string;
+  features: string[];
+  virtualTourUrl: string | null;
+  videoUrl: string | null;
+}
+
+// BOYL Location from API
+export interface BOYLLocation {
+  id: string;
+  name: string;
+  slug: string;
+  state: string;
+  county: string;
+  city: string;
+  latitude: number;
+  longitude: number;
+  radiusMiles: number;
+  polygon: { coordinates: [number, number][] } | null;
+  description: string | null;
+  featuredImage: string;
+  floorplans: BOYLFloorplan[];
+  floorplanCount: number;
+  boylCount: number;
+}
+
+// Lot Process Page content
+export interface LotProcessStep {
+  id: string;
+  title: string;
+  shortTitle?: string;
+  content: string;
+  icon: string | null;
+  order: number;
+  mediaType?: "image" | "video" | null;
+  mediaUrl?: string | null;
+  linkUrl?: string | null;
+  linkLabel?: string | null;
+}
+
+export interface LotProcessPage {
+  id: string;
+  name: string;
+  slug: string;
+  pageType: "LOT_PROCESS";
+  lotProcessBannerImage: string | null;
+  lotProcessBannerTitle: string | null;
+  lotProcessIntroTitle: string | null;
+  lotProcessIntroDescription: string | null;
+  lotProcessIntroContent: string | null;
+  lotProcessIntroCta: string | null;
+  lotProcessIntroCtaLink: string | null;
+  lotProcessIntroMediaType: "image" | "video" | null;
+  lotProcessIntroMediaUrl: string | null;
+  lotProcessStepsTitle: string | null;
+  lotProcessSteps: LotProcessStep[];
+  seo: {
+    title: string | null;
+    description: string | null;
+    keywords: string | null;
+    ogTitle: string | null;
+    ogDescription: string | null;
+    ogImage: string | null;
+  } | null;
+}
+
+// Navigation types for BOYL dropdown
+export interface BOYLNavCounty {
+  county: string;
+  slug: string;
+  city: string;
+}
+
+export interface BOYLNavState {
+  state: string;
+  counties: BOYLNavCounty[];
+}
+
+// Fetch all BOYL locations (uses local API route for client-side)
+export const fetchBOYLLocations = async () => {
+  const response = await fetch("/api/boyl-locations");
+  const data = await response.json();
+  return { data: data as BOYLLocation[] };
+};
+
+// Fetch all BOYL locations (server-side version using direct API)
+export const fetchBOYLLocationsServer = () =>
+  api.get<BOYLLocation[]>("/api/public/boyl-locations");
+
+// Fetch single BOYL location by slug
+export const fetchBOYLLocation = (slug: string) =>
+  api.get<BOYLLocation>(`/api/public/boyl-locations/${slug}`);
+
+// Fetch Lot Process page content
+export const fetchLotProcessPage = () =>
+  api.get<LotProcessPage>("/api/public/pages/lot-process");
+
+// =============================================================================
+// Featured Content (Homepage)
+// =============================================================================
+
+export interface FeaturedData {
+  communities: Community[];
+  homes: Home[];
+}
+
+// Fetch featured communities and homes for homepage
+export const fetchFeatured = () =>
+  api.get<FeaturedData>("/api/public/featured");
