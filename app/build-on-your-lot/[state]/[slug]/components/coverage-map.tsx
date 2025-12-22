@@ -223,10 +223,10 @@ function CoverageMap({
           // Check if location has polygon data
           if (loc.polygon && loc.polygon.coordinates && loc.polygon.coordinates.length > 0) {
             // Handle both flat array [[lng, lat], ...] and nested GeoJSON format [[[lng, lat], ...]]
-            const rawCoords = loc.polygon.coordinates;
-            if (Array.isArray(rawCoords[0]) && Array.isArray(rawCoords[0][0])) {
+            const rawCoords = loc.polygon.coordinates as unknown;
+            if (Array.isArray(rawCoords) && Array.isArray(rawCoords[0]) && Array.isArray(rawCoords[0][0])) {
               // Nested format: [[[lng, lat], [lng, lat], ...]]
-              coordinates = rawCoords[0] as [number, number][];
+              coordinates = (rawCoords as [number, number][][])[0];
             } else {
               // Flat format: [[lng, lat], [lng, lat], ...]
               coordinates = rawCoords as [number, number][];
