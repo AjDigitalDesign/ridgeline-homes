@@ -58,23 +58,83 @@ interface FloorplanSection {
 function getFeatureIcon(feature: string): LucideIcon {
   const lowerFeature = feature.toLowerCase();
 
-  if (lowerFeature.includes("pool") || lowerFeature.includes("swim")) return Waves;
-  if (lowerFeature.includes("clubhouse") || lowerFeature.includes("club house")) return HomeIcon;
-  if (lowerFeature.includes("fitness") || lowerFeature.includes("gym") || lowerFeature.includes("workout")) return Dumbbell;
-  if (lowerFeature.includes("playground") || lowerFeature.includes("kids") || lowerFeature.includes("children")) return Baby;
-  if (lowerFeature.includes("trail") || lowerFeature.includes("walking") || lowerFeature.includes("hiking")) return Footprints;
-  if (lowerFeature.includes("park") || lowerFeature.includes("green") || lowerFeature.includes("nature")) return Trees;
-  if (lowerFeature.includes("garage") || lowerFeature.includes("parking")) return Car;
-  if (lowerFeature.includes("shop") || lowerFeature.includes("retail") || lowerFeature.includes("store")) return ShoppingBag;
-  if (lowerFeature.includes("restaurant") || lowerFeature.includes("dining") || lowerFeature.includes("food")) return UtensilsCrossed;
-  if (lowerFeature.includes("bike") || lowerFeature.includes("cycling")) return Bike;
+  if (lowerFeature.includes("pool") || lowerFeature.includes("swim"))
+    return Waves;
+  if (lowerFeature.includes("clubhouse") || lowerFeature.includes("club house"))
+    return HomeIcon;
+  if (
+    lowerFeature.includes("fitness") ||
+    lowerFeature.includes("gym") ||
+    lowerFeature.includes("workout")
+  )
+    return Dumbbell;
+  if (
+    lowerFeature.includes("playground") ||
+    lowerFeature.includes("kids") ||
+    lowerFeature.includes("children")
+  )
+    return Baby;
+  if (
+    lowerFeature.includes("trail") ||
+    lowerFeature.includes("walking") ||
+    lowerFeature.includes("hiking")
+  )
+    return Footprints;
+  if (
+    lowerFeature.includes("park") ||
+    lowerFeature.includes("green") ||
+    lowerFeature.includes("nature")
+  )
+    return Trees;
+  if (lowerFeature.includes("garage") || lowerFeature.includes("parking"))
+    return Car;
+  if (
+    lowerFeature.includes("shop") ||
+    lowerFeature.includes("retail") ||
+    lowerFeature.includes("store")
+  )
+    return ShoppingBag;
+  if (
+    lowerFeature.includes("restaurant") ||
+    lowerFeature.includes("dining") ||
+    lowerFeature.includes("food")
+  )
+    return UtensilsCrossed;
+  if (lowerFeature.includes("bike") || lowerFeature.includes("cycling"))
+    return Bike;
   if (lowerFeature.includes("dog") || lowerFeature.includes("pet")) return Dog;
-  if (lowerFeature.includes("tennis") || lowerFeature.includes("court") || lowerFeature.includes("sport")) return CircleDot;
-  if (lowerFeature.includes("lake") || lowerFeature.includes("pond") || lowerFeature.includes("water")) return Palmtree;
-  if (lowerFeature.includes("school") || lowerFeature.includes("education")) return Building2;
-  if (lowerFeature.includes("gate") || lowerFeature.includes("security") || lowerFeature.includes("guard")) return Shield;
-  if (lowerFeature.includes("wifi") || lowerFeature.includes("internet") || lowerFeature.includes("smart")) return Wifi;
-  if (lowerFeature.includes("view") || lowerFeature.includes("mountain") || lowerFeature.includes("scenic")) return Mountain;
+  if (
+    lowerFeature.includes("tennis") ||
+    lowerFeature.includes("court") ||
+    lowerFeature.includes("sport")
+  )
+    return CircleDot;
+  if (
+    lowerFeature.includes("lake") ||
+    lowerFeature.includes("pond") ||
+    lowerFeature.includes("water")
+  )
+    return Palmtree;
+  if (lowerFeature.includes("school") || lowerFeature.includes("education"))
+    return Building2;
+  if (
+    lowerFeature.includes("gate") ||
+    lowerFeature.includes("security") ||
+    lowerFeature.includes("guard")
+  )
+    return Shield;
+  if (
+    lowerFeature.includes("wifi") ||
+    lowerFeature.includes("internet") ||
+    lowerFeature.includes("smart")
+  )
+    return Wifi;
+  if (
+    lowerFeature.includes("view") ||
+    lowerFeature.includes("mountain") ||
+    lowerFeature.includes("scenic")
+  )
+    return Mountain;
 
   return Sparkles;
 }
@@ -121,9 +181,12 @@ export default function BOYLFloorplanDetailClient({
   state,
   locationSlug,
 }: BOYLFloorplanDetailClientProps) {
-  const [activeSection, setActiveSection] = useState<FloorplanSectionId>("overview");
+  const [activeSection, setActiveSection] =
+    useState<FloorplanSectionId>("overview");
   const [showContactModal, setShowContactModal] = useState(false);
-  const [contactModalType, setContactModalType] = useState<"tour" | "info">("tour");
+  const [contactModalType, setContactModalType] = useState<"tour" | "info">(
+    "tour"
+  );
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [lightboxImages, setLightboxImages] = useState<string[]>([]);
@@ -207,7 +270,8 @@ export default function BOYLFloorplanDetailClient({
     const element = sectionRefs.current[sectionId];
     if (element) {
       const offset = 150;
-      const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+      const elementPosition =
+        element.getBoundingClientRect().top + window.scrollY;
       window.scrollTo({
         top: elementPosition - offset,
         behavior: "smooth",
@@ -233,16 +297,17 @@ export default function BOYLFloorplanDetailClient({
   };
 
   // Combine all images for the main hero gallery
-  const heroImages = floorplan.gallery?.length > 0
-    ? floorplan.gallery
-    : floorplan.elevationGallery?.length > 0
+  const heroImages =
+    floorplan.gallery?.length > 0
+      ? floorplan.gallery
+      : floorplan.elevationGallery?.length > 0
       ? floorplan.elevationGallery
       : [];
 
   return (
     <main className="min-h-screen bg-gray-50 pt-20">
       {/* Back Navigation */}
-      <div className="bg-white border-b h-12">
+      <div className="bg-white border-b h-12 mt-0.5 xl:mt-7 ">
         <div className="container mx-auto px-4 lg:px-10 xl:px-20 2xl:px-24 h-full flex items-center">
           <div className="flex items-center justify-between w-full">
             <Link
@@ -257,7 +322,9 @@ export default function BOYLFloorplanDetailClient({
             <div className="flex items-center gap-2 text-sm text-gray-500">
               <span className="hidden lg:inline">{location.name}</span>
               <span className="hidden lg:inline">|</span>
-              <span className="text-main-primary font-medium">{floorplan.name}</span>
+              <span className="text-main-primary font-medium">
+                {floorplan.name}
+              </span>
             </div>
           </div>
         </div>
@@ -267,7 +334,9 @@ export default function BOYLFloorplanDetailClient({
       <HeroGallery
         gallery={heroImages}
         floorplanName={floorplan.name}
-        onOpenGallery={(index) => openGallery(heroImages, index, `${floorplan.name} Gallery`)}
+        onOpenGallery={(index) =>
+          openGallery(heroImages, index, `${floorplan.name} Gallery`)
+        }
       />
 
       {/* Floorplan Header - Using BOYL location-specific data */}
@@ -299,7 +368,9 @@ export default function BOYLFloorplanDetailClient({
                       onClick={() => setCalculatorOpen(true)}
                       className="flex items-center gap-2 lg:justify-end mt-1 hover:opacity-80 transition-opacity"
                     >
-                      <span className="text-sm text-gray-500">Est. Payment</span>
+                      <span className="text-sm text-gray-500">
+                        Est. Payment
+                      </span>
                       <span className="text-sm font-semibold text-main-primary">
                         {calculateMonthlyPayment(floorplan.price)} / MO
                       </span>
@@ -448,14 +519,22 @@ export default function BOYLFloorplanDetailClient({
               <h2 className="text-3xl lg:text-4xl font-bold text-main-primary mb-2">
                 Elevations
               </h2>
-              <p className="text-gray-600 mt-2">Exterior design options for the {floorplan.name}</p>
+              <p className="text-gray-600 mt-2">
+                Exterior design options for the {floorplan.name}
+              </p>
               <div className="w-16 h-1 bg-main-secondary mx-auto mt-4" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {floorplan.elevationGallery?.map((image, index) => (
                 <button
                   key={index}
-                  onClick={() => openGallery(floorplan.elevationGallery!, index, `${floorplan.name} Elevations`)}
+                  onClick={() =>
+                    openGallery(
+                      floorplan.elevationGallery!,
+                      index,
+                      `${floorplan.name} Elevations`
+                    )
+                  }
                   className="relative aspect-[4/3] rounded-xl overflow-hidden group"
                 >
                   <Image
@@ -484,18 +563,28 @@ export default function BOYLFloorplanDetailClient({
               <h2 className="text-3xl lg:text-4xl font-bold text-main-primary mb-2">
                 Floor Plan Layouts
               </h2>
-              <p className="text-gray-600 mt-2">View the layout options for the {floorplan.name}</p>
+              <p className="text-gray-600 mt-2">
+                View the layout options for the {floorplan.name}
+              </p>
               <div className="w-16 h-1 bg-main-secondary mx-auto mt-4" />
             </div>
-            <div className={`grid gap-6 ${
-              (floorplan.plansImages?.length ?? 0) === 1
-                ? "grid-cols-1 max-w-2xl mx-auto"
-                : "grid-cols-1 md:grid-cols-2"
-            }`}>
+            <div
+              className={`grid gap-6 ${
+                (floorplan.plansImages?.length ?? 0) === 1
+                  ? "grid-cols-1 max-w-2xl mx-auto"
+                  : "grid-cols-1 md:grid-cols-2"
+              }`}
+            >
               {floorplan.plansImages?.map((image, index) => (
                 <button
                   key={index}
-                  onClick={() => openGallery(floorplan.plansImages!, index, `${floorplan.name} Floor Plans`)}
+                  onClick={() =>
+                    openGallery(
+                      floorplan.plansImages!,
+                      index,
+                      `${floorplan.name} Floor Plans`
+                    )
+                  }
                   className="relative aspect-[4/3] rounded-xl overflow-hidden group"
                 >
                   <Image
@@ -524,7 +613,9 @@ export default function BOYLFloorplanDetailClient({
               <h2 className="text-3xl lg:text-4xl font-bold text-main-primary mb-2">
                 Virtual Tour
               </h2>
-              <p className="text-gray-600 mt-2">Explore the {floorplan.name} interactively</p>
+              <p className="text-gray-600 mt-2">
+                Explore the {floorplan.name} interactively
+              </p>
               <div className="w-16 h-1 bg-main-secondary mx-auto mt-4" />
             </div>
             <div className="aspect-video w-full max-w-5xl mx-auto rounded-xl overflow-hidden shadow-lg">
@@ -552,15 +643,21 @@ export default function BOYLFloorplanDetailClient({
               <h2 className="text-3xl lg:text-4xl font-bold text-main-primary mb-2">
                 Video Tour
               </h2>
-              <p className="text-gray-600 mt-2">Watch a walkthrough of the {floorplan.name}</p>
+              <p className="text-gray-600 mt-2">
+                Watch a walkthrough of the {floorplan.name}
+              </p>
               <div className="w-16 h-1 bg-main-secondary mx-auto mt-4" />
             </div>
             <div className="aspect-video w-full max-w-5xl mx-auto rounded-xl overflow-hidden shadow-lg">
               <iframe
                 src={(() => {
                   const url = floorplan.videoUrl!;
-                  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/);
-                  return match ? `https://www.youtube.com/embed/${match[1]}` : url;
+                  const match = url.match(
+                    /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/
+                  );
+                  return match
+                    ? `https://www.youtube.com/embed/${match[1]}`
+                    : url;
                 })()}
                 title={`${floorplan.name} Video Tour`}
                 className="w-full h-full border-0"
@@ -585,7 +682,9 @@ export default function BOYLFloorplanDetailClient({
               <h2 className="text-3xl lg:text-4xl font-bold text-main-primary">
                 Plan Features
               </h2>
-              <p className="text-gray-600 mt-2">Included features with the {floorplan.name}</p>
+              <p className="text-gray-600 mt-2">
+                Included features with the {floorplan.name}
+              </p>
               <div className="w-16 h-1 bg-main-secondary mx-auto mt-4" />
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -618,7 +717,8 @@ export default function BOYLFloorplanDetailClient({
                 Contact Us
               </h2>
               <p className="text-gray-600 mt-1">
-                Interested in building the {floorplan.name} on your lot? Get in touch with our team.
+                Interested in building the {floorplan.name} on your lot? Get in
+                touch with our team.
               </p>
               <div className="w-16 h-1 bg-main-secondary mt-3" />
             </div>
@@ -662,7 +762,9 @@ export default function BOYLFloorplanDetailClient({
                   <dl className="space-y-3 text-sm">
                     <div>
                       <dt className="text-gray-500">Floor Plan</dt>
-                      <dd className="font-medium text-main-primary">{floorplan.name}</dd>
+                      <dd className="font-medium text-main-primary">
+                        {floorplan.name}
+                      </dd>
                     </div>
                     <div>
                       <dt className="text-gray-500">Location</dt>
@@ -871,7 +973,7 @@ function DetailNavigation({
   };
 
   return (
-    <nav className="sticky top-16 xl:top-[120px] z-40 bg-white border-b shadow-sm">
+    <nav className="sticky top-16 xl:top-[97px] z-40 bg-white border-b shadow-sm">
       <div className="container mx-auto px-4 lg:px-10 xl:px-20 2xl:px-24">
         <div className="flex items-center justify-between h-14">
           {/* Section Tabs */}
