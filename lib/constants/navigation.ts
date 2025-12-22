@@ -8,11 +8,12 @@ export type NavItem = {
 };
 
 // Main navigation items for desktop bottom row
-// Note: "Find Your Home" is rendered separately as a dropdown component
+// Note: "Find Your Home" and "Build on Your Lot" are rendered separately as dropdown components
 export const mainNavItems = [
   {
     label: "Build on Your Lot",
     href: "/build-on-your-lot",
+    hasDropdown: true,
   },
   {
     label: "News & Events",
@@ -84,13 +85,8 @@ export const utilityNavItems = [
 ] as const;
 
 // Mobile navigation items (expanded menu structure)
-// Note: "Find Your Home" is rendered separately as a dynamic component
+// Note: "Find Your Home" and "Build on Your Lot" are rendered separately as dynamic components
 export const navigationItems = [
-  {
-    label: "Build on Your Lot",
-    href: "/build-on-your-lot",
-    submenu: false,
-  },
   {
     label: "News & Events",
     href: "/blog",

@@ -11,8 +11,7 @@ import {
   fetchFrontPage,
   fetchTenant,
   fetchMarketAreas,
-  fetchCommunities,
-  fetchHomes,
+  fetchFeatured,
 } from "@/lib/api";
 
 // Disable caching to always fetch fresh data
@@ -21,7 +20,7 @@ export const revalidate = 0;
 
 export default async function Home() {
   // Fetch all data with error handling
-  const [frontPageRes, tenantRes, marketAreasRes, communitiesRes, homesRes] =
+  const [frontPageRes, tenantRes, marketAreasRes, featuredRes] =
     await Promise.all([
       fetchFrontPage().catch((e) => {
         console.error("Failed to fetch front page:", e);
@@ -35,13 +34,9 @@ export default async function Home() {
         console.error("Failed to fetch market areas:", e);
         return { data: [] };
       }),
-      fetchCommunities({ limit: 4 }).catch((e) => {
-        console.error("Failed to fetch communities:", e);
-        return { data: [] };
-      }),
-      fetchHomes({ limit: 4 }).catch((e) => {
-        console.error("Failed to fetch homes:", e);
-        return { data: [] };
+      fetchFeatured().catch((e) => {
+        console.error("Failed to fetch featured:", e);
+        return { data: { communities: [], homes: [] } };
       }),
     ]);
 
@@ -49,8 +44,8 @@ export default async function Home() {
   const tenant = tenantRes.data;
   // Ensure arrays are actually arrays
   const marketAreas = Array.isArray(marketAreasRes.data) ? marketAreasRes.data : [];
-  const communities = Array.isArray(communitiesRes.data) ? communitiesRes.data : [];
-  const homes = Array.isArray(homesRes.data) ? homesRes.data : [];
+  const communities = Array.isArray(featuredRes.data?.communities) ? featuredRes.data.communities : [];
+  const homes = Array.isArray(featuredRes.data?.homes) ? featuredRes.data.homes : [];
 
   return (
     <main>
