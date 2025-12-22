@@ -1,6 +1,9 @@
 import { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { fetchBOYLLocation } from "@/lib/api";
 import { generateMetadata as generateSeoMetadata } from "@/lib/seo";
+import BOYLHero from "../components/boyl-hero";
+import BOYLDetailNavigation from "../components/boyl-detail-navigation";
 import BOYLFloorplansClient from "./boyl-floorplans-client";
 
 export const dynamic = "force-dynamic";
@@ -48,30 +51,26 @@ async function getLocationData(slug: string) {
 }
 
 export default async function FloorplansPage({ params }: PageProps) {
-  const { slug } = await params;
+  const { state, slug } = await params;
   const location = await getLocationData(slug);
 
   if (!location) {
-    return (
-      <div className="py-12">
-        <div className="container mx-auto px-4 lg:px-10 xl:px-20 2xl:px-24">
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-bold text-main-primary mb-4">
-              Floor Plans Not Found
-            </h2>
-            <p className="text-gray-600">
-              Unable to load floor plans for this location.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
+    notFound();
   }
 
+  const basePath = `/build-on-your-lot/${state}/${slug}`;
+
   return (
-    <BOYLFloorplansClient
-      location={location}
-      floorplans={location.floorplans || []}
-    />
+    <main className="min-h-screen bg-gray-50">
+      <BOYLHero location={location} />
+      <BOYLDetailNavigation
+        basePath={basePath}
+        floorplansCount={location.floorplanCount || location.floorplans?.length || 0}
+      />
+      <BOYLFloorplansClient
+        location={location}
+        floorplans={location.floorplans || []}
+      />
+    </main>
   );
 }
