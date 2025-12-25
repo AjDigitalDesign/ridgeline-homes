@@ -88,17 +88,17 @@ function SectionRenderer({
 
     case "ABOUT":
       // BOLD template about section
-      if (homePage?.showAboutSection === false) return null;
+      if ((homePage as unknown as { showAboutSection?: boolean })?.showAboutSection === false) return null;
       return (
         <AboutSection
           key="about-bold"
-          title={homePage?.aboutTitle}
-          content={homePage?.aboutDescription}
-          linkTitle={homePage?.aboutButtonText}
-          linkUrl={homePage?.aboutButtonLink}
-          image={homePage?.aboutImageLeft}
-          image2={homePage?.aboutImageRight}
-          subheading={homePage?.aboutSubtitle}
+          title={(homePage as unknown as { aboutTitle?: string })?.aboutTitle}
+          content={(homePage as unknown as { aboutDescription?: string })?.aboutDescription}
+          linkTitle={(homePage as unknown as { aboutButtonText?: string })?.aboutButtonText}
+          linkUrl={(homePage as unknown as { aboutButtonLink?: string })?.aboutButtonLink}
+          image={homePage?.aboutImages?.[0]}
+          image2={homePage?.aboutImages?.[1]}
+          subheading={(homePage as unknown as { aboutSubtitle?: string })?.aboutSubtitle}
         />
       );
 
