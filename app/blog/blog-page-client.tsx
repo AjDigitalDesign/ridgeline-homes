@@ -319,7 +319,7 @@ export default function BlogPageClient({
   const hasPosts = filteredPosts.length > 0;
 
   return (
-    <main className="min-h-screen bg-gray-100">
+    <main className="min-h-screen bg-gray-100 pt-16 xl:pt-20">
       {/* Hero Section */}
       <section className="relative h-[300px] lg:h-[400px] overflow-hidden">
         {heroImage ? (

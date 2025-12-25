@@ -6,13 +6,42 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnimateOnScroll } from "@/components/ui/animate-on-scroll";
 
-export default function DesignCenterSection() {
+interface DesignCenterSectionProps {
+  title?: string | null;
+  description?: string | null;
+  linkTitle?: string | null;
+  linkUrl?: string | null;
+  image?: string | null;
+}
+
+const defaultContent = {
+  title: "Build Your Dream Home, Your Way",
+  description:
+    "Personalize every detail in our state-of-the-art Design Center. Choose from premium finishes, fixtures, and features to create a home that's uniquely yours.",
+  linkTitle: "Explore Design Center",
+  linkUrl: "/design-center",
+  image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1920&q=80",
+};
+
+export default function DesignCenterSection({
+  title,
+  description,
+  linkTitle,
+  linkUrl,
+  image,
+}: DesignCenterSectionProps) {
+  const displayTitle = title || defaultContent.title;
+  const displayDescription = description || defaultContent.description;
+  const displayLinkTitle = linkTitle || defaultContent.linkTitle;
+  const displayLinkUrl = linkUrl || defaultContent.linkUrl;
+  const displayImage = image || defaultContent.image;
+
   return (
     <section className="relative overflow-hidden">
       {/* Background Image */}
       <div className="absolute inset-0">
         <Image
-          src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1920&q=80"
+          src={displayImage}
           alt="Luxury home exterior"
           fill
           className="object-cover"
@@ -34,15 +63,13 @@ export default function DesignCenterSection() {
         <div className="max-w-2xl text-left">
           <AnimateOnScroll animation="fade-in-up">
             <h2 className="text-3xl lg:text-4xl xl:text-4xl traci font-bold text-white leading-7 font-outfit">
-              Build Your Dream Home, Your Way
+              {displayTitle}
             </h2>
           </AnimateOnScroll>
 
           <AnimateOnScroll animation="fade-in-up" delay={150}>
             <p className="mt-6 text-white/80 text-base lg:text-lg max-w-xl">
-              Personalize every detail in our state-of-the-art Design Center.
-              Choose from premium finishes, fixtures, and features to create a
-              home that&apos;s uniquely yours.
+              {displayDescription}
             </p>
           </AnimateOnScroll>
 
@@ -52,8 +79,8 @@ export default function DesignCenterSection() {
                 asChild
                 className="group h-auto rounded-md bg-main-secondary px-6 py-3 text-base font-medium text-main-primary hover:bg-main-secondary/90"
               >
-                <Link href="/design-center">
-                  Explore Design Center
+                <Link href={displayLinkUrl}>
+                  {displayLinkTitle}
                   <ArrowRight className="ml-2 size-4 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>

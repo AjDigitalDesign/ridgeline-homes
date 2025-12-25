@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import { AnimateOnScroll } from "@/components/ui/animate-on-scroll";
@@ -44,8 +44,16 @@ export default function MarketAreasSection({
           <AnimateOnScroll
             animation="fade-in-right"
             delay={200}
-            className="lg:w-2/3 -mr-4 lg:-mr-10 xl:-mr-16 overflow-hidden"
+            className="lg:w-2/3 -mr-4 lg:-mr-10 xl:-mr-16 overflow-hidden relative"
           >
+            {/* Navigation Arrows */}
+            <button className="market-prev absolute left-0 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center size-10 bg-white/90 hover:bg-white rounded-full shadow-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              <ChevronLeft className="size-5 text-main-primary" />
+            </button>
+            <button className="market-next absolute right-4 lg:right-10 xl:right-16 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center size-10 bg-white/90 hover:bg-white rounded-full shadow-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              <ChevronRight className="size-5 text-main-primary" />
+            </button>
+
             <Swiper
               modules={[Navigation]}
               spaceBetween={16}

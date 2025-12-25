@@ -15,7 +15,7 @@ export default function ContactPageClient({ tenant }: ContactPageClientProps) {
   const showChat = searchParams.get("chat") === "true";
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pt-16 xl:pt-20">
       {/* Hero Section */}
       <section className="relative h-[300px] lg:h-[350px] bg-main-primary">
         <div className="absolute inset-0 bg-gradient-to-r from-main-primary to-main-primary/80" />

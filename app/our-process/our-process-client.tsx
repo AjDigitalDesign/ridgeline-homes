@@ -492,7 +492,7 @@ export default function OurProcessPageClient({
   const heroTitle = pageData?.processBannerTitle || "Our Process";
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-white pt-16 xl:pt-20">
       {/* Hero Section */}
       <section className="relative h-[300px] lg:h-[400px] overflow-hidden">
         {heroImage ? (

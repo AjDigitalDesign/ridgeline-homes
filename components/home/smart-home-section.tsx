@@ -6,7 +6,36 @@ import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AnimateOnScroll } from "@/components/ui/animate-on-scroll";
 
-export default function SmartHomeSection() {
+interface SmartHomeSectionProps {
+  title?: string | null;
+  description?: string | null;
+  linkTitle?: string | null;
+  linkUrl?: string | null;
+  image?: string | null;
+}
+
+const defaultContent = {
+  title: "FUTURE PROOF",
+  description:
+    "At Ridgeline Homes, every home is designed around the way people live today—not the outdated floorplans of the past. We believe you shouldn't have to settle for spaces you'll never use or layouts that no longer fit modern life. Our smart, healthy, and thoughtfully crafted homes are built to support your real lifestyle. As the world has changed, so has the way we live, work, and gather at home. That's why we've reimagined traditional layouts to include flexible spaces like dedicated home offices, pocket workstations, study nooks for kids, and even personalized areas for pets. Ridgeline Homes gives you a home that adapts to you—today, tomorrow, and every day after.",
+  linkTitle: "Get Started",
+  linkUrl: "/smart-home",
+  image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80",
+};
+
+export default function SmartHomeSection({
+  title,
+  description,
+  linkTitle,
+  linkUrl,
+  image,
+}: SmartHomeSectionProps) {
+  const displayTitle = title || defaultContent.title;
+  const displayDescription = description || defaultContent.description;
+  const displayLinkTitle = linkTitle || defaultContent.linkTitle;
+  const displayLinkUrl = linkUrl || defaultContent.linkUrl;
+  const displayImage = image || defaultContent.image;
+
   return (
     <section className="relative bg-main-primary overflow-hidden">
       {/* Background Text */}
@@ -23,7 +52,7 @@ export default function SmartHomeSection() {
           <AnimateOnScroll animation="fade-in-left" className="w-full lg:w-1/2">
             <div className="relative aspect-4/3 rounded-xl overflow-hidden">
               <Image
-                src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80"
+                src={displayImage}
                 alt="Couple reviewing home plans"
                 fill
                 className="object-cover"
@@ -35,24 +64,13 @@ export default function SmartHomeSection() {
           <div className="w-full lg:w-1/2">
             <AnimateOnScroll animation="fade-in-up" delay={100}>
               <h2 className="text-3xl lg:text-4xl xl:text-5xl leading-7 font-outfit font-bold text-white">
-                FUTURE PROOF
+                {displayTitle}
               </h2>
             </AnimateOnScroll>
 
             <AnimateOnScroll animation="fade-in-up" delay={200}>
               <p className="mt-6 text-white/70 text-base lg:text-lg max-w-lg">
-                At Ridgeline Homes, every home is designed around the way people
-                live today—not the outdated floorplans of the past. We believe
-                you shouldn&apos;t have to settle for spaces you&apos;ll never
-                use or layouts that no longer fit modern life. Our smart,
-                healthy, and thoughtfully crafted homes are built to support
-                your real lifestyle. As the world has changed, so has the way we
-                live, work, and gather at home. That&apos;s why we&apos;ve
-                reimagined traditional layouts to include flexible spaces like
-                dedicated home offices, pocket workstations, study nooks for
-                kids, and even personalized areas for pets. Ridgeline Homes
-                gives you a home that adapts to you—today, tomorrow, and every
-                day after.
+                {displayDescription}
               </p>
             </AnimateOnScroll>
 
@@ -62,8 +80,8 @@ export default function SmartHomeSection() {
                   asChild
                   className="group h-auto rounded-md bg-main-secondary px-6 py-3 text-base font-medium text-main-primary hover:bg-main-secondary/90"
                 >
-                  <Link href="/smart-home">
-                    Get Started
+                  <Link href={displayLinkUrl}>
+                    {displayLinkTitle}
                     <ArrowRight className="ml-2 size-4 transition-transform group-hover:translate-x-1" />
                   </Link>
                 </Button>

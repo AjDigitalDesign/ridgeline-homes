@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 
 export default function FinancingPage() {
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-gray-50 pt-16 xl:pt-20">
       {/* Hero Section */}
       <section className="bg-main-primary py-16 lg:py-24">
         <div className="container mx-auto px-4 lg:px-10 xl:px-20 2xl:px-24">
