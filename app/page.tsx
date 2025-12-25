@@ -125,12 +125,12 @@ function SectionRenderer({
       );
 
     case "BOLD_WHERE_TO_LIVE":
-      if (homePage?.showBoldWhereToLive === false) return null;
+      if ((homePage as unknown as { showBoldWhereToLive?: boolean })?.showBoldWhereToLive === false) return null;
       return (
         <WhereToLiveBold
           key="boldWhereToLive"
-          subtitle={homePage?.boldWhereToLiveSubtitle}
-          title={homePage?.boldWhereToLiveTitle}
+          subtitle={(homePage as unknown as { boldWhereToLiveSubtitle?: string })?.boldWhereToLiveSubtitle}
+          title={(homePage as unknown as { boldWhereToLiveTitle?: string })?.boldWhereToLiveTitle}
           marketAreas={(homePage as unknown as { boldWhereToLiveMarketAreas?: Array<{
             id: string;
             name: string;
