@@ -10,10 +10,10 @@ interface MarketArea {
   id: string;
   name: string;
   slug: string;
-  state: string;
-  county?: string;
-  city?: string;
-  description?: string;
+  state: string | null;
+  county?: string | null;
+  city?: string | null;
+  description?: string | null;
   featureImage?: string | null;
   _count?: {
     communities: number;
@@ -36,7 +36,7 @@ function MarketAreaCard({
 }) {
   return (
     <Link
-      href={`/communities?state=${marketArea.state}&city=${encodeURIComponent(marketArea.city || marketArea.name)}`}
+      href={`/communities${marketArea.state ? `?state=${marketArea.state}&` : "?"}city=${encodeURIComponent(marketArea.city || marketArea.name)}`}
       className="group relative flex-shrink-0 w-[320px] sm:w-[350px] lg:w-[400px] h-[420px] sm:h-[450px] lg:h-[500px] overflow-hidden"
     >
       {/* Image */}
