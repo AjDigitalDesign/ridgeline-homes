@@ -15,6 +15,7 @@ import {
   fetchTenant,
   type HomePage,
   type Tenant,
+  type MarketArea,
 } from "@/lib/api";
 
 // Disable caching to always fetch fresh data
@@ -131,17 +132,7 @@ function SectionRenderer({
           key="boldWhereToLive"
           subtitle={(homePage as unknown as { boldWhereToLiveSubtitle?: string })?.boldWhereToLiveSubtitle}
           title={(homePage as unknown as { boldWhereToLiveTitle?: string })?.boldWhereToLiveTitle}
-          marketAreas={(homePage as unknown as { boldWhereToLiveMarketAreas?: Array<{
-            id: string;
-            name: string;
-            slug: string;
-            state: string;
-            county?: string;
-            city?: string;
-            description?: string;
-            featureImage?: string | null;
-            _count?: { communities: number };
-          }> })?.boldWhereToLiveMarketAreas ?? homePage?.whereToLiveMarketAreas ?? []}
+          marketAreas={(homePage as unknown as { boldWhereToLiveMarketAreas?: MarketArea[] })?.boldWhereToLiveMarketAreas ?? homePage?.whereToLiveMarketAreas ?? []}
         />
       );
 
