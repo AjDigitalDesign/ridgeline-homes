@@ -260,7 +260,7 @@ export default function GalleryPageClient({
   const heroTitle = galleryPage?.galleryBannerTitle || "Photo Gallery";
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-gray-50 pt-16 xl:pt-20">
       {/* Hero Section */}
       <section className="relative h-[300px] lg:h-[400px] overflow-hidden">
         {heroImage ? (

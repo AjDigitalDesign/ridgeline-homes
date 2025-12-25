@@ -13,63 +13,71 @@ import "swiper/css";
 interface Testimonial {
   id: string;
   name: string;
-  title: string;
-  content: string;
-  image?: string;
   rating: number;
+  companyName?: string;
+  description: string;
 }
 
-const testimonials: Testimonial[] = [
+interface TestimonialsSectionProps {
+  title?: string | null;
+  testimonials?: Testimonial[];
+  image1?: string | null;
+  image2?: string | null;
+}
+
+const defaultTestimonials: Testimonial[] = [
   {
     id: "1",
     name: "Jenny Muna",
-    title: "CEO of Company",
-    content:
+    companyName: "CEO of Company",
+    description:
       "There are so many wonderful things to say about Quere. Their staff genuinely cares about their clients and is competent and professional. They assisted me in locating the ideal house for my household.",
-    image:
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80",
     rating: 5,
   },
   {
     id: "2",
     name: "Michael Chen",
-    title: "Business Owner",
-    content:
+    companyName: "Business Owner",
+    description:
       "The entire home buying process was seamless. From the first consultation to closing, they were there every step of the way. I couldn't be happier with my new home.",
-    image:
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
     rating: 5,
   },
   {
     id: "3",
     name: "Sarah Johnson",
-    title: "First-time Homebuyer",
-    content:
+    companyName: "First-time Homebuyer",
+    description:
       "As a first-time buyer, I was nervous about the process. The team made everything so easy to understand and helped me find the perfect starter home within my budget.",
-    image:
-      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80",
     rating: 5,
   },
   {
     id: "4",
     name: "David Williams",
-    title: "Real Estate Investor",
-    content:
+    companyName: "Real Estate Investor",
+    description:
       "I've worked with many builders over the years, but Ridgeline Homes stands out for their attention to detail and customer service. Highly recommend!",
-    image:
-      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80",
     rating: 5,
   },
 ];
 
-const galleryImages = [
-  "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&q=80",
-  "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&q=80",
-];
+const defaultImages = {
+  image1: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&q=80",
+  image2: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&q=80",
+};
 
-export default function TestimonialsSection() {
+export function TestimonialsClassic({
+  title,
+  testimonials,
+  image1,
+  image2,
+}: TestimonialsSectionProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const swiperRef = useRef<SwiperType | null>(null);
+
+  const displayTitle = title || "What Our Clients Say";
+  const displayTestimonials = testimonials && testimonials.length > 0 ? testimonials : defaultTestimonials;
+  const displayImage1 = image1 || defaultImages.image1;
+  const displayImage2 = image2 || defaultImages.image2;
 
   const goToSlide = (index: number) => {
     if (swiperRef.current) {
@@ -92,7 +100,7 @@ export default function TestimonialsSection() {
           <div className="w-full lg:w-1/2">
             <AnimateOnScroll animation="fade-in-up">
               <h2 className="text-3xl lg:text-4xl xl:text-5xl font-bold text-main-primary">
-                What Our Clients Say
+                {displayTitle}
               </h2>
             </AnimateOnScroll>
 
@@ -112,7 +120,7 @@ export default function TestimonialsSection() {
               }}
               className="mt-8"
             >
-              {testimonials.map((testimonial) => (
+              {displayTestimonials.map((testimonial) => (
                 <SwiperSlide key={testimonial.id}>
                   {/* Star Rating */}
                   <div className="flex items-center gap-1 mb-4">
@@ -126,29 +134,21 @@ export default function TestimonialsSection() {
 
                   {/* Testimonial Text */}
                   <p className="text-main-primary/80 text-base lg:text-lg leading-relaxed">
-                    {testimonial.content}
+                    {testimonial.description}
                   </p>
 
                   {/* Author Info */}
                   <div className="flex items-center gap-4 mt-6">
-                    {testimonial.image && (
-                      <div className="relative size-12 rounded-full overflow-hidden">
-                        <Image
-                          src={testimonial.image}
-                          alt={testimonial.name}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                    )}
                     <div className="flex items-center gap-4">
                       <div>
                         <p className="font-semibold text-main-primary">
                           {testimonial.name}
                         </p>
-                        <p className="text-sm text-main-primary/60">
-                          {testimonial.title}
-                        </p>
+                        {testimonial.companyName && (
+                          <p className="text-sm text-main-primary/60">
+                            {testimonial.companyName}
+                          </p>
+                        )}
                       </div>
                       {/* Quote Mark */}
                       <span className="text-6xl font-serif text-main-primary/20 leading-none">
@@ -162,7 +162,7 @@ export default function TestimonialsSection() {
 
             {/* Pagination Dots */}
             <div className="flex items-center gap-2 mt-8">
-              {testimonials.map((_, index) => (
+              {displayTestimonials.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => goToSlide(index)}
@@ -193,7 +193,7 @@ export default function TestimonialsSection() {
                 }}
               >
                 <Image
-                  src={galleryImages[0]}
+                  src={displayImage1}
                   alt="Modern home exterior"
                   fill
                   className="object-cover"
@@ -202,7 +202,7 @@ export default function TestimonialsSection() {
               {/* Front Image */}
               <div className="absolute bottom-0 right-0 w-[65%] h-[55%] rounded-xl overflow-hidden shadow-lg border-4 border-white z-10">
                 <Image
-                  src={galleryImages[1]}
+                  src={displayImage2}
                   alt="Luxury home interior"
                   fill
                   className="object-cover"

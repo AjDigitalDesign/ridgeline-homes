@@ -34,7 +34,7 @@ interface HeroSliderProps {
   };
 }
 
-export default function HeroSlider({ slides, socialLinks }: HeroSliderProps) {
+export function HeroClassic({ slides, socialLinks }: HeroSliderProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isVideoOpen, setIsVideoOpen] = useState(false);
   const swiperRef = useRef<SwiperType | null>(null);

@@ -344,10 +344,46 @@ export interface Floorplan {
   };
 }
 
+// Theme colors from themePublished
+export interface TenantThemeColors {
+  primary: string;
+  secondary: string;
+  accent: string;
+  background: string;
+  foreground: string;
+}
+
+// Theme fonts from themePublished
+export interface TenantThemeFonts {
+  heading: string;
+  body: string;
+}
+
+// Published theme configuration
+export interface TenantThemePublished {
+  colors: TenantThemeColors;
+  fonts: TenantThemeFonts;
+  borderRadius: "none" | "small" | "medium" | "large";
+}
+
+// Section configuration item
+export interface TenantSectionConfig {
+  type: string;
+  enabled: boolean;
+  order: number;
+}
+
+// Published section configuration
+export interface TenantSectionConfigPublished {
+  sections: TenantSectionConfig[];
+}
+
 export interface Tenant {
   id: string;
   name: string;
   slug: string;
+  domain: string | null;
+  subdomain: string | null;
   description: string | null;
   logo: string | null;
   favicon: string | null;
@@ -356,8 +392,11 @@ export interface Tenant {
   builderPhone: string | null;
   builderAddress: string | null;
   builderCity: string | null;
+  builderCounty: string | null;
   builderState: string | null;
   builderZip: string | null;
+  builderLatitude: number | null;
+  builderLongitude: number | null;
   facebookUrl: string | null;
   twitterUrl: string | null;
   instagramUrl: string | null;
@@ -366,10 +405,19 @@ export interface Tenant {
   promoBannerEnabled: boolean;
   promoBannerDescription: string | null;
   promoBannerLink: string | null;
+  flyoutBanners: unknown | null;
+  leadCaptureEnabled: boolean;
   googleAnalyticsId: string | null;
   googleTagManagerId: string | null;
+  thirdPartyScripts: unknown | null;
   hubspotEnabled: boolean;
   lassoEnabled: boolean;
+  // Homepage Template
+  homepageTemplate: "MODERN" | "BOLD";
+  // Theme/Branding (colors, fonts)
+  themePublished: TenantThemePublished | null;
+  // Section configuration
+  sectionConfigPublished: TenantSectionConfigPublished | null;
 }
 
 // API Functions
@@ -523,9 +571,109 @@ export interface FrontPage {
   featuredHomes: Home[];
 }
 
-// Fetch front page
+// Fetch front page (legacy BOLD template)
 export const fetchFrontPage = () =>
   api.get<FrontPage>("/api/public/pages/front-page");
+
+// Home Page type for MODERN template
+export interface HomePageTemplateConfig {
+  templateType: "MODERN" | "BOLD";
+  theme: TenantThemePublished | null;
+}
+
+export interface HomePage {
+  id: string;
+  tenantId: string;
+  name: string;
+  slug: string;
+  content: string | null;
+  pageType: "FRONT_PAGE";
+  bannerSlides: BannerSlide[];
+  // Template configuration
+  templateConfig: HomePageTemplateConfig;
+  // Hero Video section (BOLD template)
+  heroVideoUrl: string | null;
+  heroVideoTitle: string | null;
+  heroVideoSubtitle: string | null;
+  heroVideoButtonText: string | null;
+  heroVideoButtonLink: string | null;
+  heroVideoPosterImage: string | null;
+  heroBackgroundImage: string | null;
+  heroShowSearch: boolean;
+  // Featured data (isTenantFeatured)
+  featuredCommunities: Community[];
+  featuredHomes: Home[];
+  // Where to live market areas
+  whereToLiveMarketAreas: MarketArea[];
+  showWhereToLive: boolean;
+  whereToLiveTitle: string | null;
+  whereToLiveDescription: string | null;
+  // Modern About section
+  showModernAbout: boolean;
+  modernAboutTitle: string | null;
+  modernAboutContent: string | null;
+  modernAboutLinkTitle: string | null;
+  modernAboutLinkUrl: string | null;
+  modernAboutImage: string | null;
+  // About section (legacy)
+  showAboutSection: boolean;
+  aboutTitle: string;
+  aboutDescription: string | null;
+  aboutButtonText: string;
+  aboutButtonLink: string | null;
+  aboutImages: string[];
+  aboutAgentImage: string | null;
+  aboutAgentName: string | null;
+  aboutAgentTitle: string | null;
+  aboutTagline: string | null;
+  aboutServices: string[];
+  // Block Content section (Design Center)
+  showBlockContent: boolean;
+  blockContentImage: string | null;
+  blockContentTitle: string | null;
+  blockContentDescription: string | null;
+  blockContentLinkTitle: string | null;
+  blockContentLinkUrl: string | null;
+  // Flex Content section (Smart Home / Future Proof)
+  showFlexContent: boolean;
+  flexContentTitle: string | null;
+  flexContentDescription: string | null;
+  flexContentLinkTitle: string | null;
+  flexContentLinkUrl: string | null;
+  flexContentImage: string | null;
+  // Testimonials
+  showTestimonials: boolean;
+  testimonialsTitle: string;
+  testimonials: Array<{
+    id: string;
+    name: string;
+    rating: number;
+    companyName?: string;
+    description: string;
+  }>;
+  testimonialImage1: string | null;
+  testimonialImage2: string | null;
+  // CTA Banner
+  ctaBannerTitle: string | null;
+  ctaBannerText: string | null;
+  ctaBannerButtonText: string | null;
+  ctaBannerButtonLink: string | null;
+  ctaBannerImage: string | null;
+  // SEO
+  seo: {
+    id: string;
+    title: string | null;
+    description: string | null;
+    keywords: string | null;
+    ogTitle: string | null;
+    ogDescription: string | null;
+    ogImage: string | null;
+  } | null;
+}
+
+// Fetch home page (MODERN template)
+export const fetchHomePage = () =>
+  api.get<HomePage>("/api/public/pages/home");
 
 // Market Area type
 export interface MarketArea {
@@ -1065,3 +1213,45 @@ export interface FeaturedData {
 // Fetch featured communities and homes for homepage
 export const fetchFeatured = () =>
   api.get<FeaturedData>("/api/public/featured");
+
+// =============================================================================
+// About Page
+// =============================================================================
+
+export interface AboutPageWhoWeAreStep {
+  id: string;
+  title: string;
+  description: string;
+  mediaType: "image" | "video" | null;
+  mediaUrl: string | null;
+}
+
+export interface AboutPage {
+  id: string;
+  name: string;
+  slug: string;
+  pageType: "ABOUT";
+  aboutPageBannerImage: string | null;
+  aboutPageBannerTitle: string | null;
+  aboutPageIntroTitle: string | null;
+  aboutPageIntroDescription: string | null;
+  aboutPageIntroContent: string | null;
+  aboutPageIntroCta: string | null;
+  aboutPageIntroCtaLink: string | null;
+  aboutPageIntroMediaType: "image" | "video" | null;
+  aboutPageIntroMediaUrl: string | null;
+  aboutPageWhoWeAreTitle: string | null;
+  aboutPageWhoWeAreSteps: AboutPageWhoWeAreStep[] | null;
+  seo: {
+    title: string | null;
+    description: string | null;
+    keywords: string | null;
+    ogTitle: string | null;
+    ogDescription: string | null;
+    ogImage: string | null;
+  } | null;
+}
+
+// Fetch About page
+export const fetchAboutPage = () =>
+  api.get<AboutPage>("/api/public/pages/about");

@@ -62,7 +62,7 @@ const designCategories = [
 
 export default function DesignCenterPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pt-16 xl:pt-20">
       {/* Hero Section */}
       <section className="relative h-[400px] lg:h-[500px] bg-main-primary overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-main-primary via-main-primary/90 to-main-primary/70" />

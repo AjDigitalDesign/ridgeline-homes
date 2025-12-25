@@ -4,6 +4,8 @@ import { Outfit, Inter } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { FavoritesProvider } from "@/components/providers/favorites-provider";
+import { LocationProvider } from "@/components/providers/location-provider";
+import { TenantProvider } from "@/components/providers/tenant-provider";
 import { AuthProvider } from "@/lib/auth-context";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
@@ -12,6 +14,7 @@ import { AnalyticsProvider } from "@/components/analytics-provider";
 import { AdvancedAnalyticsProvider } from "@/components/advanced-analytics";
 import { ChatWidgetWrapper } from "@/components/ai-chat";
 import { generateMetadata as generateSeoMetadata, siteConfig } from "@/lib/seo";
+import { fetchTenant } from "@/lib/api";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -42,31 +45,47 @@ export const metadata: Metadata = {
   }),
 };
 
-export default function RootLayout({
+async function getTenantData() {
+  try {
+    const response = await fetchTenant();
+    return response.data;
+  } catch {
+    // Return null if tenant not available - TenantProvider will use defaults
+    return null;
+  }
+}
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const tenant = await getTenantData();
+
   return (
     <html lang="en">
       <body
         className={`${outfit.variable} ${inter.variable} antialiased overflow-x-hidden`}
       >
         <QueryProvider>
-          <AuthProvider>
-            <FavoritesProvider>
-              <Suspense fallback={null}>
-                <AdvancedAnalyticsProvider>
-                  <AnalyticsProvider />
-                  <Header />
-                  {children}
-                  <Footer />
-                  <Toaster />
-                  <ChatWidgetWrapper />
-                </AdvancedAnalyticsProvider>
-              </Suspense>
-            </FavoritesProvider>
-          </AuthProvider>
+          <TenantProvider initialTenant={tenant}>
+            <AuthProvider>
+              <FavoritesProvider>
+                <LocationProvider>
+                  <Suspense fallback={null}>
+                    <AdvancedAnalyticsProvider>
+                      <AnalyticsProvider />
+                      <Header />
+                      {children}
+                      <Footer />
+                      <Toaster />
+                      <ChatWidgetWrapper />
+                    </AdvancedAnalyticsProvider>
+                  </Suspense>
+                </LocationProvider>
+              </FavoritesProvider>
+            </AuthProvider>
+          </TenantProvider>
         </QueryProvider>
       </body>
     </html>
