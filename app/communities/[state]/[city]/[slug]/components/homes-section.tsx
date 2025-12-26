@@ -48,7 +48,7 @@ export interface CommunityHome {
 
 interface HomesSectionProps {
   homes: CommunityHome[];
-  communitySlug: string;
+  communitySlug?: string;
   onScheduleTour?: (homeId: string, homeName: string) => void;
 }
 
@@ -283,9 +283,11 @@ function HomeCard({ home, onOpenGallery, onScheduleTour, onOpenCalculator }: Hom
   );
 }
 
+const INITIAL_HOMES_COUNT = 6;
+const LOAD_MORE_COUNT = 6;
+
 export default function HomesSection({
   homes,
-  communitySlug,
   onScheduleTour,
 }: HomesSectionProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -294,9 +296,15 @@ export default function HomesSection({
   const [calculatorOpen, setCalculatorOpen] = useState(false);
   const [calculatorPrice, setCalculatorPrice] = useState(400000);
   const [calculatorPropertyName, setCalculatorPropertyName] = useState("");
+  const [visibleCount, setVisibleCount] = useState(INITIAL_HOMES_COUNT);
 
-  const displayedHomes = homes.slice(0, 6);
-  const hasMore = homes.length > 6;
+  const displayedHomes = homes.slice(0, visibleCount);
+  const hasMore = visibleCount < homes.length;
+  const remainingCount = homes.length - visibleCount;
+
+  const handleLoadMore = () => {
+    setVisibleCount((prev) => Math.min(prev + LOAD_MORE_COUNT, homes.length));
+  };
 
   const handleOpenGallery = (images: string[], title: string) => {
     setLightboxImages(images);
@@ -341,14 +349,12 @@ export default function HomesSection({
         ))}
       </div>
 
-      {/* View All Button */}
+      {/* Load More Button */}
       {hasMore && (
         <div className="mt-8 text-center">
-          <Button asChild variant="outline" size="lg">
-            <Link href={`/homes?community=${communitySlug}`}>
-              View All {homes.length} Homes
-              <ArrowRight className="size-4 ml-2" />
-            </Link>
+          <Button variant="outline" size="lg" onClick={handleLoadMore}>
+            Load More ({remainingCount} remaining)
+            <ArrowRight className="size-4 ml-2" />
           </Button>
         </div>
       )}
