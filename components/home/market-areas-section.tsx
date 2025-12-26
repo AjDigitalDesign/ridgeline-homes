@@ -102,6 +102,7 @@ export default function MarketAreasSection({
                           alt={area.name}
                           fill
                           className="object-cover transition-transform duration-500 group-hover:scale-110"
+                          sizes="(max-width: 640px) 85vw, (max-width: 768px) 65vw, (max-width: 1024px) 45vw, (max-width: 1280px) 40vw, 33vw"
                         />
                       ) : (
                         <div className="w-full h-full bg-main-primary/20" />

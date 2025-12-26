@@ -101,6 +101,7 @@ export function AskUsDropdown() {
               alt="Sales representative"
               fill
               className="object-cover"
+              sizes="40px"
             />
           </div>
           <div className="text-left">
@@ -134,6 +135,7 @@ export function AskUsDropdown() {
                   alt="Sales representative"
                   fill
                   className="object-cover"
+                  sizes="40px"
                 />
               </div>
               <div>
