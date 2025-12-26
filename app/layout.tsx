@@ -15,7 +15,8 @@ import { AdvancedAnalyticsProvider } from "@/components/advanced-analytics";
 import { ChatWidgetWrapper } from "@/components/ai-chat";
 import { FlyoutBannerPopup } from "@/components/flyout-banner";
 import { generateMetadata as generateSeoMetadata, siteConfig } from "@/lib/seo";
-import { fetchTenant } from "@/lib/api";
+import { fetchTenantWithSlug } from "@/lib/api";
+import { getServerTenantSlug, getTenantApiKey } from "@/lib/tenant-config";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -31,7 +32,9 @@ export async function generateMetadata(): Promise<Metadata> {
   // Fetch tenant data for dynamic favicon
   let faviconUrl: string | undefined;
   try {
-    const response = await fetchTenant();
+    const tenantSlug = await getServerTenantSlug();
+    const apiKey = getTenantApiKey(tenantSlug);
+    const response = await fetchTenantWithSlug(tenantSlug, apiKey);
     faviconUrl = response.data?.favicon || undefined;
   } catch {
     // Use default favicon if tenant fetch fails
@@ -66,7 +69,9 @@ export async function generateMetadata(): Promise<Metadata> {
 
 async function getTenantData() {
   try {
-    const response = await fetchTenant();
+    const tenantSlug = await getServerTenantSlug();
+    const apiKey = getTenantApiKey(tenantSlug);
+    const response = await fetchTenantWithSlug(tenantSlug, apiKey);
     return response.data;
   } catch {
     // Return null if tenant not available - TenantProvider will use defaults
