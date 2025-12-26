@@ -11,9 +11,12 @@ import type { Floorplan } from "@/lib/api";
 
 interface FloorplansSectionProps {
   floorplans: Floorplan[];
-  communitySlug: string;
+  communitySlug?: string;
   onScheduleTour?: (floorplanId: string, floorplanName: string) => void;
 }
+
+const INITIAL_FLOORPLANS_COUNT = 6;
+const LOAD_MORE_COUNT = 6;
 
 function formatPrice(price: number | null) {
   if (!price) return "Contact for Price";
@@ -182,15 +185,20 @@ function FloorplanCard({ floorplan, onOpenGallery, onScheduleTour }: FloorplanCa
 
 export default function FloorplansSection({
   floorplans,
-  communitySlug,
   onScheduleTour,
 }: FloorplansSectionProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxImages, setLightboxImages] = useState<string[]>([]);
   const [lightboxTitle, setLightboxTitle] = useState("");
+  const [visibleCount, setVisibleCount] = useState(INITIAL_FLOORPLANS_COUNT);
 
-  const displayedFloorplans = floorplans.slice(0, 6);
-  const hasMore = floorplans.length > 6;
+  const displayedFloorplans = floorplans.slice(0, visibleCount);
+  const hasMore = visibleCount < floorplans.length;
+  const remainingCount = floorplans.length - visibleCount;
+
+  const handleLoadMore = () => {
+    setVisibleCount((prev) => Math.min(prev + LOAD_MORE_COUNT, floorplans.length));
+  };
 
   const handleOpenGallery = (images: string[], title: string) => {
     setLightboxImages(images);
@@ -228,14 +236,12 @@ export default function FloorplansSection({
         ))}
       </div>
 
-      {/* View All Button */}
+      {/* Load More Button */}
       {hasMore && (
         <div className="mt-8 text-center">
-          <Button asChild variant="outline" size="lg">
-            <Link href={`/plans?community=${communitySlug}`}>
-              View All {floorplans.length} Floor Plans
-              <ArrowRight className="size-4 ml-2" />
-            </Link>
+          <Button variant="outline" size="lg" onClick={handleLoadMore}>
+            Load More ({remainingCount} remaining)
+            <ArrowRight className="size-4 ml-2" />
           </Button>
         </div>
       )}
