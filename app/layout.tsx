@@ -13,6 +13,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { AnalyticsProvider } from "@/components/analytics-provider";
 import { AdvancedAnalyticsProvider } from "@/components/advanced-analytics";
 import { ChatWidgetWrapper } from "@/components/ai-chat";
+import { FlyoutBannerPopup } from "@/components/flyout-banner";
 import { generateMetadata as generateSeoMetadata, siteConfig } from "@/lib/seo";
 import { fetchTenant } from "@/lib/api";
 
@@ -98,6 +99,7 @@ export default async function RootLayout({
                       <Footer />
                       <Toaster />
                       <ChatWidgetWrapper />
+                      <FlyoutBannerPopup />
                     </AdvancedAnalyticsProvider>
                   </Suspense>
                 </LocationProvider>

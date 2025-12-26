@@ -378,6 +378,21 @@ export interface TenantSectionConfigPublished {
   sections: TenantSectionConfig[];
 }
 
+// Flyout Banner (popup) configuration
+export interface FlyoutBanner {
+  id: string;
+  name: string | null; // Banner name/title
+  image: string | null;
+  link: string | null; // Optional link URL
+  bannerTitle: string | null; // Eyebrow/subtitle text (e.g., "WELCOME OFFER")
+  title: string | null;
+  description: string | null;
+  ctaText: string | null;
+  startTime: string | null; // ISO date string
+  endTime: string | null; // ISO date string
+  enabled: boolean;
+}
+
 export interface Tenant {
   id: string;
   name: string;
@@ -405,7 +420,7 @@ export interface Tenant {
   promoBannerEnabled: boolean;
   promoBannerDescription: string | null;
   promoBannerLink: string | null;
-  flyoutBanners: unknown | null;
+  flyoutBanners: FlyoutBanner[] | null;
   leadCaptureEnabled: boolean;
   googleAnalyticsId: string | null;
   googleTagManagerId: string | null;
