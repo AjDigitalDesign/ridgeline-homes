@@ -60,7 +60,7 @@ export default function DesignCenterSection({
 
       {/* Content */}
       <div className="relative container mx-auto px-4 lg:px-10 xl:px-20 2xl:px-24 py-20 lg:py-32">
-        <div className="max-w-2xl text-left">
+        <div className="max-w-2xl mx-auto text-center">
           <AnimateOnScroll animation="fade-in-up">
             <h2 className="text-3xl lg:text-4xl xl:text-4xl traci font-bold text-white leading-7 font-outfit">
               {displayTitle}
@@ -68,7 +68,7 @@ export default function DesignCenterSection({
           </AnimateOnScroll>
 
           <AnimateOnScroll animation="fade-in-up" delay={150}>
-            <p className="mt-6 text-white/80 text-base lg:text-lg max-w-xl">
+            <p className="mt-6 text-white/80 text-base lg:text-lg max-w-xl mx-auto">
               {displayDescription}
             </p>
           </AnimateOnScroll>

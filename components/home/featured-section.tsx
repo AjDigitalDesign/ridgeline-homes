@@ -14,6 +14,7 @@ import { getHomeUrl } from "@/lib/url";
 interface FeaturedSectionProps {
   communities: Community[];
   homes: Home[];
+  title?: string | null;
 }
 
 function formatPrice(price: number | null) {
@@ -476,10 +477,13 @@ function HomeCard({ home }: { home: Home }) {
 export default function FeaturedSection({
   communities,
   homes,
+  title,
 }: FeaturedSectionProps) {
   const [activeTab, setActiveTab] = useState<"communities" | "homes">(
     "communities"
   );
+
+  const displayTitle = title || "Featured";
 
   return (
     <section className="bg-[#E8EDEF] py-16 lg:py-24 overflow-hidden">
@@ -487,7 +491,7 @@ export default function FeaturedSection({
         {/* Header */}
         <AnimateOnScroll animation="fade-in-up" className="text-center mb-10">
           <h2 className="text-3xl lg:text-4xl xl:text-5xl font-bold text-main-primary">
-            Featured
+            {displayTitle}
           </h2>
           <div className="w-16 h-1 bg-main-secondary mx-auto mt-4" />
         </AnimateOnScroll>

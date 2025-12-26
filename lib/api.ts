@@ -603,6 +603,8 @@ export interface HomePage {
   // Featured data (isTenantFeatured)
   featuredCommunities: Community[];
   featuredHomes: Home[];
+  showFeatured: boolean;
+  featuredTitle: string | null;
   // Where to live market areas
   whereToLiveMarketAreas: MarketArea[];
   showWhereToLive: boolean;

@@ -1207,14 +1207,18 @@ export default function CommunitiesPageClient({
   // Hero background image - only use listing settings banner image (no fallback to gallery images)
   const heroImage = listingSettings?.bannerImage || "";
 
-  // Hero title - show city/state from URL params, or market area, or default
-  const heroTitle = urlCity
-    ? urlCity
-    : urlState
-      ? urlState
-      : selectedMarketArea?.name ||
-        listingSettings?.bannerTitle ||
-        "Our Communities";
+  // Hero title - use listing settings banner title as default, override with filters/URL params when active
+  const getHeroTitle = () => {
+    // If filtering by city from URL
+    if (urlCity) return urlCity;
+    // If filtering by state from URL
+    if (urlState) return getStateName(urlState);
+    // If filtering by market area
+    if (selectedMarketArea?.name) return selectedMarketArea.name;
+    // Default: use listing settings banner title or fallback
+    return listingSettings?.bannerTitle || "Our Communities";
+  };
+  const heroTitle = getHeroTitle();
 
   // Hero subtitle - show state when filtering by city
   const heroSubtitle = urlCity && urlState ? urlState : null;

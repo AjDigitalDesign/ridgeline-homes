@@ -13,14 +13,21 @@ import "swiper/css/navigation";
 
 interface MarketAreasSectionProps {
   marketAreas: MarketArea[];
+  title?: string | null;
+  description?: string | null;
 }
 
 export default function MarketAreasSection({
   marketAreas,
+  title,
+  description,
 }: MarketAreasSectionProps) {
   if (!marketAreas || marketAreas.length === 0) {
     return null;
   }
+
+  const displayTitle = title || "Where Do You Want to Live?";
+  const displayDescription = description || `${marketAreas.length} Areas to Choose from`;
 
   return (
     <section className="bg-[#C0CDD1] py-16 lg:py-24 overflow-x-clip relative">
@@ -32,10 +39,10 @@ export default function MarketAreasSection({
             className="lg:w-1/3 shrink-0 pr-4 lg:pr-8"
           >
             <h2 className="text-3xl lg:text-4xl xl:text-5xl font-bold text-main-primary leading-tight">
-              Where Do You Want to Live?
+              {displayTitle}
             </h2>
             <p className="mt-4 text-main-primary/70 text-lg">
-              {marketAreas.length} Areas in Maryland to Choose from
+              {displayDescription}
             </p>
             <div className="mt-6 w-16 h-1 bg-main-secondary" />
           </AnimateOnScroll>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { X, Mail, Lock, User, Eye, EyeOff, Loader2 } from "lucide-react";
 import {
   Dialog,
@@ -398,13 +399,13 @@ export function AuthModal({
 
               <p className="text-xs text-gray-500 text-center">
                 By creating an account, you agree to our{" "}
-                <a href="/terms" className="text-main-primary hover:underline">
+                <Link href="/terms" className="text-main-primary hover:underline">
                   Terms of Service
-                </a>{" "}
+                </Link>{" "}
                 and{" "}
-                <a href="/privacy" className="text-main-primary hover:underline">
+                <Link href="/privacy" className="text-main-primary hover:underline">
                   Privacy Policy
-                </a>
+                </Link>
               </p>
             </form>
           )}

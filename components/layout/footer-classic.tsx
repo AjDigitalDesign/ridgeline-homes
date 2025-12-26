@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import {
   MapPin,
@@ -16,71 +17,37 @@ import {
   Send,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  useTenant,
+  useTenantContact,
+  useTenantSocial,
+  useTenantAssets,
+} from "@/components/providers/tenant-provider";
+import {
+  aboutUsDropdownItems,
+  newsEventsDropdownItems,
+} from "@/lib/constants/navigation";
 
-function FooterLogo() {
-  return (
-    <Link href="/">
-      <svg viewBox="0 0 200 60" className="w-44 h-auto">
-        {/* Abstract ridge/rooflines */}
-        <path
-          d="M10 35 L25 15 L40 35"
-          stroke="#D4AF37"
-          strokeWidth="3"
-          fill="none"
-          strokeLinecap="round"
-        />
-        <path
-          d="M20 35 L35 20 L50 35"
-          stroke="#D4AF37"
-          strokeWidth="2"
-          fill="none"
-          strokeLinecap="round"
-          opacity="0.6"
-        />
-        <text
-          x="60"
-          y="26"
-          fill="#FFFFFF"
-          fontFamily="Helvetica, Arial, sans-serif"
-          fontSize="17"
-          fontWeight="700"
-          letterSpacing="1"
-        >
-          RIDGELINE
-        </text>
-        <text
-          x="60"
-          y="42"
-          fill="#D4AF37"
-          fontFamily="Helvetica, Arial, sans-serif"
-          fontSize="11"
-          letterSpacing="4"
-        >
-          HOMES
-        </text>
-      </svg>
-    </Link>
-  );
-}
-
-const usefulLinks = [
-  { label: "About Us", href: "/about-us" },
+// Navigation links derived from header navigation
+const quickLinks = [
+  { label: "Find Your Home", href: "/homes" },
   { label: "Communities", href: "/communities" },
-  { label: "Our Best Services", href: "/services" },
-  { label: "Request Visit", href: "/contact" },
-  { label: "FAQ", href: "/resources/faqs" },
+  { label: "Build on Your Lot", href: "/build-on-your-lot" },
+  { label: "Contact", href: "/contact" },
 ];
 
+// Combine about us and news/events for explore section
 const exploreLinks = [
-  { label: "All Properties", href: "/homes" },
-  { label: "Our Agents", href: "/team" },
-  { label: "All Projects", href: "/communities" },
-  { label: "Our Process", href: "/resources/our-process" },
-  { label: "Neighborhood", href: "/communities" },
+  ...aboutUsDropdownItems.map((item) => ({ label: item.label, href: item.href })),
+  ...newsEventsDropdownItems.map((item) => ({ label: item.label, href: item.href })),
 ];
 
 export function FooterClassic() {
   const [email, setEmail] = useState("");
+  const { tenant } = useTenant();
+  const contact = useTenantContact();
+  const social = useTenantSocial();
+  const assets = useTenantAssets();
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -93,6 +60,18 @@ export function FooterClassic() {
     setEmail("");
   };
 
+  // Build full address string
+  const fullAddress = contact
+    ? [
+        contact.address.line1,
+        contact.address.city,
+        contact.address.state,
+        contact.address.zip,
+      ]
+        .filter(Boolean)
+        .join(", ")
+    : null;
+
   return (
     <footer className="bg-main-primary">
       {/* Main Footer Content */}
@@ -100,44 +79,78 @@ export function FooterClassic() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8">
           {/* Left Column - Logo & Description */}
           <div className="lg:col-span-3">
-            <FooterLogo />
+            <Link href="/" className="inline-block">
+              {assets?.logo ? (
+                <Image
+                  src={assets.logo}
+                  alt={contact?.companyName || "Logo"}
+                  width={176}
+                  height={60}
+                  className="h-14 w-auto object-contain"
+                />
+              ) : (
+                <span className="text-2xl font-bold text-white">
+                  {contact?.companyName || "Home Builder"}
+                </span>
+              )}
+            </Link>
             <p className="mt-6 text-sm text-white/70 leading-relaxed">
               Building quality homes with passion, dedication, and resources to
               help our clients reach their buying goals. Your dream home awaits.
             </p>
 
-            {/* Social Icons */}
+            {/* Social Icons - Only show if social links exist */}
             <div className="flex items-center gap-3 mt-6">
-              <a
-                href="#"
-                className="size-9 rounded-full border border-white/20 flex items-center justify-center text-white/70 hover:bg-main-secondary hover:border-main-secondary hover:text-main-primary transition-colors"
-              >
-                <Facebook className="size-4" />
-              </a>
-              <a
-                href="#"
-                className="size-9 rounded-full border border-white/20 flex items-center justify-center text-white/70 hover:bg-main-secondary hover:border-main-secondary hover:text-main-primary transition-colors"
-              >
-                <Twitter className="size-4" />
-              </a>
-              <a
-                href="#"
-                className="size-9 rounded-full border border-white/20 flex items-center justify-center text-white/70 hover:bg-main-secondary hover:border-main-secondary hover:text-main-primary transition-colors"
-              >
-                <Linkedin className="size-4" />
-              </a>
-              <a
-                href="#"
-                className="size-9 rounded-full border border-white/20 flex items-center justify-center text-white/70 hover:bg-main-secondary hover:border-main-secondary hover:text-main-primary transition-colors"
-              >
-                <Youtube className="size-4" />
-              </a>
-              <a
-                href="#"
-                className="size-9 rounded-full border border-white/20 flex items-center justify-center text-white/70 hover:bg-main-secondary hover:border-main-secondary hover:text-main-primary transition-colors"
-              >
-                <Instagram className="size-4" />
-              </a>
+              {social?.facebook && (
+                <a
+                  href={social.facebook}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="size-9 rounded-full border border-white/20 flex items-center justify-center text-white/70 hover:bg-main-secondary hover:border-main-secondary hover:text-main-primary transition-colors"
+                >
+                  <Facebook className="size-4" />
+                </a>
+              )}
+              {social?.twitter && (
+                <a
+                  href={social.twitter}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="size-9 rounded-full border border-white/20 flex items-center justify-center text-white/70 hover:bg-main-secondary hover:border-main-secondary hover:text-main-primary transition-colors"
+                >
+                  <Twitter className="size-4" />
+                </a>
+              )}
+              {social?.linkedin && (
+                <a
+                  href={social.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="size-9 rounded-full border border-white/20 flex items-center justify-center text-white/70 hover:bg-main-secondary hover:border-main-secondary hover:text-main-primary transition-colors"
+                >
+                  <Linkedin className="size-4" />
+                </a>
+              )}
+              {social?.youtube && (
+                <a
+                  href={social.youtube}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="size-9 rounded-full border border-white/20 flex items-center justify-center text-white/70 hover:bg-main-secondary hover:border-main-secondary hover:text-main-primary transition-colors"
+                >
+                  <Youtube className="size-4" />
+                </a>
+              )}
+              {social?.instagram && (
+                <a
+                  href={social.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="size-9 rounded-full border border-white/20 flex items-center justify-center text-white/70 hover:bg-main-secondary hover:border-main-secondary hover:text-main-primary transition-colors"
+                >
+                  <Instagram className="size-4" />
+                </a>
+              )}
             </div>
           </div>
 
@@ -147,60 +160,48 @@ export function FooterClassic() {
               Get In Touch
             </h3>
             <ul className="space-y-4">
-              <li className="flex items-start gap-3">
-                <MapPin className="size-5 text-white/50 shrink-0 mt-0.5" />
-                <span className="text-sm text-white/70">
-                  789 Inner Lane, Holy park,
-                  <br />
-                  Maryland, USA
-                </span>
-              </li>
-              <li className="flex items-start gap-3">
-                <Phone className="size-5 text-white/50 shrink-0 mt-0.5" />
-                <div className="text-sm text-white/70">
-                  <a
-                    href="tel:+1234567890"
-                    className="hover:text-main-secondary transition-colors"
-                  >
-                    +01 234 567 890
-                  </a>
-                  <br />
-                  <a
-                    href="tel:+09876543210"
-                    className="hover:text-main-secondary transition-colors"
-                  >
-                    +09 876 543 210
-                  </a>
-                </div>
-              </li>
-              <li className="flex items-start gap-3">
-                <Mail className="size-5 text-white/50 shrink-0 mt-0.5" />
-                <div className="text-sm text-white/70">
-                  <a
-                    href="mailto:info@ridgelinehomes.com"
-                    className="hover:text-main-secondary transition-colors"
-                  >
-                    info@ridgelinehomes.com
-                  </a>
-                  <br />
-                  <a
-                    href="mailto:support@ridgelinehomes.com"
-                    className="hover:text-main-secondary transition-colors"
-                  >
-                    support@ridgelinehomes.com
-                  </a>
-                </div>
-              </li>
+              {fullAddress && (
+                <li className="flex items-start gap-3">
+                  <MapPin className="size-5 text-white/50 shrink-0 mt-0.5" />
+                  <span className="text-sm text-white/70">{fullAddress}</span>
+                </li>
+              )}
+              {contact?.phone && (
+                <li className="flex items-start gap-3">
+                  <Phone className="size-5 text-white/50 shrink-0 mt-0.5" />
+                  <div className="text-sm text-white/70">
+                    <a
+                      href={`tel:${contact.phone}`}
+                      className="hover:text-main-secondary transition-colors"
+                    >
+                      {contact.phone}
+                    </a>
+                  </div>
+                </li>
+              )}
+              {contact?.email && (
+                <li className="flex items-start gap-3">
+                  <Mail className="size-5 text-white/50 shrink-0 mt-0.5" />
+                  <div className="text-sm text-white/70">
+                    <a
+                      href={`mailto:${contact.email}`}
+                      className="hover:text-main-secondary transition-colors"
+                    >
+                      {contact.email}
+                    </a>
+                  </div>
+                </li>
+              )}
             </ul>
           </div>
 
-          {/* Useful Link */}
+          {/* Quick Links */}
           <div className="lg:col-span-2">
             <h3 className="text-lg font-semibold text-white mb-6">
-              Useful Link
+              Quick Links
             </h3>
             <ul className="space-y-3">
-              {usefulLinks.map((link) => (
+              {quickLinks.map((link) => (
                 <li key={link.label}>
                   <Link
                     href={link.href}
@@ -286,8 +287,8 @@ export function FooterClassic() {
         <div className="container mx-auto px-4 lg:px-10 xl:px-20 2xl:px-24 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-white/50">
             <p>
-              Copyright © {new Date().getFullYear()} Ridgeline Homes. All rights
-              reserved.
+              Copyright © {new Date().getFullYear()}{" "}
+              {contact?.companyName || "Home Builder"}. All rights reserved.
             </p>
             <div className="flex items-center gap-6">
               <Link

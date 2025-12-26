@@ -165,7 +165,7 @@ export default async function BuildOnYourLotPage() {
                 variant="outline"
                 className="border-white text-white hover:bg-white hover:text-main-primary"
               >
-                <a href="#locations">View Locations</a>
+                <Link href="#locations">View Locations</Link>
               </Button>
             </div>
           </div>

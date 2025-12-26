@@ -1,3 +1,5 @@
+import { Fragment } from "react";
+import type { Metadata } from "next";
 import { HeroSection } from "@/components/home/hero";
 import PromoBanner from "@/components/home/promo-banner";
 import { AboutSection } from "@/components/home/about";
@@ -17,10 +19,50 @@ import {
   type Tenant,
   type MarketArea,
 } from "@/lib/api";
+import { generateMetadata as generateSeoMetadata, siteConfig } from "@/lib/seo";
 
 // Disable caching to always fetch fresh data
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+
+// Generate metadata from CMS SEO fields
+export async function generateMetadata(): Promise<Metadata> {
+  try {
+    const [homePageRes, tenantRes] = await Promise.all([
+      fetchHomePage().catch(() => ({ data: null })),
+      fetchTenant().catch(() => ({ data: null })),
+    ]);
+
+    const homePage = homePageRes.data;
+    const tenant = tenantRes.data;
+    const seo = homePage?.seo;
+
+    // Use tenant name if available, otherwise fallback to siteConfig
+    const siteName = tenant?.name || siteConfig.name;
+
+    return generateSeoMetadata({
+      title: seo?.title || siteName,
+      description: seo?.description || tenant?.description || siteConfig.description,
+      image: seo?.ogImage || undefined,
+      openGraph: {
+        title: seo?.ogTitle || siteName,
+        description: seo?.ogDescription || seo?.description || tenant?.description || siteConfig.description,
+        image: seo?.ogImage || undefined,
+      },
+      twitter: {
+        title: seo?.ogTitle || siteName,
+        description: seo?.ogDescription || seo?.description || tenant?.description || siteConfig.description,
+        image: seo?.ogImage || undefined,
+      },
+    });
+  } catch {
+    // Fallback to default metadata
+    return generateSeoMetadata({
+      title: `${siteConfig.name} | ${siteConfig.tagline}`,
+      description: siteConfig.description,
+    });
+  }
+}
 
 // Section config type from API
 interface SectionConfig {
@@ -32,13 +74,14 @@ interface SectionConfig {
 // Default section order for fallback
 const DEFAULT_SECTIONS: SectionConfig[] = [
   { type: "HERO_SLIDER", enabled: true, order: 0 },
-  { type: "MODERN_ABOUT", enabled: true, order: 1 },
-  { type: "WHERE_TO_LIVE", enabled: true, order: 2 },
-  { type: "BLOCK_CONTENT", enabled: true, order: 3 },
-  { type: "FEATURED", enabled: true, order: 4 },
-  { type: "FLEX_CONTENT", enabled: true, order: 5 },
-  { type: "TESTIMONIALS", enabled: true, order: 6 },
-  { type: "CTA", enabled: true, order: 7 },
+  { type: "PROMO", enabled: true, order: 1 },
+  { type: "MODERN_ABOUT", enabled: true, order: 2 },
+  { type: "WHERE_TO_LIVE", enabled: true, order: 3 },
+  { type: "BLOCK_CONTENT", enabled: true, order: 4 },
+  { type: "FEATURED", enabled: true, order: 5 },
+  { type: "FLEX_CONTENT", enabled: true, order: 6 },
+  { type: "TESTIMONIALS", enabled: true, order: 7 },
+  { type: "CTA", enabled: true, order: 8 },
 ];
 
 // Section renderer component
@@ -122,6 +165,8 @@ function SectionRenderer({
         <MarketAreasSection
           key="marketAreas"
           marketAreas={homePage?.whereToLiveMarketAreas ?? []}
+          title={homePage?.whereToLiveTitle}
+          description={homePage?.whereToLiveDescription}
         />
       );
 
@@ -165,11 +210,13 @@ function SectionRenderer({
       );
 
     case "FEATURED":
+      if (homePage?.showFeatured === false) return null;
       return (
         <FeaturedSection
           key="featured"
           communities={homePage?.featuredCommunities ?? []}
           homes={homePage?.featuredHomes ?? []}
+          title={homePage?.featuredTitle}
         />
       );
 
@@ -256,17 +303,35 @@ export default async function Home() {
   }
 
   // Filter enabled sections (already sorted by backend)
-  const orderedSections = sectionConfig.filter((s) => s.enabled);
+  // Also filter out PROMO from sections as we render it separately as a global banner
+  const orderedSections = sectionConfig
+    .filter((s) => s.enabled)
+    .filter((s) => s.type !== "PROMO");
+
+  // Check if promo banner should be shown (global banner after hero)
+  const showPromoBanner = tenant?.promoBannerEnabled && tenant?.promoBannerDescription;
 
   return (
     <main>
-      {orderedSections.map((section) => (
-        <SectionRenderer
-          key={section.type}
-          section={section}
-          homePage={homePage}
-          tenant={tenant}
-        />
+      {orderedSections.map((section, index) => (
+        <Fragment key={section.type}>
+          <SectionRenderer
+            section={section}
+            homePage={homePage}
+            tenant={tenant}
+          />
+          {/* Render promo banner after first section (hero) */}
+          {index === 0 && showPromoBanner && (
+            <section className="bg-[#C0CDD1] py-10 lg:py-16 xl:py-20">
+              <div className="container mx-auto px-4 lg:px-10 xl:px-16 -mt-20 lg:-mt-28 relative z-10 lg:max-w-5xl xl:max-w-6xl">
+                <PromoBanner
+                  description={tenant.promoBannerDescription!}
+                  link={tenant.promoBannerLink}
+                />
+              </div>
+            </section>
+          )}
+        </Fragment>
       ))}
     </main>
   );
