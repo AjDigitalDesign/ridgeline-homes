@@ -1,8 +1,39 @@
 import axios from "axios";
+import {
+  getTenantSlugFromHostname,
+  getTenantApiKey,
+} from "@/lib/tenant-config";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 const API_KEY = process.env.NEXT_PUBLIC_API_KEY || "";
 const TENANT_SLUG = process.env.NEXT_PUBLIC_TENANT_SLUG || "";
+
+/**
+ * Get the current tenant slug for client-side requests.
+ * - Client-side: reads from window hostname
+ * - Fallback: uses NEXT_PUBLIC_TENANT_SLUG env variable
+ *
+ * For server-side, use getServerTenantSlug() from lib/tenant-config.ts
+ */
+export function getCurrentTenantSlug(): string {
+  // Client-side: determine from current hostname
+  if (typeof window !== "undefined") {
+    return getTenantSlugFromHostname(window.location.hostname);
+  }
+
+  // Server-side or fallback: use environment variable
+  return TENANT_SLUG;
+}
+
+/**
+ * Get the API key for the current tenant.
+ * - Client-side: looks up based on hostname
+ * - Fallback: uses NEXT_PUBLIC_API_KEY env variable
+ */
+export function getCurrentTenantApiKey(): string {
+  const tenantSlug = getCurrentTenantSlug();
+  return getTenantApiKey(tenantSlug);
+}
 
 // Public API client (with tenant slug header for public endpoints)
 export const api = axios.create({
@@ -10,7 +41,7 @@ export const api = axios.create({
   headers: {
     "Content-Type": "application/json",
     "X-API-Key": API_KEY,
-    "x-tenant-slug": TENANT_SLUG,
+    "x-tenant-slug": TENANT_SLUG, // Default, will be overridden by interceptor
     "Cache-Control": "no-cache",
   },
 });
@@ -24,8 +55,20 @@ export const authApi = axios.create({
   },
 });
 
-// Add request interceptor to include auth token and cache-busting for public api
+// Add request interceptor to include auth token, tenant slug, API key, and cache-busting for public api
 api.interceptors.request.use((config) => {
+  // Dynamically set tenant slug and API key based on current context
+  const tenantSlug = getCurrentTenantSlug();
+  if (tenantSlug) {
+    config.headers["x-tenant-slug"] = tenantSlug;
+  }
+
+  // Set tenant-specific API key
+  const apiKey = getCurrentTenantApiKey();
+  if (apiKey) {
+    config.headers["X-API-Key"] = apiKey;
+  }
+
   if (typeof window !== "undefined") {
     const sessionToken = localStorage.getItem("session_token");
     if (sessionToken) {
@@ -436,7 +479,27 @@ export interface Tenant {
 }
 
 // API Functions
+
+/**
+ * Fetch tenant data.
+ * For client-side: uses the axios client which dynamically sets tenant slug.
+ * For server-side: the interceptor will use NEXT_PUBLIC_TENANT_SLUG as fallback,
+ * which is correct for static generation. For dynamic server rendering,
+ * use fetchTenantWithSlug() with a tenant slug from getServerTenantSlug().
+ */
 export const fetchTenant = () => api.get<Tenant>("/api/public/tenant");
+
+/**
+ * Fetch tenant data with explicit tenant slug and API key.
+ * Use this for server-side rendering where you need to specify the tenant.
+ */
+export const fetchTenantWithSlug = (tenantSlug: string, apiKey?: string) =>
+  api.get<Tenant>("/api/public/tenant", {
+    headers: {
+      "x-tenant-slug": tenantSlug,
+      ...(apiKey && { "X-API-Key": apiKey }),
+    },
+  });
 
 export const fetchCommunities = (params?: {
   status?: string;
