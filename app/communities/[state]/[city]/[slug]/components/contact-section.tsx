@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Phone } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -374,13 +375,13 @@ export default function ContactSection({
               {/* reCAPTCHA Notice */}
               <p className="text-xs text-gray-500 text-center">
                 This site is protected by reCAPTCHA and the Google{" "}
-                <a href="/privacy" className="underline">
+                <Link href="/privacy" className="underline">
                   Privacy Policy
-                </a>{" "}
+                </Link>{" "}
                 and{" "}
-                <a href="/terms" className="underline">
+                <Link href="/terms" className="underline">
                   Terms of Service
-                </a>{" "}
+                </Link>{" "}
                 apply.
               </p>
             </form>

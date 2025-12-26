@@ -10,6 +10,7 @@ import type { Community, Home } from "@/lib/api";
 interface FeaturedSectionBoldProps {
   communities: Community[];
   homes: Home[];
+  title?: string | null;
 }
 
 // Card for the carousel - simplified design matching the Schumacher style
