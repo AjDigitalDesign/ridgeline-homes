@@ -36,10 +36,6 @@ export const tenantMappings: TenantMapping = {
   "ridgelinehomes.net": "ridgeline-homes",
   "www.ridgelinehomes.net": "ridgeline-homes",
 
-  // Iconpeak Homes
-  "iconpeakhomes.forgehome.io": "iconpeak-homes",
-  "www.iconpeakhomes.forgehome.io": "iconpeak-homes",
-
   // You can also use Vercel preview URLs
   // "project-name.vercel.app": "default-tenant",
 };
